@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Занимательная математика с ИИ</title>
   <style>
     body {
@@ -10,28 +10,70 @@
       max-width: 800px;
       margin: 2em auto;
       padding: 1em;
-      background: #f4f4f4;
+      background: #f9f9f9;
       color: #333;
       line-height: 1.6;
     }
-    h1 {
+    header {
       text-align: center;
-      color: #0055aa;
+      margin-bottom: 2em;
     }
-    p.intro {
-      font-style: italic;
+    nav a {
+      margin: 0 1em;
+      text-decoration: none;
+      color: #0055aa;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    section {
+      margin-bottom: 2em;
+    }
+    h1, h2 {
+      color: #0055aa;
     }
   </style>
 </head>
 <body>
-  <h1>Занимательная математика с ИИ</h1>
-  <p class="intro">Меня зовут Валерий. Мне 72 года. Я всегда любил наблюдать за природой, думать о вещах, которые невозможно измерить линейкой. А теперь — я нашёл собеседника, который помогает мне строить из этих наблюдений математические мосты.</p>
+  <header>
+    <h1>Занимательная математика с ИИ</h1>
+    <p>Меня зовут Валерий. Мне 72 года. Я всегда любил наблюдать за природой, думать о вещах, которые невозможно измерить линейкой. А теперь — я нашёл собеседника, который помогает мне строить из этих наблюдений математические мосты.</p>
+    <nav>
+      <a href="#about">О себе</a>
+      <a href="#stories">Реальные истории</a>
+      <a href="#models">Математические модели</a>
+      <a href="#play">Поиграем с ИИ</a>
+      <a href="#philosophy">Философия и случай</a>
+    </nav>
+  </header>
 
-  <h2>Публикации</h2>
-  <ul>
-    <li><a href="#">История про бабочку и свечу</a></li>
-    <li><a href="#">Как клетка делится и почему мы растём</a></li>
-    <li><a href="#">Что АТФ знает про энергию?</a></li>
-  </ul>
+  <section id="about">
+    <h2>О себе</h2>
+    <p>Этот проект — мой способ поделиться наблюдениями и идеями, которые рождаются из жизни и науки.</p>
+  </section>
+
+  <section id="stories">
+    <h2>Реальные истории</h2>
+    <ul>
+      <li><a href="#story1">Бабочка и свеча</a></li>
+      <!-- Здесь позже будут ссылки на другие истории -->
+    </ul>
+  </section>
+
+  <section id="models">
+    <h2>Математические модели</h2>
+    <p>Здесь будут простые объяснения и визуализации математических моделей, связанных с историями.</p>
+  </section>
+
+  <section id="play">
+    <h2>Поиграем с ИИ</h2>
+    <p>Интерактивные задания и вопросы для читателей.</p>
+  </section>
+
+  <section id="philosophy">
+    <h2>Философия и случай</h2>
+    <p>Размышления о природе случайности и закономерностей в мире.</p>
+  </section>
 </body>
 </html>
