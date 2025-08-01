@@ -40,6 +40,19 @@
       padding: 1em;
       margin-top: 2em;
     }
+.model-description {
+  background: #fff8dc;
+  border-left: 6px solid #ffa500;
+  padding: 1.2em 1.5em;
+  margin-top: 2em;
+  font-size: 1em;
+  line-height: 1.5;
+  font-family: 'Georgia', serif;
+}
+.model-description h2 {
+  color: #cc6600;
+}
+
     label {
       display: block;
       margin-top: 1em;
@@ -62,6 +75,7 @@
       color: #0055aa;
     }
   </style>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   <a href="index.html" class="back-link">&larr; Вернуться на главную</a>
@@ -96,6 +110,37 @@
     <button onclick="calculateProbability()">Посчитать вероятность спасения</button>
     <div id="result"></div>
   </section>
+<section class="model-description">
+  <h2>Детерминированно-стохастическая модель спасения бабочки</h2>
+  <p>
+    Рассмотрим модель, описывающую вероятность спасения бабочки как функцию двух факторов:
+  </p>
+  <ul>
+    <li><strong>W</strong> — сила ветра (сквозняка), воздействующего на свечу и бабочку;</li>
+    <li><strong>R</strong> — реакция свечи на ветер (время и вероятность задуть фитиль).</li>
+  </ul>
+  <p>Обозначим вероятность спасения бабочки в момент времени <em>t</em> как <strong>P(t)</strong>.</p>
+  
+  <p>Простейшая модель может быть задана уравнением:</p>
+
+  <p style="text-align:center; font-family: 'Times New Roman', serif; font-size: 1.2em;">
+    <em>P(t) = 1 - \exp(-\alpha \cdot W \cdot R \cdot t)</em>
+  </p>
+
+  <p>где <em>\(\alpha\)</em> — эмпирический коэффициент, отражающий чувствительность системы к воздействию ветра и реакции свечи.</p>
+  
+  <p>Здесь <em>P(t)</em> растёт с увеличением времени <em>t</em>, силы ветра <em>W</em> и реакции свечи <em>R</em>, приближаясь к 1 — полной вероятности спасения.</p>
+
+  <p>Чтобы добавить стохастичность (случайность), можно ввести случайную величину <em>\(\xi\)</em>, моделирующую непредсказуемые порывы ветра:</p>
+
+  <p style="text-align:center; font-family: 'Times New Roman', serif; font-size: 1.2em;">
+    <em>P(t) = 1 - \exp(-\alpha \cdot W \cdot R \cdot t + \beta \cdot \xi(t))</em>
+  </p>
+
+  <p>где <em>\(\xi(t)\)</em> — случайный процесс с нулевым средним, а <em>\(\beta\)</em> — масштабный коэффициент влияния случайных факторов.</p>
+
+  <p>Эта модель помогает понять, как детерминированные факторы взаимодействуют с вероятностными событиями, создавая сложную динамику спасения бабочки.</p>
+</section>
 
   <script>
     const windSlider = document.getElementById('wind');
