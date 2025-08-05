@@ -61,11 +61,19 @@ function draw() {
 
   requestAnimationFrame(draw);
 }
-canvas.addEventListener('click', function() {draw();}, false);
+canvas.addEventListener('click', function() {
+x = 250; // начальное положение спички
+y = 150;
+vx = 0.5 + Math.random() * 0.5; // небольшая случайная скорость
+vy = 0.3;
+alpha = 1; // прозрачность "смолы"
+ draw();
+}, false);
 draw();
 </script>
 
 </body>
 </html>
+
 
 
