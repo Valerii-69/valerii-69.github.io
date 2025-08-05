@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Успокаивающая сила ландшафта</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+
+<h2>🧮 Модель эмоционального воздействия ландшафта</h2>
+
+<label>Цветовая насыщенность (от 0 до 1): <input type="number" id="color" step="0.1" min="0" max="1" value="0.6"></label>
+<label>Контраст рельефа (от 0 до 1): <input type="number" id="relief" step="0.1" min="0" max="1" value="0.4"></label>
+<label>Высота наблюдения (в метрах): <input type="number" id="height" step="10" min="0" max="500" value="100"></label>
+
+<button onclick="calculate()">Рассчитать</button>
+
+<div class="result" id="output"></div>
+
+<script>
+function calculate() {
+  // Получение значений
+  const C = parseFloat(document.getElementById("color").value);
+  const R = parseFloat(document.getElementById("relief").value);
+  const H = parseFloat(document.getElementById("height").value);
+
+  // Нормализуем высоту (максимальный эффект примерно на 120 м)
+  const H_norm = Math.exp(-Math.pow((H - 120) / 80, 2));
+
+  // Эффективность восприятия (простая эмпирическая формула)
+  const E = (0.6 * C + 0.4 * R) * H_norm;
+
+  // Вывод результата
+  document.getElementById("output").textContent =
+    "📊 Эмоциональное воздействие: " + E.toFixed(3) +
+    (E > 0.5 ? " — успокаивает" : " — возбуждает или нейтрально");
+}
+</script>
+
+</body>
+</html>
