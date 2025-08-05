@@ -1,0 +1,60 @@
+<!-- Здесь будет визуализация групп частиц и их качания -->
+<canvas id="universeCanvas" width="600" height="400"></canvas>
+
+<script>
+// Класс частицы с координатами и массой
+class Particle {
+  constructor(x, y, mass) {
+    this.x = x;
+    this.y = y;
+    this.mass = mass;
+    this.vibrationAmplitude = 0;
+    this.groupId = null; // Идентификатор группы
+  }
+}
+
+// Массив частиц
+const particles = [];
+
+// Создаем частицы и группируем
+function createParticles(numParticles) {
+  for (let i = 0; i < numParticles; i++) {
+    // случайное размещение частиц
+    particles.push(new Particle(Math.random()*600, Math.random()*400, 1));
+  }
+}
+
+// Функция обновления позиции с учетом покачивания
+function updateParticles() {
+  particles.forEach(p => {
+    // простое колебание по оси Y (пример)
+    p.y += Math.sin(Date.now() / 500 + p.x) * 0.5;
+  });
+}
+
+// Рисуем частицы на canvas
+function draw() {
+  const canvas = document.getElementById('universeCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = 'cyan';
+    ctx.fill();
+    ctx.stroke();
+  });
+}
+
+// Основной цикл
+function animate() {
+  updateParticles();
+  draw();
+  requestAnimationFrame(animate);
+}
+
+// Запуск
+createParticles(50);
+animate();
+</script>
