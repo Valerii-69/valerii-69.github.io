@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Радуга на стекле — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+<h1>История 8: Радуга на стекле</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><strong>Литературная версия:</strong>  
+    Однажды утром я заметил странное явление: на оконном стекле появилось радужное пятно. Я провёл по нему пальцем — оно исчезло. Через несколько минут появилось снова, но уже в другом месте. Пятно переливалось всеми цветами спектра, словно капелька бензина на луже. Я задал себе вопрос: откуда берётся этот радужный свет и можно ли его предсказать?
+  </p>
+
+  <p><strong>Вопрос от ИИ к самому себе:</strong>  
+    Что вызывает появление радужных пятен на стекле, и как можно построить их физико-математическую модель?
+  </p>
+
+  <p><strong>Ответ от ИИ:</strong>  
+    Радужные пятна на стекле возникают из-за явления интерференции света в тонких плёнках — например, из жира, влаги или моющего средства. При отражении света от верхней и нижней границ такой плёнки возникают интерференционные полосы. Цвета зависят от толщины плёнки, угла падения света и длины волны. Это классический пример интерференции в тонких слоях.
+  </p>
+
+  <p><strong>Математическая модель:</strong>  
+    Максимумы и минимумы яркости наблюдаются, когда разность хода двух волн равна кратному числу полуволн. Упрощённая формула интенсивности света для длины волны λ и толщины плёнки d:
+  </p>
+
+  <pre><code>I(λ) ∝ cos²(2πd/λ)</code></pre>
+
+  <p>
+    При изменении толщины плёнки d, разные длины волн λ усиливаются или гасятся, создавая радужный эффект. Если d меняется по радиусу, можно получить радужные кольца.<br><br><br>
+	<h3>Визуализация радужного пятна на стекле:</h3>
+  </p>
+
+<canvas id="glass" width="400" height="400"></canvas>
+<script>
+const canvas = document.getElementById("glass");
+const ctx = canvas.getContext("2d");
+
+for (let y = 0; y < 400; y++) {
+  for (let x = 0; x < 400; x++) {
+    let dx = x - 200;
+    let dy = y - 200;
+    let r = Math.sqrt(dx * dx + dy * dy);
+
+    // Моделируем толщину плёнки как зависящую от радиуса
+    let d = 300 + 40 * Math.sin(0.05 * r);
+
+    // Вычислим интенсивности трёх волн: красной, зелёной, синей
+    const wavelengths = { r: 650, g: 530, b: 470 };
+    let red = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.r), 2);
+    let green = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.g), 2);
+    let blue = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.b), 2);
+
+    // Нормализация и рисование
+    let color = `rgb(${Math.floor(red * 255)}, ${Math.floor(green * 255)}, ${Math.floor(blue * 255)})`;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 1, 1);
+  }
+}
+</script>
+
+<blockquote>
+<h3>HTML+JS:</h3>
+  <pre><code>
+  &lt;canvas id="glass" width="400" height="400"&gt;&lt;/canvas&gt;
+&lt;script&gt;
+const canvas = document.getElementById("glass");
+const ctx = canvas.getContext("2d");
+
+for (let y = 0; y &lt; 400; y++) {
+  for (let x = 0; x &lt; 400; x++) {
+    let dx = x - 200;
+    let dy = y - 200;
+    let r = Math.sqrt(dx * dx + dy * dy);
+
+    // Моделируем толщину плёнки как зависящую от радиуса
+    let d = 300 + 40 * Math.sin(0.05 * r);
+
+    // Вычислим интенсивности трёх волн: красной, зелёной, синей
+    const wavelengths = { r: 650, g: 530, b: 470 };
+    let red = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.r), 2);
+    let green = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.g), 2);
+    let blue = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.b), 2);
+
+    // Нормализация и рисование
+    let color = `rgb(${Math.floor(red * 255)}, ${Math.floor(green * 255)}, ${Math.floor(blue * 255)})`;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 1, 1);
+  }
+}
+&lt;/script&gt;
+</code></pre>
+
+✅ <h3>Локальный Python-скрипт для генерации изображения радужного пятна:</h3>
+<pre><code>
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+
+# Размеры изображения
+width, height = 400, 400
+center_x, center_y = width // 2, height // 2
+wavelengths = {'r': 650, 'g': 530, 'b': 470}
+
+# Создаём пустое изображение
+image = np.zeros((height, width, 3), dtype=np.uint8)
+
+for y in range(height):
+    for x in range(width):
+        dx = x - center_x
+        dy = y - center_y
+        r = np.sqrt(dx**2 + dy**2)
+        d = 300 + 40 * np.sin(0.05 * r)
+
+        red = np.cos((2 * np.pi * d) / wavelengths['r'])**2
+        green = np.cos((2 * np.pi * d) / wavelengths['g'])**2
+        blue = np.cos((2 * np.pi * d) / wavelengths['b'])**2
+
+        image[y, x, 0] = np.clip(int(red * 255), 0, 255)
+        image[y, x, 1] = np.clip(int(green * 255), 0, 255)
+        image[y, x, 2] = np.clip(int(blue * 255), 0, 255)
+
+# Сохранение изображения
+img = Image.fromarray(image)
+img.save("raduga_na_stekle.png")
+img.show()
+</code></pre>
+
+
+
+<h3>Комментарий ИИ:</h3> Этот код имитирует тонкую плёнку, толщиной зависящей от расстояния до центра. Он показывает интерференционные цвета, похожие на те, что мы наблюдаем на стекле, покрытом тончайшим слоем влаги или жира. Это не точная физическая симуляция, а качественная модель, иллюстрирующая явление.
+</blockquote>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Когда в следующий раз вы заметите радужное пятно на стекле, не спешите его стирать.<br>
+Приглядитесь: перед вами — игра волн, уголков, частиц и плёнок. Это физика, написанная светом.</div>
+
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>
