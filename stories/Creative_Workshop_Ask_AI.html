@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Творческая мастерская и Спроси у ИИ - Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f0f5f7;
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      color: #2a6599;
+      margin-bottom: 20px;
+    }
+    section {
+      margin-bottom: 40px;
+      border: 1px solid #b0c4de;
+      padding: 20px;
+      border-radius: 10px;
+      background: #e8f0fe;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.1rem;
+      border: 2px solid #2a6599;
+      border-radius: 8px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #2a6599;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #1d4273;
+    }
+    #storyResult, #chatResult {
+      margin-top: 15px;
+      background: #d0e2f0;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      line-height: 1.5;
+      min-height: 100px;
+      white-space: pre-wrap;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    #chatMessages {
+      height: 200px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #222;
+    }
+    .chat-user {
+      color: #2a6599;
+      font-weight: bold;
+    }
+    .chat-ai {
+      color: #4a4a4a;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+  <h1>2.5 Творческая мастерская: создаём историю с ИИ</h1>
+  <section>
+    <label for="ideaInput">Введите вашу идею или тему для истории:</label>
+    <textarea id="ideaInput" placeholder="Например: приключение математика в космосе"></textarea>
+    <button id="generateStoryBtn">Создать историю</button>
+    <button id="saveStoryBtn">Сохранить историю</button>
+    <div id="storyResult"></div>
+  </section>
+
+  <h1>2.6 Спроси у ИИ</h1>
+  <section>
+    <label for="chatInput">Введите вопрос ИИ:</label>
+    <input type="text" id="chatInput" placeholder="Задайте вопрос..." autocomplete="off" />
+    <button id="sendChatBtn">Отправить</button>
+    <div id="chatMessages"></div>
+  </section>
+
+  <script>
+    // Раздел 2.5 — Творческая мастерская с сохранением
+    const ideaInput = document.getElementById('ideaInput');
+    const generateStoryBtn = document.getElementById('generateStoryBtn');
+    const saveStoryBtn = document.getElementById('saveStoryBtn');
+    const storyResult = document.getElementById('storyResult');
+
+    function generateStory(idea) {
+      return `
+Однажды, вдохновлённый идеей "${idea}", наш герой отправился в необычное приключение, где числа и формулы оживали, а математические загадки превращались в захватывающие испытания. 
+
+В каждом шаге он открывал новые тайны и понимал, что математика — это язык Вселенной, который помогает разгадать её загадки.
+
+Пусть эта история вдохновит вас исследовать мир с увлечением и творчеством!`;
+    }
+
+    generateStoryBtn.addEventListener('click', () => {
+      const idea = ideaInput.value.trim();
+      if (!idea) {
+        alert('Пожалуйста, введите идею для истории.');
+        return;
+      }
+      const story = generateStory(idea);
+      storyResult.textContent = story;
+    });
+
+    saveStoryBtn.addEventListener('click', () => {
+      const storyText = storyResult.textContent.trim();
+      if (!storyText) {
+        alert('Сначала создайте историю, чтобы её сохранить.');
+        return;
+      }
+      localStorage.setItem('savedStory', storyText);
+      alert('История сохранена в локальном хранилище браузера!');
+    });
+
+    // Автозагрузка сохранённой истории при загрузке страницы
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem('savedStory');
+      if (saved) {
+        storyResult.textContent = saved;
+      }
+    });
+
+    // Раздел 2.6 — Спроси у ИИ (эмуляция)
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function appendMessage(sender, text) {
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="chat-${sender}">${sender === 'user' ? 'Вы' : 'ИИ'}:</span> <span>${text}</span>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function generateAIResponse(question) {
+      // Очень простая эмуляция ответа
+      const lower = question.toLowerCase();
+      if (lower.includes('математика')) return 'Математика — это язык Вселенной, изучающий числа и фигуры.';
+      if (lower.includes('почему')) return 'Потому что так устроен мир, и мы пытаемся его понять.';
+      if (lower.includes('что такое')) return 'Это фундаментальный вопрос, требующий точного определения.';
+      if (lower.includes('кто')) return 'Это интересный вопрос! Попробуйте поискать в энциклопедии.';
+      return 'Спасибо за вопрос! К сожалению, я пока учусь и не знаю точного ответа.';
+    }
+
+    sendChatBtn.addEventListener('click', () => {
+      const question = chatInput.value.trim();
+      if (!question) {
+        alert('Пожалуйста, введите вопрос.');
+        return;
+      }
+      appendMessage('user', question);
+      chatInput.value = '';
+      // Имитируем задержку ответа
+      setTimeout(() => {
+        const answer = generateAIResponse(question);
+        appendMessage('ai', answer);
+      }, 800);
+    });
+
+    // Отправка по Enter
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendChatBtn.click();
+      }
+    });
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+</body>
+</html>

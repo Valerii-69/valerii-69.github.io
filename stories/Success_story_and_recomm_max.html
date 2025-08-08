@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>История успеха и рекомендации - Занимательная математика с ИИ </title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      margin: 40px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #3366cc;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 16px;
+      resize: vertical;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Поделитесь своей историей успеха с ИИ</h1>
+  <p>Расскажите, как ИИ помог вам понять что-то новое, решить задачу или создать что-то удивительное.</p>
+  
+  <textarea id="successStory" placeholder="Напишите здесь вашу историю..."></textarea>
+  
+  <h2>Какие рекомендации вы дали бы другим?</h2>
+  <textarea id="advice" placeholder="Ваши советы другим участникам..."></textarea>
+  
+  <button onclick="sendToGoogleSheet()">Отправить</button>
+  <div id="message"></div>
+
+  <script>
+    async function sendToGoogleSheet() {
+      const story = document.getElementById('successStory').value.trim();
+      const advice = document.getElementById('advice').value.trim();
+      const messageEl = document.getElementById('message');
+
+      if (!story || !advice) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = "Пожалуйста, заполните обе части: историю и рекомендации.";
+        return;
+      }
+
+      const data = {
+        story: story,
+        advice: advice,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        const response = await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        messageEl.style.color = 'green';
+        messageEl.textContent = "Спасибо! Ваша история успешно сохранена.";
+        document.getElementById('successStory').value = '';
+        document.getElementById('advice').value = '';
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = "Ошибка при отправке. Попробуйте позже.";
+        console.error('Ошибка:', error);
+      }
+    }
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

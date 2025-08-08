@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Творческая мастерская: история с ИИ - Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f0f5f7;
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      color: #2a6599;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      font-size: 1.1rem;
+      border: 2px solid #2a6599;
+      border-radius: 8px;
+      resize: vertical;
+    }
+    button {
+      background-color: #2a6599;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #1d4273;
+    }
+    #result {
+      margin-top: 25px;
+      background: #d0e2f0;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      line-height: 1.5;
+      min-height: 100px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Творческая мастерская: создаём историю с ИИ</h1>
+  <label for="ideaInput">Введите вашу идею или тему для истории:</label>
+  <textarea id="ideaInput" placeholder="Например: приключение математика в космосе"></textarea>
+  <button id="generateBtn">Создать историю</button>
+  <div id="result"></div>
+
+  <script>
+    const ideaInput = document.getElementById('ideaInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const resultDiv = document.getElementById('result');
+
+    generateBtn.addEventListener('click', () => {
+      const idea = ideaInput.value.trim();
+      if (!idea) {
+        alert('Пожалуйста, введите идею для истории.');
+        return;
+      }
+
+      // Простая эмуляция ИИ — создаём текст на основе идеи
+      const story = `
+Однажды, вдохновлённый идеей "${idea}", наш герой отправился в необычное приключение, где числа и формулы оживали, а математические загадки превращались в захватывающие испытания. 
+
+В каждом шаге он открывал новые тайны и понимал, что математика — это язык Вселенной, который помогает разгадать её загадки.
+
+Пусть эта история вдохновит вас исследовать мир с увлечением и творчеством!`;
+
+      resultDiv.textContent = story;
+    });
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+</body>
+</html>

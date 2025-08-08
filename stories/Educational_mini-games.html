@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Обучающая мини-игра: Вычисления - Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #fff9f0;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      color: #a64d00;
+      margin-bottom: 20px;
+    }
+    #question {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+    }
+    input[type="number"] {
+      width: 150px;
+      font-size: 1.2rem;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 2px solid #a64d00;
+      border-radius: 5px;
+      text-align: center;
+    }
+    button {
+      background-color: #a64d00;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      font-size: 1.1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #7a3900;
+    }
+    #feedback {
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 2em;
+    }
+    #score {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+  <h1>Обучающая мини-игра: Вычисления</h1>
+  <div id="question"></div>
+  <input type="number" id="answerInput" placeholder="Введите ответ" autocomplete="off" />
+  <br />
+  <button id="checkBtn">Проверить</button>
+  <div id="feedback"></div>
+  <div id="score">Правильных ответов: 0 из 0</div>
+
+  <script>
+    const questions = [
+      {q: "5 + 7 =", a: 12},
+      {q: "9 - 4 =", a: 5},
+      {q: "6 × 3 =", a: 18},
+      {q: "15 ÷ 5 =", a: 3},
+      {q: "8 + 12 =", a: 20}
+    ];
+
+    let currentIndex = 0;
+    let correctCount = 0;
+    let totalCount = 0;
+
+    const questionEl = document.getElementById('question');
+    const answerInput = document.getElementById('answerInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const scoreEl = document.getElementById('score');
+
+    function loadQuestion() {
+      if (currentIndex >= questions.length) {
+        questionEl.textContent = "Игра окончена! Поздравляем!";
+        answerInput.style.display = "none";
+        checkBtn.style.display = "none";
+        return;
+      }
+      questionEl.textContent = questions[currentIndex].q;
+      answerInput.value = "";
+      answerInput.focus();
+      feedbackEl.textContent = "";
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const userAnswer = Number(answerInput.value);
+      if (isNaN(userAnswer)) {
+        feedbackEl.style.color = "red";
+        feedbackEl.textContent = "Пожалуйста, введите число.";
+        return;
+      }
+      totalCount++;
+      if (userAnswer === questions[currentIndex].a) {
+        correctCount++;
+        feedbackEl.style.color = "green";
+        feedbackEl.textContent = "Правильно! 🎉";
+      } else {
+        feedbackEl.style.color = "red";
+        feedbackEl.textContent = `Неправильно. Правильный ответ: ${questions[currentIndex].a}`;
+      }
+      scoreEl.textContent = `Правильных ответов: ${correctCount} из ${totalCount}`;
+      currentIndex++;
+      setTimeout(loadQuestion, 1500);
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>

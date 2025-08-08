@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>История успеха и рекомендации - Занимательная математика с ИИ </title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f8ff;
+    }
+    h2 {
+      color: #2a5d84;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2a5d84;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .success {
+      margin-top: 15px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h2>История успеха и рекомендации</h2>
+
+  <form id="successForm">
+    <label for="name">Имя:</label>
+    <input type="text" id="name" required />
+
+    <label for="age">Возраст:</label>
+    <input type="number" id="age" required />
+
+    <label for="story">Моя история успеха:</label>
+    <textarea id="story" rows="5" required></textarea>
+
+    <label for="recommendation">Моя рекомендация другим:</label>
+    <textarea id="recommendation" rows="3" required></textarea>
+
+    <button type="submit">Отправить</button>
+  </form>
+
+  <div class="success" id="confirmation" style="display: none;">
+    ✅ Спасибо! Ваша история отправлена и сохранена.
+  </div>
+
+  <script>
+    document.getElementById("successForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const age = document.getElementById("age").value.trim();
+      const story = document.getElementById("story").value.trim();
+      const recommendation = document.getElementById("recommendation").value.trim();
+
+      const data = {
+        name,
+        age,
+        story,
+        recommendation
+      };
+
+      // 🔗 ВСТАВЬ СЮДА СВОЙ URL ВЕБ-ПРИЛОЖЕНИЯ:
+      const scriptURL = "https://script.google.com/macros/s/ВАШ_ID_СКРИПТА/exec";
+
+      fetch(scriptURL, {
+        method: "POST",
+        mode: "no-cors", // чтобы не было ошибки CORS
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(() => {
+        document.getElementById("confirmation").style.display = "block";
+        document.getElementById("successForm").reset();
+      })
+      .catch(err => {
+        alert("Ошибка при отправке данных: " + err.message);
+      });
+    });
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+</body>
+</html>

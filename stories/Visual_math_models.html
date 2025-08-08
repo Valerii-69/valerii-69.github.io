@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Визуализация математической модели: Маятник - Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f4f7f8;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      color: #336699;
+      margin-bottom: 10px;
+    }
+    canvas {
+      background: #eef6fb;
+      border: 1px solid #ccc;
+      display: block;
+      margin: 20px auto;
+    }
+    .controls {
+      margin-top: 15px;
+    }
+    label {
+      margin: 0 10px;
+      font-weight: bold;
+    }
+    input[type=range] {
+      width: 200px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+  <h1>Маятник: визуализация колебаний</h1>
+  <canvas id="pendulum" width="500" height="400"></canvas>
+  <div class="controls">
+    <label for="lengthRange">Длина маятника (м): <span id="lengthVal">1.0</span></label>
+    <input type="range" id="lengthRange" min="0.5" max="3" step="0.1" value="1" />
+    <label for="angleRange">Начальный угол (град): <span id="angleVal">30</span></label>
+    <input type="range" id="angleRange" min="5" max="90" step="1" value="30" />
+  </div>
+
+  <script>
+    const canvas = document.getElementById('pendulum');
+    const ctx = canvas.getContext('2d');
+
+    const originX = canvas.width / 2;
+    const originY = 50;
+
+    let length = 1.0; // м
+    let angleDeg = 30; // градусы
+    let angle = angleDeg * Math.PI / 180;
+    let angularVelocity = 0;
+    let angularAcceleration = 0;
+
+    const g = 9.81; // м/с²
+    const damping = 0.01;
+
+    const lengthRange = document.getElementById('lengthRange');
+    const angleRange = document.getElementById('angleRange');
+    const lengthVal = document.getElementById('lengthVal');
+    const angleVal = document.getElementById('angleVal');
+
+    lengthRange.addEventListener('input', () => {
+      length = parseFloat(lengthRange.value);
+      lengthVal.textContent = length.toFixed(1);
+    });
+
+    angleRange.addEventListener('input', () => {
+      angleDeg = parseFloat(angleRange.value);
+      angle = angleDeg * Math.PI / 180;
+      angularVelocity = 0; // сброс скорости при смене угла
+      angleVal.textContent = angleDeg;
+    });
+
+    function drawPendulum(theta) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Точка подвеса
+      ctx.beginPath();
+      ctx.arc(originX, originY, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#444';
+      ctx.fill();
+
+      // Конец маятника
+      const x = originX + length * 150 * Math.sin(theta);
+      const y = originY + length * 150 * Math.cos(theta);
+
+      // Верёвка
+      ctx.beginPath();
+      ctx.moveTo(originX, originY);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = '#336699';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Груз
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = '#2a75bb';
+      ctx.fill();
+      ctx.strokeStyle = '#1a4f7a';
+      ctx.stroke();
+    }
+
+    function updatePhysics() {
+      // Уравнение движения маятника (малые углы)
+      angularAcceleration = (-g / length) * Math.sin(angle);
+      angularVelocity += angularAcceleration * 0.02;
+      angularVelocity *= (1 - damping);
+      angle += angularVelocity * 0.02;
+    }
+
+    function animate() {
+      updatePhysics();
+      drawPendulum(angle);
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

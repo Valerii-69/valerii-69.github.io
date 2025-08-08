@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Генератор математических историй - Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #fff8e1;
+      color: #444;
+    }
+    h1 {
+      color: #b36b00;
+      text-align: center;
+    }
+    select, button {
+      font-size: 1.1rem;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 2px solid #b36b00;
+      width: 100%;
+      max-width: 350px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      cursor: pointer;
+      background: white;
+      color: #b36b00;
+      transition: background-color 0.3s ease;
+    }
+    select:hover, button:hover {
+      background-color: #ffecb3;
+    }
+    #story {
+      margin-top: 30px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #b36b00;
+      min-height: 120px;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+  <h1>Генератор математических историй</h1>
+  <label for="topicSelect">Выберите тему:</label>
+  <select id="topicSelect">
+    <option value="путешествие">Путешествие во времени</option>
+    <option value="загадка">Математическая загадка</option>
+    <option value="эксперимент">Научный эксперимент</option>
+    <option value="волшебство">Волшебство чисел</option>
+  </select>
+  <button id="generateBtn">Создать историю</button>
+  <div id="story"></div>
+
+  <script>
+    const stories = {
+      путешествие: [
+        "Однажды герой отправился в путешествие во времени, где каждая секунда измерялась золотыми часами с необычной геометрией. Чтобы вернуться домой, он должен был решить загадку, основанную на числе π.",
+        "Путешественник во времени обнаружил древний храм, построенный по принципам фрактальной геометрии, и разгадал тайну бесконечности с помощью математики."
+      ],
+      загадка: [
+        "В небольшом городе появился мудрец, который решал загадки, используя лишь числа Фибоначчи. Его самая сложная загадка оставалась нерешённой веками.",
+        "Загадка в математике часто прячет в себе простую истину: найти закономерность в хаосе — значит понять мир."
+      ],
+      эксперимент: [
+        "В лаборатории ученые создали машину, которая визуализировала потоки чисел, похожие на танец светящихся частиц в темноте.",
+        "Эксперимент показал, что даже случайные числа могут создавать удивительные закономерности, если внимательно за ними наблюдать."
+      ],
+      волшебство: [
+        "В далекой стране числа обладали магической силой — они могли менять форму и создавать удивительные узоры, которые оживали на глазах.",
+        "Волшебник чисел создал заклинание, которое позволяло понимать язык природы через уравнения и формулы."
+      ]
+    };
+
+    const topicSelect = document.getElementById("topicSelect");
+    const generateBtn = document.getElementById("generateBtn");
+    const storyDiv = document.getElementById("story");
+
+    generateBtn.addEventListener("click", () => {
+      const topic = topicSelect.value;
+      const options = stories[topic];
+      const randomIndex = Math.floor(Math.random() * options.length);
+      const generatedStory = options[randomIndex];
+      storyDiv.textContent = generatedStory;
+    });
+  </script>
+</body>
+</html>

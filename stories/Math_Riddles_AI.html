@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Математические загадки с ИИ - Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f0f8ff;
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      color: #2a75bb;
+    }
+    #puzzle {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      min-height: 3em;
+    }
+    input[type="text"] {
+      width: 100%;
+      font-size: 1.1rem;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 2px solid #2a75bb;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #2a75bb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1a4f7a;
+    }
+    #feedback {
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 2em;
+    }
+    #hint {
+      margin-top: 10px;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+  <h1>Математические загадки с ИИ</h1>
+  <div id="puzzle"></div>
+  <input type="text" id="answerInput" placeholder="Введите ваш ответ..." autocomplete="off" />
+  <button id="checkBtn">Проверить ответ</button>
+  <div id="feedback"></div>
+  <div id="hint"></div>
+
+  <script>
+    // Набор загадок
+    const puzzles = [
+      {
+        question: "Я думаю о числе. Если умножить его на 3 и прибавить 5, получится 20. Какое это число?",
+        answer: "5",
+        hint: "Попробуйте решить уравнение: 3x + 5 = 20"
+      },
+      {
+        question: "Сколько сторон у треугольника?",
+        answer: "3",
+        hint: "Подумайте о геометрической фигуре с тремя углами."
+      },
+      {
+        question: "Число 10 умножили на какое число, чтобы получить 100?",
+        answer: "10",
+        hint: "Подумайте, сколько раз 10 помещается в 100."
+      },
+      {
+        question: "У меня есть 12 яблок, я отдал 7. Сколько осталось?",
+        answer: "5",
+        hint: "Простое вычитание."
+      },
+      {
+        question: "Какое число идёт после 99?",
+        answer: "100",
+        hint: "Следующее натуральное число."
+      }
+    ];
+
+    let currentPuzzleIndex = 0;
+
+    const puzzleEl = document.getElementById('puzzle');
+    const answerInput = document.getElementById('answerInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const hintEl = document.getElementById('hint');
+
+    function loadPuzzle(index) {
+      const puzzle = puzzles[index];
+      puzzleEl.textContent = puzzle.question;
+      feedbackEl.textContent = '';
+      hintEl.textContent = '';
+      answerInput.value = '';
+      answerInput.focus();
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      const correctAnswer = puzzles[currentPuzzleIndex].answer.toLowerCase();
+
+      if (userAnswer === '') {
+        feedbackEl.textContent = "Пожалуйста, введите ответ.";
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        feedbackEl.style.color = 'green';
+        feedbackEl.textContent = "Правильно! 🎉";
+        hintEl.textContent = '';
+        // Загрузка следующей загадки с задержкой
+        currentPuzzleIndex++;
+        if (currentPuzzleIndex >= puzzles.length) {
+          currentPuzzleIndex = 0;
+          setTimeout(() => {
+            alert("Поздравляем! Вы решили все загадки. Начнём сначала.");
+            loadPuzzle(currentPuzzleIndex);
+          }, 1000);
+        } else {
+          setTimeout(() => loadPuzzle(currentPuzzleIndex), 1500);
+        }
+      } else {
+        feedbackEl.style.color = 'red';
+        feedbackEl.textContent = "Неправильно. Попробуйте ещё.";
+        hintEl.textContent = "Подсказка: " + puzzles[currentPuzzleIndex].hint;
+      }
+    });
+
+    // Загрузка первой загадки при старте
+    loadPuzzle(currentPuzzleIndex);
+  </script>
+</body>
+</html>

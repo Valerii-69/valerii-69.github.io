@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Технические рекомендации — Поиграем с ИИ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #2a6ea8;
+    }
+    .recommendation {
+      background: white;
+      padding: 15px;
+      border-left: 5px solid #2a6ea8;
+      margin-bottom: 15px;
+    }
+    button {
+      background-color: #2a6ea8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #1b4f7d;
+    }
+    #summary {
+      margin-top: 30px;
+      background: #e2f0fb;
+      padding: 15px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+  <h1>6. Технические рекомендации</h1>
+  <p>Здесь собраны советы для удобной и безопасной работы с ИИ-инструментами и HTML-приложениями.</p>
+
+  <div id="recommendations"></div>
+
+  <button onclick="generateSummary()">Сформировать краткое резюме</button>
+
+  <div id="summary"></div>
+
+  <script>
+    const tips = [
+      {
+        title: "Обновляйте браузер",
+        text: "Используйте последнюю версию Google Chrome, Firefox или Edge для лучшей совместимости с ИИ-инструментами."
+      },
+      {
+        title: "Откройте консоль разработчика",
+        text: "Используйте Ctrl+Shift+I или F12 для просмотра ошибок и отладки JavaScript-кода."
+      },
+      {
+        title: "Проверяйте разрешения",
+        text: "Разрешите доступ к микрофону, камере и буферу обмена, если это необходимо приложению."
+      },
+      {
+        title: "Используйте надёжное подключение к интернету",
+        text: "Большинство ИИ-инструментов требуют стабильного соединения — Wi-Fi предпочтительнее мобильного интернета."
+      },
+      {
+        title: "Сохраняйте свои данные",
+        text: "Периодически сохраняйте текст, код и настройки, чтобы не потерять прогресс при сбое."
+      },
+      {
+        title: "Проверяйте кросс-браузерную совместимость",
+        text: "Если вы делитесь страницами с другими, проверьте, как они выглядят в разных браузерах."
+      }
+    ];
+
+    function renderTips() {
+      const container = document.getElementById("recommendations");
+      tips.forEach((tip, index) => {
+        const div = document.createElement("div");
+        div.className = "recommendation";
+        div.innerHTML = `<h3>${index + 1}. ${tip.title}</h3><p>${tip.text}</p>`;
+        container.appendChild(div);
+      });
+    }
+
+    function generateSummary() {
+      const summary = `
+        <strong>Основное:</strong><br>
+        ✅ Поддерживайте актуальность ПО и браузеров<br>
+        ✅ Проверяйте консоль при ошибках<br>
+        ✅ Обеспечьте стабильный интернет<br>
+        ✅ Регулярно сохраняйте данные<br>
+        ✅ Убедитесь в безопасности действий<br>
+        ✅ Проверяйте совместимость на разных устройствах
+      `;
+      document.getElementById("summary").innerHTML = summary;
+    }
+
+    renderTips();
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

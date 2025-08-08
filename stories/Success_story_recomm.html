@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>История успеха и рекомендации - Занимательная математика с ИИ </title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    textarea, input { width: 100%; margin: 10px 0; padding: 10px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    #status { margin-top: 10px; color: green; }
+  </style>
+</head>
+<body>
+  <h2>История успеха и рекомендации</h2>
+  <p>Поделитесь своей историей взаимодействия с математикой и ИИ, а также советами другим читателям.</p>
+
+  <label>Ваше имя:</label>
+  <input type="text" id="name" placeholder="Например, Валерий" />
+
+  <label>История успеха:</label>
+  <textarea id="success" rows="5" placeholder="Как математика или ИИ помогли вам в жизни..."></textarea>
+
+  <label>Рекомендации другим:</label>
+  <textarea id="recommendation" rows="3" placeholder="Что бы вы посоветовали другим читателям?"></textarea>
+
+  <button onclick="submitStory()">Отправить</button>
+  <div id="status"></div>
+
+  <script>
+    async function submitStory() {
+      const name = document.getElementById('name').value.trim();
+      const success = document.getElementById('success').value.trim();
+      const recommendation = document.getElementById('recommendation').value.trim();
+
+      if (!name || !success || !recommendation) {
+        document.getElementById('status').innerText = "Пожалуйста, заполните все поля.";
+        return;
+      }
+
+      const data = { name, success, recommendation };
+
+      try {
+        const response = await fetch('ВАШ_СКРИПТ_URL', {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          document.getElementById('status').innerText = "Спасибо! Ваша история сохранена.";
+          document.getElementById('name').value = '';
+          document.getElementById('success').value = '';
+          document.getElementById('recommendation').value = '';
+        } else {
+          document.getElementById('status').innerText = "Произошла ошибка. Попробуйте позже.";
+        }
+      } catch (error) {
+        document.getElementById('status').innerText = "Ошибка соединения.";
+      }
+    }
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+</body>
+</html>
