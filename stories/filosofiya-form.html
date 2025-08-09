@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Философия и случай – Интерактив</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 800px; margin: auto; }
+    label { font-weight: bold; display: block; margin-top: 20px; }
+    textarea, select, input { width: 100%; padding: 8px; margin-top: 5px; }
+    button { padding: 10px 20px; margin-top: 20px; }
+    .preview { background: #f9f9f9; border: 1px solid #ccc; padding: 15px; margin-top: 20px; }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+
+  <h1>Философия и случай</h1>
+  <p>Выберите элементы, которые вас зацепили, и поделитесь своим размышлением.</p>
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeBv_jXt_yR1QGVqaulR-3zT2QJdbSVtHtE0CP0ArE73IOMDQ/viewform?embedded=true" width="640" height="1868" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+<!--
+  <form id="philosophyForm">
+    <label>Выберите рассказ:</label>
+    <select name="story" required>
+      <option value="">-- Выберите --</option>
+      <option>Забытый чемодан</option>
+      <option>Камень на вершине</option>
+      <option>Письмо от незнакомца</option>
+      <option>Потерянная книга</option>
+      <option>Зеркало без отражения</option>
+    </select>
+
+    <label>Выберите наблюдение:</label>
+    <select name="observation" required>
+      <option value="">-- Выберите --</option>
+      <option>Склоняющееся дерево</option>
+      <option>Капля дождя на стекле</option>
+      <option>Прыжок тени от птицы</option>
+    </select>
+
+    <label>Выберите эссе:</label>
+    <select name="essay" required>
+      <option value="">-- Выберите --</option>
+      <option>Предел смысла</option>
+      <option>Шаг за границу логики</option>
+      <option>Философия в чайной ложке</option>
+    </select>
+
+    <label>Выберите парадокс:</label>
+    <select name="paradox" required>
+      <option value="">-- Выберите --</option>
+      <option>Парадокс кучи</option>
+      <option>Корабль Тесея</option>
+      <option>Ворота в будущее</option>
+      <option>Парадокс выбора</option>
+      <option>Вопрос о свободе</option>
+    </select>
+
+    <label>Выберите притчу:</label>
+    <select name="parable" required>
+      <option value="">-- Выберите --</option>
+      <option>Слепцы и слон</option>
+      <option>Два монаха у реки</option>
+    </select>
+
+    <label>Ваше размышление:</label>
+    <textarea name="reflection" rows="5" placeholder="Что вы поняли или почувствовали?" required></textarea>
+
+    <label>Email (для подтверждения):</label>
+    <input type="email" name="email" placeholder="you@example.com" required />
+
+    <button type="button" onclick="previewData()">Предпросмотр</button>
+    <div class="preview" id="previewBlock" style="display:none;"></div>
+
+    <button type="submit">Отправить</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('philosophyForm');
+    const previewBlock = document.getElementById('previewBlock');
+
+    function previewData() {
+      const data = Object.fromEntries(new FormData(form).entries());
+      previewBlock.innerHTML = `
+        <h3>Предпросмотр</h3>
+        <p><strong>Рассказ:</strong> ${data.story}</p>
+        <p><strong>Наблюдение:</strong> ${data.observation}</p>
+        <p><strong>Эссе:</strong> ${data.essay}</p>
+        <p><strong>Парадокс:</strong> ${data.paradox}</p>
+        <p><strong>Притча:</strong> ${data.parable}</p>
+        <p><strong>Размышление:</strong><br>${data.reflection}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+      `;
+      previewBlock.style.display = 'block';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      try {
+        const response = await fetch('https://script.google.com/macros/s/ВАШ_ID_СКРИПТА/exec', {
+          method: 'POST',
+          body: formData,
+        });
+        if (response.ok) {
+          alert('Спасибо! Ваш ответ сохранён.');
+          form.reset();
+          previewBlock.style.display = 'none';
+        } else {
+          alert('Ошибка при отправке.');
+        }
+      } catch (err) {
+        alert('Ошибка соединения: ' + err.message);
+      }
+    });
+  </script>
+-->
+
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

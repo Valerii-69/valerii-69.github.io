@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Философия и случай — Вопросы к ИИ</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .question-block {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    select, textarea, input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2d89ef;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1b5fab;
+    }
+    .preview {
+      margin-top: 20px;
+      background-color: #eef;
+      padding: 15px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLScmhCiJvgbybBBunj8S-OC5FntS3c7jXVl9pSPq_sXLcM93fQ/viewform?embedded=true" width="800" height="934" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+<!--  <h1>Философия и случай — Вопросы к ИИ</h1>
+
+  <div class="question-block">
+    <label for="question">Выберите философский вопрос:</label>
+    <select id="question">
+      <option value="">— Выберите —</option>
+      <option value="Случай управляет Вселенной?">Случай управляет Вселенной?</option>
+      <option value="Что важнее — разум или воля?">Что важнее — разум или воля?</option>
+      <option value="Можно ли смоделировать судьбу?">Можно ли смоделировать судьбу?</option>
+      <option value="Может ли случай быть необходимостью?">Может ли случай быть необходимостью?</option>
+      <option value="Может ли ИИ иметь интуицию?">Может ли ИИ иметь интуицию?</option>
+    </select>
+
+    <label for="email">Ваш email (для подтверждения):</label>
+    <input type="email" id="email" placeholder="example@gmail.com" required>
+
+    <label for="answer">Ваш ответ или размышление:</label>
+    <textarea id="answer" rows="6" placeholder="Напишите ваш ответ здесь..."></textarea>
+
+    <button onclick="previewAnswer()">Предпросмотр</button>
+    <div class="preview" id="previewArea" style="display:none;"></div>
+
+    <button onclick="sendForm()">Отправить</button>
+  </div>
+
+  <script>
+    function previewAnswer() {
+      const question = document.getElementById('question').value;
+      const answer = document.getElementById('answer').value;
+      const email = document.getElementById('email').value;
+
+      if (!question || !answer || !email) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+      }
+
+      document.getElementById('previewArea').style.display = 'block';
+      document.getElementById('previewArea').innerHTML = `
+        <strong>Вопрос:</strong> ${question}<br/>
+        <strong>Email:</strong> ${email}<br/>
+        <strong>Ответ:</strong><br/>${answer.replace(/\n/g, "<br/>")}
+      `;
+    }
+
+    function sendForm() {
+      const question = document.getElementById('question').value;
+      const answer = document.getElementById('answer').value;
+      const email = document.getElementById('email').value;
+
+      if (!question || !answer || !email) {
+        alert("Пожалуйста, заполните все поля перед отправкой.");
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ question, answer, email })
+      });
+
+      alert("Спасибо! Ваш ответ отправлен. Подтверждение придёт на email.");
+      document.getElementById('question').value = "";
+      document.getElementById('answer').value = "";
+      document.getElementById('email').value = "";
+      document.getElementById('previewArea').style.display = 'none';
+    }
+  </script>-->
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

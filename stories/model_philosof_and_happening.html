@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Модель — Философия и случай</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fafafa;
+      color: #222;
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    h1 {
+      text-align: center;
+      color: #2a4d69;
+    }
+    .formula {
+      font-size: 1.2rem;
+      margin: 15px 0 25px 0;
+      text-align: center;
+    }
+    #modelCanvas {
+      display: block;
+      margin: 0 auto 30px auto;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 8px;
+    }
+    #explanation {
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 30px;
+      background: #e8f0fe;
+      padding: 15px 20px;
+      border-radius: 6px;
+      border-left: 5px solid #2a4d69;
+    }
+    button {
+      display: block;
+      margin: 0 auto 20px auto;
+      background-color: #2a4d69;
+      color: white;
+      font-size: 1.1rem;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #1b2e43;
+    }
+  </style>
+
+  <!-- Подключение MathJax для формул -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+
+  <h1>Модель — Философия и случай</h1>
+
+  <p>В этом разделе мы рассмотрим простую математическую модель случайного выбора,  
+  которая иллюстрирует влияние вероятностей на исходы событий.</p>
+
+  <div class="formula">
+    $$ P(A) = \frac{n(A)}{n(S)} $$
+  </div>
+
+  <canvas id="modelCanvas" width="600" height="250" aria-label="Интерактивная модель случайного выбора"></canvas>
+
+  <button id="runButton">Запустить симуляцию</button>
+
+  <div id="explanation">
+    <p><strong>Описание модели:</strong></p>
+    <p>Пусть у нас есть корзина с разноцветными шариками. Каждый цвет соответствует событию.  
+    Вероятность выбрать шарик определённого цвета пропорциональна количеству шариков этого цвета.</p>
+
+    <p>Ниже вы можете запустить симуляцию 1000 случайных выборов и увидеть результаты.</p>
+
+    <p><strong>Вопросы для размышления:</strong></p>
+    <ul>
+      <li>Как изменится результат, если изменить количество шариков какого-то цвета?</li>
+      <li>Можно ли считать эту модель точной для реальных ситуаций?</li>
+      <li>Как связаны случайность и детерминизм в подобных моделях?</li>
+    </ul>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('modelCanvas');
+    const ctx = canvas.getContext('2d');
+    const runButton = document.getElementById('runButton');
+
+    // Настройки модели — цвета и количество шариков
+    const balls = [
+      { color: '#f44336', label: 'Красный', count: 40 },
+      { color: '#2196f3', label: 'Синий', count: 30 },
+      { color: '#4caf50', label: 'Зелёный', count: 20 },
+      { color: '#ffeb3b', label: 'Жёлтый', count: 10 },
+    ];
+
+    // Общий объем
+    const totalBalls = balls.reduce((sum, b) => sum + b.count, 0);
+
+    // Для хранения результатов симуляции
+    let results = balls.map(b => ({ ...b, picked: 0 }));
+
+    function drawChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const chartHeight = 150;
+      const chartWidth = 500;
+      const barWidth = chartWidth / balls.length - 20;
+      const startX = 50;
+      const startY = 200;
+
+      // Найти максимум для масштабирования
+      const maxCount = Math.max(...results.map(r => r.picked));
+
+      // Рисуем оси
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(startX - 10, startY - chartHeight - 10);
+      ctx.lineTo(startX - 10, startY + 10);
+      ctx.lineTo(startX + chartWidth + 10, startY + 10);
+      ctx.stroke();
+
+      // Рисуем бары
+      results.forEach((r, i) => {
+        const barHeight = maxCount ? (r.picked / maxCount) * chartHeight : 0;
+        const x = startX + i * (barWidth + 20);
+        const y = startY - barHeight;
+
+        ctx.fillStyle = r.color;
+        ctx.fillRect(x, y, barWidth, barHeight);
+
+        // Подписи
+        ctx.fillStyle = '#000';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(r.label, x + barWidth / 2, startY + 30);
+        ctx.fillText(r.picked, x + barWidth / 2, y - 5);
+      });
+    }
+
+    // Симуляция случайного выбора
+    function simulate(n = 1000) {
+      // Сброс результатов
+      results.forEach(r => r.picked = 0);
+
+      // Массив с цветами, где цвет повторяется count раз
+      const pool = [];
+      balls.forEach(b => {
+        for (let i = 0; i < b.count; i++) pool.push(b.color);
+      });
+
+      for (let i = 0; i < n; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const color = pool[idx];
+        const res = results.find(r => r.color === color);
+        if (res) res.picked++;
+      }
+    }
+
+    runButton.addEventListener('click', () => {
+      simulate();
+      drawChart();
+    });
+
+    // Начальная отрисовка пустой диаграммы
+    drawChart();
+  </script>
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

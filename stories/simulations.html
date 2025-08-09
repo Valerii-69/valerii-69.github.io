@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Философия и случай — Симуляции случайности</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    button {
+      margin-top: 10px;
+    }
+    canvas {
+      border: 1px solid #aaa;
+      margin-top: 10px;
+    }
+    .section {
+      margin-bottom: 40px;
+	margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h3>Занимательная математика с ИИ</h3>
+</header>
+
+  <h1>Симуляции случайности</h1>
+  <p>Исследуем случайность через интерактивные эксперименты и парадоксы.</p>
+
+  <!-- 1. Парадокс Монти Холла -->
+  <div class="section" id="monty">
+    <h2>1. Парадокс Монти Холла</h2>
+    <p>Выберите одну из трёх дверей. За одной — приз. Ведущий откроет одну из оставшихся пустых дверей и предложит вам поменять выбор. Меняете ли вы решение?</p>
+    <button onclick="runMontyHall()">Играть</button>
+    <p id="monty-result"></p>
+  </div>
+
+  <!-- 2. Случайное блуждание -->
+  <div class="section" id="random-walk">
+    <h2>2. Случайное блуждание</h2>
+    <p>Пусть частица делает шаг влево или вправо случайно. Какой путь она пройдёт за 100 шагов?</p>
+    <button onclick="randomWalk()">Начать симуляцию</button><br />
+    <canvas id="walkCanvas" width="600" height="200"></canvas>
+  </div>
+
+  <!-- 3. Анимация случайного числа -->
+  <div class="section" id="random-number">
+    <h2>3. Случайное число с анимацией</h2>
+    <p>Нажмите кнопку, чтобы анимировано выбрать случайное число от 1 до 100.</p>
+    <button onclick="animateRandom()">Выбрать число</button>
+    <h3 id="random-output">...</h3>
+  </div>
+
+  <script>
+    // 1. Монти Холл
+    function runMontyHall() {
+      const prizeDoor = Math.floor(Math.random() * 3);
+      const userChoice = Math.floor(Math.random() * 3);
+      let remainingDoors = [0, 1, 2].filter(d => d !== userChoice && d !== prizeDoor);
+      const openedDoor = remainingDoors[Math.floor(Math.random() * remainingDoors.length)];
+      const switchDoor = [0, 1, 2].find(d => d !== userChoice && d !== openedDoor);
+      const switchedWin = switchDoor === prizeDoor;
+      document.getElementById('monty-result').textContent =
+        `Вы выбрали дверь ${userChoice + 1}. Ведущий открыл ${openedDoor + 1}. 
+        Если бы вы поменяли выбор на ${switchDoor + 1}, вы бы ${switchedWin ? 'выиграли' : 'проиграли'}.`;
+    }
+
+    // 2. Случайное блуждание
+    function randomWalk() {
+      const canvas = document.getElementById('walkCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let x = canvas.width / 2;
+      let y = canvas.height / 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      for (let i = 0; i < 100; i++) {
+        x += Math.random() < 0.5 ? -5 : 5;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // 3. Анимация случайного числа
+    function animateRandom() {
+      let counter = 0;
+      const maxFrames = 20;
+      const interval = setInterval(() => {
+        document.getElementById("random-output").textContent = Math.floor(Math.random() * 100) + 1;
+        counter++;
+        if (counter >= maxFrames) clearInterval(interval);
+      }, 100);
+    }
+  </script>
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

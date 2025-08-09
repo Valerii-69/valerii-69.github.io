@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Философия и случай: Зарисовка</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #fefefe;
+      color: #222;
+      margin: 0;
+      padding: 2em;
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .section {
+      margin: 2em 0;
+    }
+    .card {
+      background-color: #f9f9f9;
+      margin: 1em auto;
+      padding: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      max-width: 600px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .card:hover {
+      background-color: #eef;
+    }
+    .content {
+      display: none;
+      margin-top: 1em;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+
+<h1>Философия и случай</h1>
+<h2>ЗАРИСОВКА</h2>
+
+<div class="section" id="stories">
+  <h3>Рассказ</h3>
+</div>
+
+<div class="section" id="observations">
+  <h3>Наблюдение</h3>
+</div>
+
+<div class="section" id="essays">
+  <h3>Эссе</h3>
+</div>
+
+<div class="section" id="paradoxes">
+  <h3>Парадокс</h3>
+</div>
+
+<div class="section" id="parables">
+  <h3>Притча</h3>
+</div>
+
+<script>
+  const content = {
+    stories: [
+      { title: "История одной монеты", text: "Однажды монета упала ребром. Это длилось два года..." },
+      { title: "Ветер и газета", text: "Газета улетела — и изменила жизнь троих прохожих..." },
+      { title: "Ключ без замка", text: "Старик хранил ключ всю жизнь. Только замок исчез ещё в детстве..." },
+      { title: "Письмо в бутылке", text: "Оно доплыло. Но адресат не знал, что это письмо — от него самого." },
+      { title: "Сон библиотекаря", text: "Во сне он сжигал книги, которых не существовало. Утром они были в каталоге." }
+    ],
+    observations: [
+      { title: "Капля на стекле", text: "Кажется случайной, но её путь определяет гравитация, пыль, наклон и ветер." },
+      { title: "Стук в дверь", text: "Почти всегда оказывается не тем, кто нам нужен. Но меняет ход дня." },
+      { title: "Падающий лист", text: "Угол падения листа точно совпал с направлением твоего взгляда. Случайно?" }
+    ],
+    essays: [
+      { title: "Случай как закон", text: "Может ли случай быть результатом высшего порядка? Или он всегда анархия?" },
+      { title: "Философия кости", text: "Когда играют кости — играет ли Вселенная в шахматы с нами?" },
+      { title: "Возможность невозможного", text: "Что делает редкое событие таким значимым в потоке банального?" }
+    ],
+    paradoxes: [
+      { title: "Парадокс предсказания", text: "Если предсказание всегда сбывается — почему это не случайность?" },
+      { title: "Парадокс времени", text: "Ты случайно не родился раньше, но всё бы изменилось, если бы да." },
+      { title: "Парадокс выбора", text: "Кажется, ты выбираешь случайно. Но кто подложил варианты?" },
+      { title: "Парадокс ошибки", text: "Ошибка — случайность или закономерность? Почему она повторяется?" },
+      { title: "Парадокс наблюдателя", text: "Ты смотришь — и меняешь то, что, как думаешь, наблюдаешь." }
+    ],
+    parables: [
+      { title: "Притча о круге", text: "Мудрец начертил круг и сказал: «Это твоя судьба». Ученик стёр одну точку — и ушёл." },
+      { title: "Притча о случайности", text: "У реки спорили Случай и Закон. Прошёл слепой. Он не знал, кто из них выиграл." }
+    ]
+  };
+
+  function createCards(type, items) {
+    const container = document.getElementById(type);
+    items.forEach((item, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<strong>${item.title}</strong><div class="content">${item.text}</div>`;
+      card.addEventListener("click", () => {
+        const content = card.querySelector(".content");
+        content.style.display = content.style.display === "block" ? "none" : "block";
+      });
+      container.appendChild(card);
+    });
+  }
+
+  createCards("stories", content.stories);
+  createCards("observations", content.observations);
+  createCards("essays", content.essays);
+  createCards("paradoxes", content.paradoxes);
+  createCards("parables", content.parables);
+</script>
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

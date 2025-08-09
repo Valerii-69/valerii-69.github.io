@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Универсальная форма обратной связи</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 680px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    h2 {
+      text-align: center;
+      color: #fff;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #444;
+    }
+    input[type="text"], input[type="email"], select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    textarea {
+      min-height: 80px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #3178c6;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #255a94;
+    }
+    #resultMessage {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeCQFc98b_kJJEkOfelnyEZSn--vM6gTsEs6ieB3zgYmohYpQ/viewform?embedded=true" width="640" height="1642" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+  <!--<h2>Обратная связь для раздела сайта</h2>
+
+  <form id="universalForm">
+
+    <label for="sectionSelect">Выберите раздел (section):</label>
+    <select id="sectionSelect" name="section" required>
+      <option value="">-- Выберите раздел --</option>
+      <option value="Истории успеха и рекомендации">Истории успеха и рекомендации</option>
+      <option value="Философия и случай">Философия и случай</option>
+      <option value="Поиграем с ИИ">Поиграем с ИИ</option>
+      <option value="Другой раздел">Другой раздел</option>
+    </select>
+
+    <label for="nameInput">Ваше имя:</label>
+    <input type="text" id="nameInput" name="name" placeholder="Введите имя" required minlength="2" />
+
+    <label for="emailInput">Email для подтверждения:</label>
+    <input type="email" id="emailInput" name="email" placeholder="example@mail.com" required />
+
+    <label for="storyIdInput">ID истории / темы (если применимо):</label>
+    <input type="text" id="storyIdInput" name="storyId" placeholder="Например: 3 или 'История 8'" />
+
+    <label for="commentInput">Комментарий:</label>
+    <textarea id="commentInput" name="comment" placeholder="Ваш комментарий" required minlength="5"></textarea>
+
+    <label for="questionInput">Вопрос (если есть):</label>
+    <textarea id="questionInput" name="question" placeholder="Ваш вопрос (необязательно)"></textarea>
+
+    <label for="answerInput">Ответ (если есть):</label>
+    <textarea id="answerInput" name="answer" placeholder="Ваш ответ (необязательно)"></textarea>
+
+    <label for="ratingSelect">Рейтинг (1-5):</label>
+    <select id="ratingSelect" name="rating">
+      <option value="">-- Выберите рейтинг --</option>
+      <option value="1">1 — Плохо</option>
+      <option value="2">2</option>
+      <option value="3">3 — Средне</option>
+      <option value="4">4</option>
+      <option value="5">5 — Отлично</option>
+    </select>
+
+    <button type="submit">Отправить</button>
+
+  </form>-->
+
+<!--  <div id="resultMessage"></div>
+
+  <script>
+    const form = document.getElementById('universalForm');
+    const resultMessage = document.getElementById('resultMessage');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // Очистка результата
+      resultMessage.textContent = '';
+
+      // Валидация email
+      const email = form.email.value.trim();
+      if (!validateEmail(email)) {
+        resultMessage.style.color = 'red';
+        resultMessage.textContent = 'Пожалуйста, введите корректный email.';
+        return;
+      }
+
+      // Минимальная длина комментария
+      if (form.comment.value.trim().length < 5) {
+        resultMessage.style.color = 'red';
+        resultMessage.textContent = 'Комментарий слишком короткий.';
+        return;
+      }
+
+      // Собираем данные
+      const data = {
+        section: form.section.value,
+        name: form.name.value.trim(),
+        email: email,
+        storyId: form.storyId.value.trim(),
+        comment: form.comment.value.trim(),
+        question: form.question.value.trim(),
+        answer: form.answer.value.trim(),
+        rating: form.rating.value
+      };
+
+      try {
+        const response = await fetch('https://script.google.com/macros/s/ВАШ_ID_СЮДА/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const json = await response.json();
+
+        if (json.status === 'ok') {
+          resultMessage.style.color = 'green';
+          resultMessage.textContent = 'Спасибо! Ваши данные успешно отправлены.';
+          form.reset();
+        } else {
+          throw new Error(json.message || 'Неизвестная ошибка сервера.');
+        }
+      } catch (error) {
+        resultMessage.style.color = 'red';
+        resultMessage.textContent = 'Ошибка отправки: ' + error.message;
+      }
+    });
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+  </script>-->
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>

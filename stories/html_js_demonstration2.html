@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Философия и случай — HTML+JS демонстрация</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    #result {
+      margin-top: 20px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, button {
+      margin: 10px 0;
+      padding: 8px;
+      font-size: 16px;
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      border: 1px solid #ddd;
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+
+  <h1>HTML+JS Демонстрация</h1>
+  <p>Симуляция случайного выбора чисел от 1 до 10. Как часто каждое число выпадает?</p>
+
+  <label for="numSimulations">Количество симуляций:</label>
+  <input type="number" id="numSimulations" value="1000" min="1" max="100000">
+  <br>
+<!--  <label for="userName">Ваше имя:</label>
+  <input type="text" id="userName" placeholder="Введите имя">
+  <br>
+  <label for="userComment">Комментарий:</label>
+  <input type="text" id="userComment" placeholder="Введите комментарий">
+  <br>-->
+  <button onclick="runSimulation()">Запустить симуляцию (нажать несколько раз)</button>
+
+  <div id="result"></div>
+  <canvas id="chartCanvas" width="600" height="300"></canvas>
+
+  <script>
+    function runSimulation() {
+      const count = parseInt(document.getElementById('numSimulations').value);
+//      const name = document.getElementById('userName').value.trim();
+//      const comment = document.getElementById('userComment').value.trim();
+
+      if (!count || count < 1) {
+        alert("Введите корректное число симуляций.");
+        return;
+      }
+
+      const frequency = Array(10).fill(0);
+      for (let i = 0; i < count; i++) {
+        const rand = Math.floor(Math.random() * 10); // 0–9
+        frequency[rand]++;
+      }
+
+      // Вывод результатов
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = `<h3>Результаты:</h3><ul>${frequency.map((f, i) => `<li>${i + 1}: ${f}</li>`).join('')}</ul>`;
+
+      drawChart(frequency);
+
+      // Отправка в Google Таблицу
+//      sendToGoogleSheet({ name, comment, count, frequency });
+    }
+
+    function drawChart(data) {
+      const canvas = document.getElementById('chartCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const max = Math.max(...data);
+      const barWidth = canvas.width / data.length;
+
+      data.forEach((value, index) => {
+        const height = (value / max) * (canvas.height - 20);
+        ctx.fillStyle = '#3f51b5';
+        ctx.fillRect(index * barWidth + 10, canvas.height - height - 10, barWidth - 20, height);
+        ctx.fillStyle = '#000';
+        ctx.fillText(index + 1, index * barWidth + barWidth / 2, canvas.height - 2);
+      });
+    }
+
+    function sendToGoogleSheet(data) {
+      fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.text())
+      .then(response => {
+        console.log("Ответ сервера:", response);
+      })
+      .catch(err => {
+        console.error("Ошибка:", err);
+      });
+    }
+  </script>
+  
+    <pre><code>
+//Старт симуляции	
+    function runSimulation() {
+      const count = parseInt(document.getElementById('numSimulations').value);
+//Проверка корректности входных данных
+      if (!count || count < 1) {
+        alert("Введите корректное число симуляций.");
+        return;
+      }
+//Задаем массив частот для 10 чисел от 1 до 10
+      const frequency = Array(10).fill(0);
+      for (let i = 0; i < count; i++) {
+        const rand = Math.floor(Math.random() * 10); // 0–9
+        frequency[rand]++;
+      }
+
+      // Вывод результатов
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = `<h3>Результаты:</h3><ul>${frequency.map((f, i) => `<li>${i + 1}: ${f}</li>`).join('')}</ul>`;
+
+//Рисуем таблицу и график результата очередной симуляции
+      drawChart(frequency);
+    }
+
+    function drawChart(data) {
+      const canvas = document.getElementById('chartCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const max = Math.max(...data);
+      const barWidth = canvas.width / data.length;
+
+      data.forEach((value, index) => {
+        const height = (value / max) * (canvas.height - 20);
+        ctx.fillStyle = '#3f51b5';
+        ctx.fillRect(index * barWidth + 10, canvas.height - height - 10, barWidth - 20, height);
+        ctx.fillStyle = '#000';
+        ctx.fillText(index + 1, index * barWidth + barWidth / 2, canvas.height - 2);
+      });
+    }
+ </code></pre>
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <br><a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+
+</body>
+</html>
