@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Летящая стрела — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 14: Летящая стрела</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Стрела взмыла ввысь, пронзая воздух и устремляясь к цели. Она была символом стремления и точности, отражая силы, которые двигают нас вперёд, несмотря на сопротивление и преграды.
+
+Каждое мгновение её полёта — это борьба с ветром и гравитацией, победа над временем и расстоянием.
+
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как описать траекторию полёта стрелы с учётом сопротивления воздуха и начальной скорости?
+</p>
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/strela_model.png" alt="Летящая стрела" width="100%"/>
+
+<h2>Летящая стрела: Модель сил (click window for refresh)</h2>
+<canvas id="arrow" width="600" height="300" style="background:#eef3f7"></canvas><br>
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.05</span></label>
+<input type="range" id="wind_mass" min="0" max="0.1" value="0.05" step="0.001">
+
+<script>
+const canvas = document.getElementById('arrow');
+const ctx = canvas.getContext('2d');
+const windmassSlider = document.getElementById('wind_mass');
+const windmassVal = document.getElementById('wind_mass_val');
+
+let m = 0.05; 
+const g = 9.81;
+const cd = 0.000011;
+let dtx = 0.01;
+let dty = 0.003;
+let stepx = 0.05;
+
+let x = 0;
+let y = canvas.height - 20;
+let vx = 1000 * Math.cos(Math.PI / 4);
+let vy = -1000 * Math.sin(Math.PI / 4);
+  let v = Math.sqrt(vx*vx + vy*vy);
+  let Fdx = -cd * v * vx;
+  let Fdy = -cd * v * vy;
+  let ax = Fdx / m;
+  let ay = (Fdy + m * g) / m;
+
+  // Обновляем подписи ползунков
+  function updateLabels() {
+    windmassVal.textContent = windmassSlider.value;
+  }
+  windmassSlider.oninput = updateLabels;
+  updateLabels();
+
+
+
+function drawArrow(x, y, angle, stepx) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.closePath();
+  ctx.fillStyle = '#444';
+  ctx.beginPath();
+  ctx.moveTo(60, 0);
+  ctx.lineTo(-10, 10);
+  ctx.lineTo(10, 20);
+  ctx.rotate(angle);
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+
+  vx += ax * dtx;
+  vy += ay * dty;
+  x += vx * dtx;
+  y += vy * dty;
+
+  let angle = Math.atan2(vy, vx);
+
+  if (x < canvas.width + 60) {
+  stepx += stepx;
+    drawArrow(x, y, angle, stepx);
+    requestAnimationFrame(step);
+  }
+}
+//step();
+canvas.addEventListener('click', function() {
+x = 0;
+y = canvas.height - 20;
+m = parseFloat(windmassSlider.value);
+vx = 1000 * Math.cos(Math.PI / 4);
+vy = -1000 * Math.sin(Math.PI / 4);
+   v = Math.sqrt(vx*vx + vy*vy);
+   Fdx = -cd * v * vx;
+   Fdy = -cd * v * vy;
+   ax = Fdx / m;
+   ay = (Fdy + m * g) / m;
+stepx = 0.005;
+step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои опоры будут крепки, а мосты, которые ты строишь в жизни, соединяют самые важные берега и дарят надежду и поддержку.
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

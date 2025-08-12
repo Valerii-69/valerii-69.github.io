@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Пластмассовый обруч — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 8: Пластмассовый обруч</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Пластмассовый обруч играл с солнечными лучами на асфальте, пока маленькая девочка кружилась с ним на лужайке. Он помнил весёлые дни, когда каждый оборот был новым танцем, а смех — музыкой движения.
+
+Он казался простым предметом, но в каждом вращении таилась история радости и лёгкости, которые дарили детям минуты счастья.
+
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как описать вращательное движение обруча на талии с учётом изменения угловой скорости и силы трения?
+
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/obruch_model.png" alt="Пластмассовый обруч" width="100%"/>
+
+<h2>Пластмассовый обруч: Модель сил (click window for refresh)</h2>
+<canvas id="hula" width="800" height="800" style="background:#fff0f5"></canvas>
+
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('hula');
+const ctx = canvas.getContext('2d');
+
+let omega0 = 0.4; // начальная угловая скорость
+let b = 0.05; // коэффициент трения
+let I = 1; // момент инерции (условно)
+let omega = omega0;
+let theta = 0;
+let t = 0;
+
+function drawHula(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(angle);
+  ctx.strokeStyle = '#ff69b4';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(angle, angle, 180, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function step() {
+  omega = omega0 * Math.exp(- (b / I) * t);
+  theta += omega;
+  drawHula(theta);
+  t += 0.05;
+  if (omega > 0.001) {
+    requestAnimationFrame(step);
+  }
+}
+//step();
+canvas.addEventListener('click', function() {
+ omega0 = 0.4; // начальная угловая скорость
+ omega = omega0;
+ theta = 0;
+ t = 0;
+ step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть каждый твой круговорот будет наполнен радостью движения и лёгкостью, а любые препятствия рассеются, как лёгкий ветерок.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

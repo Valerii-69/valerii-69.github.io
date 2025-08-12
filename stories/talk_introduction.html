@@ -66,17 +66,18 @@
     <li>Раздел «Спросить ИИ» — ответы на любые ваши вопросы</li>
   </ul>
   <nav>
-    <button id="startGameBtn">Начать игру</button>
+    <!--<button id="startGameBtn">Начать игру</button>-->
     <button id="exploreBtn">Посмотреть все игры</button>
   </nav>
 
   <script>
-    document.getElementById('startGameBtn').onclick = () => {
+   /* document.getElementById('startGameBtn').onclick = () => {
       alert('Здесь будет запуск первой игры! Скоро...');
       // Здесь можно перенаправить или открыть первую игру
-    };
+    };*/
     document.getElementById('exploreBtn').onclick = () => {
-      alert('Здесь будет список всех доступных игр и упражнений.');
+	window.location.href = "./Educational_mini-games.html";
+      //alert('Здесь будет список всех доступных игр и упражнений.');
       // Можно открыть меню или другую страницу
     };
   </script>

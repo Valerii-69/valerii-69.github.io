@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Каменная бабушка — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 10: Каменная бабушка</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Каменная бабушка стояла у входа в старый сад, храня воспоминания многих поколений. Её суровое лицо и крепкие руки рассказывали истории терпения и мудрости, а тёплый свет заходящего солнца мягко касался её каменной души.
+
+Она наблюдала за жизнью, как за непрерывным потоком, и понимала, что даже камни могут хранить тепло и надежду. </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как можно описать процесс постепенного износа и эрозии каменной статуи под воздействием ветра и дождя с помощью математической модели?
+
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/babushka_model.png" alt="Каменная бабушка" width="100%"/>
+
+<h2>Каменная бабушка: Модель сил (click window for refresh)</h2>
+<canvas id="stone" width="300" height="300" style="background:#ccc"></canvas>
+
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('stone');
+const ctx = canvas.getContext('2d');
+
+let V0 = 1; // начальный объём (условно)
+let k = 0.05; // коэффициент износа
+let E = 1; // интенсивность эрозии
+let t = 0;
+
+function drawStone(volume) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  let size = 200 * Math.cbrt(volume); // кубический корень, чтобы масштабировать по объёму
+  ctx.fillStyle = '#888';
+  ctx.beginPath();
+  ctx.arc(canvas.width / 2, canvas.height / 2, size / 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function step() {
+  let V = V0 * Math.exp(-k * E * t);
+  drawStone(V);
+  t += 0.1;
+  if (V > 0.05) {
+    requestAnimationFrame(step);
+  }
+}
+//step();
+canvas.addEventListener('click', function() {
+ V0 = 1; // начальный объём (условно)
+ k = 0.05; // коэффициент износа
+ E = 1; // интенсивность эрозии
+ t = 0;
+ step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть время бережно касается каждого из нас, придавая мудрость и стойкость, а даже самые крепкие камни со временем обогащаются своей историей.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

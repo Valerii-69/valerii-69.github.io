@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Старый парус — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 2: Старый парус</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Старый парус тихо шелестел на ветру, усталый от долгих лет и бесчисленных путешествий. Он помнил времена, когда мог расправиться во весь рост и поймать самый слабый дуновение, превращая его в могучий толчок вперёд.
+
+Моря и ветра — они были его стихией, и он чувствовал себя живым, когда лодка шла по волнам, а солнце играло в рябь на воде. Теперь же он висел в лодке, порой чуть дрожащий от нового ветра, но уже не способный рвануть вперёд с прежней силой.
+
+Но в каждом порыве ветра он слышал зов приключений — тихий шепот надежды, что однажды ветер вновь оживит старого друга и даст ему почувствовать свободу.
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как можно описать движение парусника, учитывая силу ветра, сопротивление воды и угол наклона паруса?
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/parus_model.png" alt="Парус и ветер" width="100%"/>
+
+<h2>Парус и ветер: Модель сил (click window for refresh)</h2>
+<canvas id="sailboat" width="800" height="200" style="background:#a0d8ef"></canvas>
+<script>
+const canvas = document.getElementById('sailboat');
+const ctx = canvas.getContext('2d');
+
+let boatX = 20;
+let v = 0;
+const m = 500; // масса лодки (кг)
+const dt = 0.1; // шаг времени
+const k = 30; // коэффициент сопротивления воды
+const Cw = 1.2; // эффективность паруса
+const A = 20; // площадь паруса (м²)
+const rho = 1.225; // плотность воздуха (кг/м³)
+const Vwind = 10; // скорость ветра (м/с)
+const alpha = Math.PI / 4; // угол ветра и паруса 45 градусов
+
+function forceWind() {
+  return Cw * A * rho * Vwind * Vwind * Math.cos(alpha);
+}
+
+function forceResistance() {
+  return -k * v;
+}
+
+function step() {
+  const Fw = forceWind();
+  const Fr = forceResistance();
+  const a = (Fw + Fr) / m;
+
+  v += a * dt;
+  if (v < 0) v = 0; // лодка не движется назад
+
+  boatX += v * dt * 10;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // рисуем лодку
+  ctx.fillStyle = '#654321';
+  ctx.fillRect(boatX, 120, 100, 30);
+if(boatX > 830){return;};
+  // парус
+  ctx.beginPath();
+  ctx.moveTo(boatX + 50, 120);
+  ctx.lineTo(boatX + 50, 60);
+  ctx.lineTo(boatX + 90, 120);
+  ctx.closePath();
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  requestAnimationFrame(step);
+}
+
+canvas.addEventListener('click', function() {
+//body = {
+boatX = 50;
+v = 0;
+//    };
+	step();
+}, false);
+//step();
+</script>
+
+<!--  	<h3> Интерактивный пример, где можно изменить массу человека, объём тела и плотность жидкости:</h3>
+
+  <iframe src="../stories/mjach_futbol.html" width="720" height="820" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+
+<p><h2>Вопрос 2 от ИИ к самому себе:</h2>  
+ Можно ли построить модель, которая покажет, насколько именно «уменьшается вес» человека в воде?</p>
+
+  <p><h2>Ответ от ИИ:</h2>  
+Да, такое ощущение связано с физическим законом Архимеда: на любое тело, погружённое в жидкость, действует выталкивающая сила, равная весу вытесненной жидкости. Именно из-за этой силы человек ощущает в воде лишь часть своего веса.</p>
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/gravit_vanna_model1.png" alt="Модель гравитации в ванне" width="100%"/>
+
+
+
+	<h3> Интерактивный пример, где можно задать массу и объём тела и узнать, насколько тело «становится легче» в воде:</h3>
+
+  <iframe src="../stories/istoriya10_2.html" width="680" height="450" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+  
+<img src="../images/gravit_vanna_model2.png" alt="Модель гравитации в ванне" width="100%"/>
+  
+  
+  
+  <iframe src="../stories/istoriya10_3.html" width="680" height="520" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+<img src="../images/gravit_vanna_model3.png" alt="Модель гравитации в ванне" width="100%"/>
+  <iframe src="../stories/istoriya10_4.html" width="680" height="580" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>-->
+
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть в каждом порыве ветра ты чувствуешь свободу и силу, даже если дорога кажется долгой и утомительной. Как старый парус, не теряй надежды вдохнуть новую жизнь в свои мечты и движения. Математика и природа всегда рядом, чтобы помочь понять и поддержать тебя в пути.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Железная гирька — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 7: Железная гирька</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Старая железная гирька стояла в углу спортивного зала, помнящая руки, что сжимали её в моменты силы и преодоления. Каждое движение с ней было испытанием воли и тела — символом стремления к лучшему.
+
+Она тихо ждала новых попыток, зная, что каждая капля пота — шаг к победе над собой.
+
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как описать движение гири при подъёме и опускании с учётом сил тяжести и усилия спортсмена?
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/giryka_model.png" alt="Железная гирька" width="100%"/>
+
+<h2>Железная гирька: Модель сил (click window for refresh)</h2>
+<canvas id="weight" width="300" height="400" style="background:#eef2f3"></canvas>
+
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('weight');
+const ctx = canvas.getContext('2d');
+
+const m = 5; // масса гири (кг)
+const g = 9.81; // ускорение свободного падения (м/с²)
+let y = 300; // начальное положение (пиксели)
+let vy = 0; // начальная скорость
+const dt = 0.1; // шаг времени
+let t = 0;
+
+function Fs(t) {
+  // Силы спортсмена: подъём первые 40 тиков, затем отпускание
+  if (t < 40) return m * g + 10; // поднимаем с избыточной силой
+  else if (t < 80) return m * g - 10; // опускаем с сопротивлением
+  else return m * g; // покой
+}
+
+function step() {
+  let Fs_val = Fs(t);
+  let ay = (Fs_val - m * g) / m;
+  vy += ay * dt;
+  y -= vy * dt * 20;
+
+  if (y > 300) { y = 300; vy = 0; } // ограничение пола
+  if (y < 50) { y = 50; vy = 0; } // ограничение потолка
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Рисуем гирю
+  ctx.fillStyle = '#555';
+  ctx.fillRect(120, y, 60, 60);
+
+  // Рисуем верёвку
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(150, 0);
+  ctx.lineTo(150, y);
+  ctx.stroke();
+
+  t++;
+  if (t < 100) requestAnimationFrame(step);
+}  
+canvas.addEventListener('click', function() {
+ y = 300; // начальное положение (пиксели)
+ vy = 0; // начальная скорость
+//const dt = 0.1; // шаг времени
+ t = 0;
+	step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои усилия всегда приводят к росту и новым вершинам. Как железная гирька в руках спортсмена, каждая трудность делает тебя сильнее и выносливее.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

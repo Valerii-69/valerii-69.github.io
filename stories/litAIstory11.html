@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Стеклянный шар — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 11: Стеклянный шар</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Прозрачный стеклянный шар лежал на полке, отражая свет и наполняясь цветами вокруг. Он помнил, как однажды его выпустили в свободное движение — и он катился, играя с тенью и светом, создавая маленькие чудеса.
+
+Шарик был хрупким, но в каждом движении чувствовалась свобода и радость открытия.
+
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как описать движение стеклянного шара по наклонной плоскости с учётом трения и вращения?
+
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/sharik_steklo_model.png" alt="Стеклянный шар" width="100%"/>
+
+<h2>Стеклянный шар: Модель сил (click window for refresh)</h2>
+<canvas id="ball" width="600" height="200" style="background:#eef9ff"></canvas>
+
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('ball');
+const ctx = canvas.getContext('2d');
+
+const g = 9.81;
+const alpha = (Math.PI / 40); // угол наклона 30 градусов
+const m = 1;
+const r = 20;
+const I = (2/5) * m * r * r;
+const a = g * Math.sin(alpha) / (1 + I / (m * r * r));
+
+let x = 0;
+let vx = 0;
+const dt = 0.01;
+
+function drawScene(xPos) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Нарисовать наклонную плоскость
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+//  ctx.moveTo(0, canvas.height);
+  ctx.moveTo(0, 40);
+  ctx.lineTo(canvas.width, canvas.height - canvas.width * Math.tan(alpha));
+  ctx.stroke();
+
+  // Нарисовать шар
+//  const y = canvas.height - xPos * Math.tan(alpha) - r;
+  const y = (r + xPos * 2.358 * Math.tan(alpha));// - canvas.height;
+  ctx.fillStyle = '#3399ff';
+  ctx.beginPath();
+  ctx.arc(xPos, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function step() {
+  vx += a * dt;
+  x += vx * dt * 50;
+
+  if (x < canvas.width - r) {
+    drawScene(x);
+    requestAnimationFrame(step);
+  }
+}
+//step();
+canvas.addEventListener('click', function() {
+ x = 20;
+ vx = 0;
+drawScene(x);
+step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои движения будут плавными и уверенными, а каждый новый склон — возможностью катиться к новым вершинам и открытиям.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

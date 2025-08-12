@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Воздушный шар против ветра</title>
+<style> 
+body { font-family: Arial; margin: 20px; } 
+canvas { border: 1px solid #ccc; } 
+input[type="range"] {
+  width: 300px; /* Sets a fixed width in pixels */
+}
+</style>
+</head>
+<body>
+<h1>Модель полета воздушного шара</h1>
+<p>Можно ли лететь против ветра? Поиграйте с высотой и силой ветра.</p>
+<label for="wind">Сила ветра, (м/с): <span id="wind_val">0</span></label>
+<input type="range" id="wind" min="-10" max="10" value="0" step="0.0001"><br>
+<label for="lift">Подъемная сила, (кг): <span id="lift_val">0</span></label>
+<input type="range" id="lift" min="-5" max="5" value="0" step="0.0001"><br>
+<canvas id="balloon" width="600" height="300"></canvas><br>
+<button id="newGameBtn" onclick="startGame()">СТАРТ</button>
+<p><b>Пожелание:</b> исследуйте, как изменение высоты может повлиять на направление полета.</p>
+<p><b>В заключение:</b> Хотя теоретически можно создать небольшую тягу, вращая шар,<br> ее будет недостаточно для движения против ветра.<br> Эффект силы Кориолиса на малых объектах в атмосфере незначителен по сравнению с силой ветра. 
+</p>
+<script>
+const cb = document.getElementById('balloon');
+const ctxb = cb.getContext('2d');
+const liftSlider = document.getElementById('lift');
+const windSlider = document.getElementById('wind');
+
+const windliftVal = document.getElementById('lift_val');
+const windVal = document.getElementById('wind_val');
+
+
+let xb=300, yb=150;
+
+  // Обновляем подписи ползунков
+  function updateLabels() {
+    windliftVal.textContent = liftSlider.value;
+    if(windSlider.value>=0){windVal.textContent = windSlider.value + " попутный"}else{windVal.textContent = windSlider.value + " встречный"};
+  }
+  windSlider.oninput = liftSlider.oninput = updateLabels;
+  updateLabels();
+
+
+
+function drawBalloon() {
+  ctxb.clearRect(0,0,cb.width,cb.height);
+  const wind = parseFloat(document.getElementById('wind').value);
+  const lift = parseFloat(document.getElementById('lift').value);
+  xb += wind*0.5;
+  yb -= lift*0.5;
+  ctxb.fillStyle = 'red';
+  ctxb.beginPath();
+  ctxb.arc(xb, yb, 20, 0, Math.PI*2);
+  ctxb.fill();
+  if(xb < cb.width & yb < cb.height & xb > 0 & yb > 0){
+  requestAnimationFrame(drawBalloon);
+  };
+}
+
+
+function startGame(){
+xb=300
+ yb=150;
+	drawBalloon();
+}
+//drawBalloon();
+</script>
+</body>
+</html>

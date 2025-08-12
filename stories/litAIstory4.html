@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Бумажный самолётик — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 4: Бумажный самолётик</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Сложенный в спешке, но с любовью, бумажный самолётик мечтал о полёте. Он помнил зал аплодисментов школьного класса, где однажды взмыл в воздух, подарив радость и восторг.
+
+Ветер ласково касался его тонких крыльев, и каждое движение было полным надежды — попасть в даль, преодолеть гравитацию и коснуться неба, даже если всего на миг.
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как математически описать планирование бумажного самолётика, учитывая угол атаки, сопротивление воздуха и подъёмную силу?
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/samoletik_model.png" alt="Бумажный самолётик" width="100%"/>
+
+<h2>Бумажный самолётик: Модель сил (click window for refresh)</h2>
+<canvas id="plane" width="600" height="300" style="background:#d0f0f0"></canvas><br>
+<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">
+<script>
+const canvas = document.getElementById('plane');
+const ctx = canvas.getContext('2d');
+const windmassSlider = document.getElementById('wind_mass');
+const windmassVal = document.getElementById('wind_mass_val');
+
+const dtx = 0.005;
+const dty = 0.0058;
+const g = 9.81;
+const rho = 1.225;
+const S = 0.02; // площадь крыльев (м²)
+let m = 0.004; // масса (кг)
+const CL = 0.8; // подъёмный коэффициент
+const CD = 0.1; // коэффициент сопротивления
+
+let x = 250;
+let y = 100;
+let vx = 2; // начальная скорость (м/с)
+let vy = 5;
+let theta = Math.atan2(vy, vx);
+
+
+  // Обновляем подписи ползунков
+  function updateLabels() {
+    windmassVal.textContent = windmassSlider.value;
+  }
+  windmassSlider.oninput = updateLabels;
+  updateLabels();
+
+
+function drawPlane(x, y, angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(x, canvas.height - y);
+  ctx.rotate(angle);
+  ctx.fillStyle = '#b5651d';
+  ctx.beginPath();
+  ctx.moveTo(0, -10);
+  ctx.lineTo(30, 0);
+  ctx.lineTo(0, 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+  let V = Math.sqrt(vx*vx + vy*vy);
+  let L = 0.5 * rho * V * V * S * CL;
+  let D = 0.5 * rho * V * V * S * CD;
+
+  let ax = (-D * (vx/V) + L * (vy/V)) / m;
+  let ay = (-m * g - D * (vy/V) - L * (vx/V)) / m;
+
+  vx += ax * dtx;
+  vy += ay * dty;
+
+  x += vx * dtx * 360;
+  y += vy * dty * 30;
+
+  theta = Math.atan2(vy, vx);
+
+  if (y > 0 && x < canvas.width) {
+    drawPlane(x, y, theta);
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+ x = 250;
+ y = 100;
+ vx = 2; // начальная скорость (м/с)
+ vy = 6;
+ theta = Math.atan2(vy, vx);
+ m = parseFloat(windmassSlider.value);
+	step();
+}, false);
+
+//step();
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои мечты взмывают ввысь, как бумажный самолётик, даже если путь порой непрост. Каждый полёт — это возможность научиться летать лучше, и даже падения — часть большого приключения.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

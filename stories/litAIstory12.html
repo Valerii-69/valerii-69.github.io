@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Листок на ветру — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 12: Листок на ветру</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Лёгкий осенний листок плавно носился по ветру, играя с солнечными лучами и рассказывая истории о дальних путешествиях. Каждый изгиб и поворот был наполнен свободой и непредсказуемостью, словно жизнь сама танцевала с ним в воздухе.
+
+Листок знал, что его путь — это путь перемен и красоты, где каждое мгновение ценно и уникально.
+
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как математически описать движение листка в воздухе с учётом аэродинамических сил и турбулентности?
+
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/listok_veter_model.png" alt="Листок на ветру" width="100%"/>
+
+<h2>Листок на ветру: Модель сил (click window for refresh)</h2>
+<canvas id="leaf" width="600" height="600" style="background:#ccf2ff"></canvas>
+
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('leaf');
+const ctx = canvas.getContext('2d');
+
+const m = 0.01;
+const g = 9.81;
+const cd = 0.1;
+let x = 300;
+let y = 50;
+let vx = 1;
+let vy = 0;
+const dt = 0.08;
+
+function drawLeaf(x, y) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#228B22';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 20, 10, Math.sin(x/10), 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function step() {
+  // Силы
+  let Fg = m * g;
+  let v = Math.sqrt(vx*vx + vy*vy);
+  let Fdx = -cd * v * vx;
+  let Fdy = -cd * v * vy;
+
+  // Турбулентность - случайный шум
+  let Ft_x = (Math.random() - 0.5) * 0.2;
+  let Ft_y = (Math.random() - 0.5) * 0.2;
+
+  // Ускорения
+  let ax = (Fdx + Ft_x) / m;
+  let ay = (Fdy + Ft_y + Fg) / m;
+
+  // Обновляем скорость и позицию
+  vx += ax * dt;
+  vy += ay * dt;
+  x += vx * dt * 20;
+  y += vy * dt * 20;
+
+  // Ограничения по экрану
+  if (y > canvas.height) {
+    y = 50; vy = 0; vx = 1; x = 300;
+  }
+  if (x > canvas.width) x = 0;
+  if (x < 0) x = canvas.width;
+
+  drawLeaf(x, y);
+  requestAnimationFrame(step);
+}
+
+//step();
+canvas.addEventListener('click', function() {
+ x = 300;
+ y = 50;
+ vx = 1;
+ vy = 0;
+
+step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть ветер несёт тебя легко, а каждый поворот жизни будет полон красоты и неожиданностей, как танец листка на ветру.
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

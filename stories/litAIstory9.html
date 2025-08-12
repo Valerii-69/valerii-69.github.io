@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Шарик на ниточке — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 9: Шарик на ниточке</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Яркий шарик плавно качался на тонкой ниточке, играя с лучами солнца в парке. Он помнил детские руки, что с любовью держали его, и тихий ветер, что шептал истории о мечтах и просторах.
+Каждое его движение было словно танец, лёгкий и свободный, но вместе с тем полный чувства связи с миром.
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как математически описать движение шарика на ниточке, учитывая колебания и влияние силы тяжести?
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/sharik_nitochka_model.png" alt="Шарик на ниточке" width="100%"/>
+
+<h2>Шарик на ниточке: Модель сил (click window for refresh)</h2>
+<canvas id="pendulum" width="400" height="300" style="background:#e0f7fa"></canvas>
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('pendulum');
+const ctx = canvas.getContext('2d');
+
+const g = 9.81;
+const l = 150;
+let theta = 0.5; // начальный угол (радианы)
+let omega = 0;
+let dt = 0.02;
+
+function drawPendulum(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  const originX = canvas.width / 2;
+  const originY = 50;
+  const bobX = originX + l * Math.sin(angle);
+  const bobY = originY + l * Math.cos(angle);
+
+  // нить
+  ctx.moveTo(originX, originY);
+  ctx.lineTo(bobX, bobY);
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // шарик
+  ctx.beginPath();
+  ctx.arc(bobX, bobY, 20, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff4081';
+  ctx.fill();
+  ctx.strokeStyle = '#c2185b';
+  ctx.stroke();
+}
+
+function step() {
+  let alpha = -(g / l) * Math.sin(theta);
+  omega += alpha * dt;
+  theta += omega * dt;
+
+  drawPendulum(theta);
+  requestAnimationFrame(step);
+}
+//step();
+canvas.addEventListener('click', function() {
+ theta = 0.5; // начальный угол (радианы)
+ omega = 0;
+ dt = 0.02;
+ step();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои колебания жизни будут гармоничными и наполненными светом, а каждый новый маятник приносит баланс и вдохновение.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

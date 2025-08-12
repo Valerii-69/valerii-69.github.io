@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Крутящийся волчок — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 3: Крутящийся волчок</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Волчок стоял на полке, покрытый лёгкой пылью, и мечтал ещё раз увидеть мир в калейдоскопе своего вращения. Он помнил, как когда-то казалось, что время останавливается — пока он крутился на кончике пальца, играя с силой и балансом.
+
+Каждое вращение было маленьким чудом, и даже когда энергия убывала, волчок продолжал свой танец, словно доказывая, что движение — это жизнь.
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как математически описать прецессию и затухание вращающегося волчка с учётом трения и центробежных сил?</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/volchek_model.png" alt="Крутящийся волчек" width="100%"/>
+
+<h2>Крутящийся волчек: Модель сил (click window for refresh)</h2>
+<canvas id="top" width="300" height="300" style="background:#f0f0f0"></canvas>
+<script>
+const canvas = document.getElementById('top');
+const ctx = canvas.getContext('2d');
+
+let omega0 = 0.3; // начальная угловая скорость (рад/шаг)
+let beta = 0.005; // коэффициент затухания
+let theta = 0; // угол вращения
+let t = 0;
+
+function drawTop(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(angle);
+  // тело волчка
+  ctx.fillStyle = '#aa0000';
+  ctx.beginPath();
+  ctx.moveTo(0, -60);
+  ctx.lineTo(20, 60);
+  ctx.lineTo(-20, 60);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+  let omega = omega0 * Math.exp(-beta * t);
+  theta += omega;
+  drawTop(theta);
+  t++;
+  if (omega > 0.001) {
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+omega0 = 0.3; // начальная угловая скорость (рад/шаг)
+beta = 0.005; // коэффициент затухания
+theta = 0; // угол вращения
+t = 0;
+	step();
+}, false);
+
+
+//step();
+</script>
+<!--  	<h3> Интерактивный пример, где можно изменить массу человека, объём тела и плотность жидкости:</h3>
+
+  <iframe src="../stories/mjach_futbol.html" width="720" height="820" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+
+<p><h2>Вопрос 2 от ИИ к самому себе:</h2>  
+ Можно ли построить модель, которая покажет, насколько именно «уменьшается вес» человека в воде?</p>
+
+  <p><h2>Ответ от ИИ:</h2>  
+Да, такое ощущение связано с физическим законом Архимеда: на любое тело, погружённое в жидкость, действует выталкивающая сила, равная весу вытесненной жидкости. Именно из-за этой силы человек ощущает в воде лишь часть своего веса.</p>
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/gravit_vanna_model1.png" alt="Модель гравитации в ванне" width="100%"/>
+
+
+
+	<h3> Интерактивный пример, где можно задать массу и объём тела и узнать, насколько тело «становится легче» в воде:</h3>
+
+  <iframe src="../stories/istoriya10_2.html" width="680" height="450" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+  
+<img src="../images/gravit_vanna_model2.png" alt="Модель гравитации в ванне" width="100%"/>
+  
+  
+  
+  <iframe src="../stories/istoriya10_3.html" width="680" height="520" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+<img src="../images/gravit_vanna_model3.png" alt="Модель гравитации в ванне" width="100%"/>
+  <iframe src="../stories/istoriya10_4.html" width="680" height="580" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>-->
+
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои начинания вращаются с вдохновением и силой, а любые замедления будут лишь возможностью насладиться движением и подготовиться к новому витку. Как волчок, продолжай свой танец, даже если энергия убывает — в этом и есть красота жизни.
+
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

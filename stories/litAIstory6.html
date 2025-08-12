@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Медная монетка — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 6: Медная монетка</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Медная монетка лежала на дне старого кармана, побывавшая в тысячах ладоней и слышавшая тысячи желаний. Каждый раз, когда её бросали, она становилась символом надежды и судьбы — и она любила эти мгновения, когда судьба зависела от её стороны.
+
+Монетка помнила, как дети мечтали о чуде, а взрослые искали ответы в простом «орле» или «решке». Для неё это была игра, в которой всегда была доля тайны и волшебства.
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как математически описать вероятность выпадения «орла» или «решки» при броске монетки и влияние начальных условий на результат?
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/monetka_model.png" alt="Медная монетка" width="100%"/>
+
+<h2>Медная монетка: Модель</h2>
+<canvas id="coin" width="200" height="200" style="background:#f7f7f7"></canvas>
+<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('coin');
+const ctx = canvas.getContext('2d');
+const btn = document.getElementById('flipBtn');
+
+let flipping = false;
+let angle = 0;
+let speed = 0;
+let result = null;
+
+function drawCoin(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.arc(0, 0, 80, 0, Math.PI * 2);
+  ctx.fillStyle = '#c68642';
+  ctx.fill();
+  ctx.strokeStyle = '#804000';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(result === 'орёл' ? 'О' : result === 'решка' ? 'Р' : '', 0, 0);
+  ctx.restore();
+}
+
+function flip() {
+  if (flipping) return;
+  flipping = true;
+  speed = Math.random() * 0.5 + 0.3;
+  angle = 0;
+  result = null;
+  let flips = Math.floor(Math.random() * 10) + 10;
+  let count = 0;
+
+  function animate() {
+    angle += speed;
+    speed *= 0.97;
+    count++;
+    drawCoin(angle);
+    if (speed > 0.01) {
+      requestAnimationFrame(animate);
+    } else {
+      result = Math.random() < 0.5 ? 'орёл' : 'решка';
+      drawCoin(angle);
+      flipping = false;
+    }
+  }
+  animate();
+}
+
+btn.onclick = flip;
+drawCoin(angle);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть каждый твой выбор будет осознанным, а удача и случай идут рядом с тобой в гармонии. Помни, что иногда судьба — просто игра вероятностей, и в этом её красота.
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

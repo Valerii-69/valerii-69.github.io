@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Парадоксы обыденной логики — мини‑сборник</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#98a8b8;--glass:rgba(255,255,255,0.04)}
+    *{box-sizing:border-box}
+    body{font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;background:linear-gradient(180deg,#071021 0%, #071728 60%);color:#e6eef6;margin:0;padding:40px;}
+    .container{max-width:900px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042a38}
+    h1{font-size:20px;margin:0}
+    p.lead{color:var(--muted);margin-top:6px}
+
+    .controls{display:flex;gap:10px;margin:18px 0}
+    button{background:var(--glass);border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px 12px;border-radius:10px;cursor:pointer}
+    button.primary{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#042a38;border:none;font-weight:600}
+
+    .card{background:rgba(255,255,255,0.02);border-radius:14px;padding:20px;box-shadow:0 6px 24px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+
+    .paradox{margin:18px 0;padding:14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.02)}
+    .dialog{font-family: Georgia, 'Times New Roman', serif;margin:0 0 8px 0}
+    blockquote{margin:8px 0 0 0;padding-left:12px;border-left:3px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .philos{margin-top:10px;color:var(--muted);font-size:14px}
+
+    /* Анимации появления */
+    .hidden{opacity:0;transform:translateY(8px)}
+    .fade-in{animation:fadeIn .6s ease forwards}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+    /* Удобства для печати */
+    @media print{body{background:white;color:black} .card{box-shadow:none;border:none}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">ПФ</div>
+      <div>
+        <h1>Парадоксы обыденной логики — мини‑сборник</h1>
+        <p class="lead">Короткие сценки и маленькие заметки о том, как простые вопросы превращаются в психологические игры.</p>
+      </div>
+    </header>
+
+    <div class="controls">
+      <button id="playBtn" class="primary">Показать по очереди</button>
+      <button id="showAllBtn">Показать всё сразу</button>
+      <button id="downloadBtn">Скачать HTML</button>
+      <button id="copyBtn">Копировать текст</button>
+    </div>
+
+    <div class="card" id="card">
+      <div class="meta">
+        <div>Автор: Валерий + ИИ (версия для сайта)</div>
+        <div id="date"></div>
+      </div>
+
+      <section id="intro" class="hidden">
+        <h2>Введение</h2>
+        <p>В обыденной речи мы часто ищем не столько информацию, сколько подтверждение своей картины мира. И тогда простой вопрос перестаёт быть простым. Часы превращаются в допрос, дорога — в тест на намерения, стакан воды — в экзамен по жажде. Эти маленькие разговорные ловушки смешны и немного грустны, потому что в них — привычка защищать себя даже от безобидных фактов.</p>
+      </section>
+
+      <div id="paradoxes">
+        <!-- Каждый парадокс — отдельный блок -->
+        <article class="paradox hidden">
+          <p class="dialog"><strong>1. Время и мотивы</strong><br>
+          — <em>Который сейчас час?</em><br>
+          — <em>А вам зачем?</em></p>
+          <blockquote>Ирония: будто само время должно знать, для чего его спрашивают.</blockquote>
+          <p class="philos">Философия: иногда люди защищают даже ту информацию, что принадлежит всем. Это вопрос не о часах, а о доверии.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>2. Место и намерения</strong><br>
+          — <em>Где находится библиотека?</em><br>
+          — <em>А что вы там хотите?</em></p>
+          <blockquote>Ирония: путь к знаниям проходит через бюрократию любопытства.</blockquote>
+          <p class="philos">Философия: в нашем мире маршруты всё чаще охраняют не стены, а люди, которые требуют объяснений.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>3. Жажда и сомнение</strong><br>
+          — <em>Можно мне стакан воды?</em><br>
+          — <em>А вы пить хотите?</em></p>
+          <blockquote>Ирония: просьба о воде как загадка без очевидного ответа.</blockquote>
+          <p class="philos">Философия: даже самые простые нужды иногда требуют доказательств — и мы учимся оправдывать жажду.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>4. Принадлежность и подозрение</strong><br>
+          — <em>Это ваш велосипед?</em><br>
+          — <em>А вам зачем?</em></p>
+          <blockquote>Ирония: невинный вопрос мгновенно превращается в допрос.</blockquote>
+          <p class="philos">Философия: собственность становится не просто вещью, а поводом для психологической игры в «кто кому что должен объяснять».</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>5. Погода и подозрения</strong><br>
+          — <em>А дождь будет?</em><br>
+          — <em>А что, вам гулять собралось?</em></p>
+          <blockquote>Ирония: прогноз погоды выдают только с пакетом ваших планов.</blockquote>
+          <p class="philos">Философия: мы часто связываем чужой вопрос с собственными представлениями о том, что «нормально» знать.</p>
+        </article>
+      </div>
+
+      <section id="conclusion" class="hidden">
+        <h3>Заключение</h3>
+        <p>Парадоксы обыденной логики смешны, потому что они рождаются из простых ситуаций, а заканчиваются психологическими лабиринтами. Но они и ценны: в каждом есть маленький урок о том, как мы воспринимаем чужие вопросы. Возможно, иногда стоит просто ответить — и подарить человеку факт без проверки на «зачем».</p>
+      </section>
+
+      <footer>
+        <div>Нажмите «Показать по очереди», чтобы пролистать материал как мини-лекцию, или «Показать всё сразу» для печати и быстрого копирования.</div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // Дата генерации
+    document.getElementById('date').textContent = new Date().toLocaleDateString('ru-RU', {year:'numeric',month:'long',day:'numeric'});
+
+    const items = Array.from(document.querySelectorAll('.hidden'));
+    const playBtn = document.getElementById('playBtn');
+    const showAllBtn = document.getElementById('showAllBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    // Функция поочерёдного показа с задержкой
+    function playSequentially() {
+      // Сначала скрыть всё
+      items.forEach(i=>{i.classList.remove('fade-in'); i.style.opacity=0});
+      let delay = 0;
+      items.forEach((el, idx) => {
+        setTimeout(()=>{
+          el.classList.add('fade-in');
+        }, delay);
+        delay += 700; // шаг между элементами
+      });
+    }
+
+    // Показать сразу
+    function showAll() {
+      items.forEach(el=> el.classList.add('fade-in'));
+    }
+
+    playBtn.addEventListener('click', playSequentially);
+    showAllBtn.addEventListener('click', showAll);
+
+    // Скачать текущую страницу как HTML
+    downloadBtn.addEventListener('click', ()=>{
+      const html = '<!doctype html>' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'paradoksy_obydennoj_logiki.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // Скопировать текстовый контент в буфер обмена
+    copyBtn.addEventListener('click', async ()=>{
+      const textParts = Array.from(document.querySelectorAll('.card *')).map(el => el.innerText).join('\n\n');
+      try{
+        await navigator.clipboard.writeText(textParts);
+        copyBtn.textContent = 'Скопировано!';
+        setTimeout(()=> copyBtn.textContent = 'Копировать текст', 1500);
+      }catch(e){
+        alert('Не удалось скопировать автоматически. Вы можете выделить текст и нажать Ctrl+C.');
+      }
+    });
+
+    // Авто-показываем вводный блок при загрузке как приятный эффект
+    window.addEventListener('load', ()=>{
+      const intro = document.getElementById('intro');
+      intro.classList.add('fade-in');
+      // небольшой таймаут перед показом пародоксов
+      setTimeout(()=>{
+        // оставляем пародоксы скрытыми до действий пользователя
+      },400);
+    });
+
+    // Дополнительно: плавная прокрутка к разделам при клике (можно расширить)
+  </script>
+</body>
+</html>

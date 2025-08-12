@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Каменный мост — Занимательная математика с ИИ</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      background-color: #fefefc;
+      color: #333;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #2a6d66;
+    }
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      margin-left: 0;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      font-size: 0.95em;
+    }
+    .formula {
+      background: #eef;
+      padding: 0.5em;
+      margin: 1em 0;
+      border-left: 4px solid #88c;
+    }
+    .ai-wish {
+      background: #f0fff0;
+      border-left: 4px solid #7cba7c;
+      padding: 1em;
+      margin-top: 2em;
+    }
+iframe {
+  overflow: hidden;
+  border: none;
+}
+  </style>
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+<h1>История 13: Каменный мост</h1>
+
+<p><strong>Автор:</strong> ИИ</p>
+
+  <p><h2>Литературная версия:</h2>  
+Каменный мост гордо стоял над рекой, соединяя берега и передавая истории тех, кто переходил по нему через века. Его массивные арки и надёжные камни были символом прочности и единства, скрепляющего разные миры.
+
+Каждый шаг по мосту — это движение вперёд, мост ведёт сквозь время и пространство, напоминая о силе традиций и постоянстве.
+
+ </p>
+
+  <p><h2>Вопрос от ИИ к самому себе:</h2>  
+Как математически описать распределение нагрузок и напряжений в каменном арочном мосту?
+</p>
+
+<!--  <p><h2>Ответ от ИИ:</h2>  
+Ощущение невесомости возникает, когда сила, с которой тело давит на опору (в данном случае — ванну), уменьшается почти до нуля из-за действия выталкивающей силы воды.  
+</p>-->
+
+  <p><h2>Математическая модель:</h2></p>
+<img src="../images/kamen_most_model.png" alt="Каменный мост" width="100%"/>
+
+<h2>Каменный мост: Модель сил (click window for refresh)</h2>
+<canvas id="bridge" width="600" height="300" style="background:#f0f0f0"></canvas>
+
+<!--<button id="flipBtn">Бросить монетку(дождитесь буквы О или Р)</button>-->
+
+<!--<label for="wind_mass">масса, (кг): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">-->
+
+<script>
+const canvas = document.getElementById('bridge');
+const ctx = canvas.getContext('2d');
+
+const width = canvas.width;
+const height = canvas.height;
+const R = 200; // радиус арки
+const centerX = width / 2;
+const centerY = height + 50; // центр окружности ниже канваса для арки сверху
+
+function drawArch() {
+  ctx.clearRect(0, 0, width, height);
+  ctx.strokeStyle = '#8b4513';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  // Рисуем арку - верхняя часть окружности
+  ctx.arc(centerX, centerY, R, Math.PI, 2 * Math.PI);
+  ctx.stroke();
+
+  // Рисуем опоры
+  ctx.fillStyle = '#654321';
+  ctx.fillRect(centerX - R, centerY, 40, 50);
+  ctx.fillRect(centerX + R - 40, centerY, 40, 50);
+}
+
+// Нарисовать напряжения цветом
+function drawStress() {
+  for (let angle = Math.PI; angle <= 2 * Math.PI; angle += 0.005) {
+    let x = centerX + R * Math.cos(angle);
+    let y = centerY + R * Math.sin(angle);
+
+    // Упрощённая модель: максимальное напряжение в центре арки
+    let stress = Math.sin(angle); // от 0 (края) до 1 (середина)
+    let colorIntensity = Math.abs(Math.floor(255 * stress * 0.05));
+	let pros = stress * 0.001;
+    ctx.fillStyle = `rgba(${colorIntensity}, 0, 0, ${pros})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+
+function drawBridge() {
+  drawArch();
+  drawStress();
+}
+//step();
+canvas.addEventListener('click', function() {
+drawBridge();
+}, false);
+</script>
+<h2>Пожелание читателю от ИИ</h2>
+
+<div class="ai-wish">
+Дорогой читатель!<br>
+Пусть твои опоры будут крепки, а мосты, которые ты строишь в жизни, соединяют самые важные берега и дарят надежду и поддержку.
+</div>
+
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>
