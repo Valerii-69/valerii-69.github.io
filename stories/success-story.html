@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>История успеха и рекомендации - Занимательная математика с ИИ</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    h1 { text-align: center; }
+    textarea, input { width: 100%; margin-bottom: 15px; padding: 10px; font-size: 16px; }
+    .preview { background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+    .hidden { display: none; }
+    .success { color: green; font-weight: bold; text-align: center; }
+    .error { color: red; font-weight: bold; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  </style>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+  <h1>История успеха и рекомендации</h1>
+
+  <form id="successForm">
+    <label>Ваше имя:</label>
+    <input type="text" id="name" required>
+
+    <label>Ваш возраст:</label>
+    <input type="number" id="age" required>
+
+    <label>Ваша история успеха:</label>
+    <textarea id="story" rows="5" required></textarea>
+
+    <label>Ваши рекомендации другим:</label>
+    <textarea id="recommendations" rows="3" required></textarea>
+
+    <div class="g-recaptcha" data-sitekey="ВАШ_SITE_KEY"></div>
+
+    <button type="button" onclick="previewSubmission()">Предпросмотр</button>
+  </form>
+
+  <div id="preview" class="preview hidden"></div>
+
+  <button class="hidden" id="sendBtn" onclick="submitForm()">Отправить</button>
+
+  <div id="status" class="success hidden">Спасибо! Ваша история отправлена!</div>
+
+  <script>
+    function previewSubmission() {
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value.trim();
+      const story = document.getElementById('story').value.trim();
+      const recs = document.getElementById('recommendations').value.trim();
+
+      if (!name || !age || !story || !recs) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+      }
+
+      const previewBox = document.getElementById('preview');
+      previewBox.innerHTML = `
+        <h3>Предпросмотр:</h3>
+        <p><strong>Имя:</strong> ${name}</p>
+        <p><strong>Возраст:</strong> ${age}</p>
+        <p><strong>История:</strong> ${story}</p>
+        <p><strong>Рекомендации:</strong> ${recs}</p>
+      `;
+      previewBox.classList.remove('hidden');
+      document.getElementById('sendBtn').classList.remove('hidden');
+    }
+
+    function submitForm() {
+      const response = grecaptcha.getResponse();
+      if (!response) {
+        alert("Пожалуйста, подтвердите, что вы не робот.");
+        return;
+      }
+
+      const data = {
+        name: document.getElementById('name').value,
+        age: document.getElementById('age').value,
+        story: document.getElementById('story').value,
+        recommendations: document.getElementById('recommendations').value,
+        captcha: response
+      };
+
+      fetch("ВАШ_СЦРИПТ_АППС_ГУГЛ", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.result === "success") {
+          document.getElementById('status').classList.remove('hidden');
+          document.getElementById('successForm').reset();
+          grecaptcha.reset();
+          document.getElementById('preview').classList.add('hidden');
+          document.getElementById('sendBtn').classList.add('hidden');
+        } else {
+          alert("Ошибка: " + res.error);
+        }
+      });
+    }
+  </script>
+  <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
+</body>
+</html>

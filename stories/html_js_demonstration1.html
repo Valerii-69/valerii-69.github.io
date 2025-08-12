@@ -2,10 +2,6 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
-<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>HTML+JS демонстрация — Философия и случай</title>
   <style>
     body {
@@ -72,12 +68,18 @@
       line-height: 1.4;
       border: 1px solid #ddd;
       margin-bottom: 40px;
+      white-space: pre-wrap; /* Чтобы переносить длинные строки */
     }
     p {
       line-height: 1.5;
       font-size: 1rem;
       max-width: 700px;
       margin: 0 auto 20px auto;
+    }
+    .comment {
+      color: #555;
+      font-style: italic;
+      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -87,10 +89,11 @@
   <h2>Занимательная математика с ИИ</h2>
 </header>
 
-  <h1>HTML+JS демонстрация</h1>
+  <h1>HTML+JS демонстрация с комментариями</h1>
 
-  <p>Ниже пример интерактивного блока, в котором при клике меняется случайное число.  
-  Это простая демонстрация динамического взаимодействия с пользователем с помощью JavaScript.</p>
+  <p>В этом примере вы можете нажать на большой цветной блок, чтобы получить случайное число от 1 до 100.  
+  Кнопка «Сбросить» возвращает текст к исходному состоянию.  
+  Ниже показан сам код с пояснениями.</p>
 
   <div id="demoBox" tabindex="0" role="button" aria-label="Нажмите, чтобы сгенерировать число">Нажми меня</div>
 
@@ -136,52 +139,6 @@ demoBox.addEventListener('keydown', (event) => {
       <li>Используем <code>event.preventDefault()</code>, чтобы отменить стандартное поведение браузера при пробеле.</li>
     </ul>
   </div>
-
-
-
-<!--  <pre id="codeBlock">
-// Простой JavaScript для обновления содержимого блока
-
-const demoBox = document.getElementById('demoBox');
-const resetBtn = document.getElementById('resetBtn');
-
-function randomNumber() {
-  return Math.floor(Math.random() * 100) + 1;
-}
-
-demoBox.addEventListener('click', () => {
-  demoBox.textContent = randomNumber();
-});
-
-resetBtn.addEventListener('click', () => {
-  demoBox.textContent = 'Нажми меня';
-});
-  </pre>-->
-
-  <script>
-    const demoBox = document.getElementById('demoBox');
-    const resetBtn = document.getElementById('resetBtn');
-
-    function randomNumber() {
-      return Math.floor(Math.random() * 100) + 1;
-    }
-
-    demoBox.addEventListener('click', () => {
-      demoBox.textContent = randomNumber();
-    });
-
-    resetBtn.addEventListener('click', () => {
-      demoBox.textContent = 'Нажми меня';
-    });
-
-    // Также можно обновлять содержимое клавишей Enter или пробелом (доступность)
-    demoBox.addEventListener('keydown', (event) => {
-      if(event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        demoBox.textContent = randomNumber();
-      }
-    });
-  </script>
 <footer>
   © 2025 Занимательная математика с ИИ
 </footer>

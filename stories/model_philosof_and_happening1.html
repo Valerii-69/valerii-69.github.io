@@ -62,6 +62,13 @@
     button:hover {
       background-color: #1b2e43;
     }
+    #statusMessage {
+      text-align: center;
+      font-weight: 600;
+      margin-top: 15px;
+      min-height: 24px;
+      color: #2a4d69;
+    }
   </style>
 
   <!-- Подключение MathJax для формул -->
@@ -86,6 +93,8 @@
 
   <button id="runButton">Запустить симуляцию</button>
 
+  <div id="statusMessage"></div>
+
   <div id="explanation">
     <p><strong>Описание модели:</strong></p>
     <p>Пусть у нас есть корзина с разноцветными шариками. Каждый цвет соответствует событию.  
@@ -105,6 +114,7 @@
     const canvas = document.getElementById('modelCanvas');
     const ctx = canvas.getContext('2d');
     const runButton = document.getElementById('runButton');
+    const statusMessage = document.getElementById('statusMessage');
 
     // Настройки модели — цвета и количество шариков
     const balls = [
@@ -159,12 +169,42 @@
       });
     }
 
+    // URL вашего Google Apps Script Web App
+    const scriptUrl = 'https://script.google.com/macros/s/ВАШ_ID_СЮДА/exec';
+
+    async function sendResultsToSheet(params, results) {
+      const payload = {
+        model: "Модель случайного выбора",
+        params: params,
+        results: results
+      };
+
+      try {
+        const resp = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const json = await resp.json();
+        if (json.status === 'ok') {
+          statusMessage.style.color = 'green';
+          statusMessage.textContent = 'Результаты успешно сохранены в Google Таблицу.';
+        } else {
+          statusMessage.style.color = 'red';
+          statusMessage.textContent = 'Ошибка при сохранении: ' + (json.message || 'Неизвестная ошибка.');
+        }
+      } catch (e) {
+        statusMessage.style.color = 'red';
+        statusMessage.textContent = 'Ошибка сети или скрипта: ' + e.message;
+      }
+    }
+
     // Симуляция случайного выбора
     function simulate(n = 1000) {
       // Сброс результатов
       results.forEach(r => r.picked = 0);
 
-      // Массив с цветами, где цвет повторяется count раз
+      // Массив для случайного выбора
       const pool = [];
       balls.forEach(b => {
         for (let i = 0; i < b.count; i++) pool.push(b.color);
@@ -176,9 +216,16 @@
         const res = results.find(r => r.color === color);
         if (res) res.picked++;
       }
+
+      // Отправляем данные в Google Таблицу
+    /*  sendResultsToSheet(
+        { totalSimulations: n, balls: balls.map(b => ({label: b.label, count: b.count})) },
+        results.map(r => ({label: r.label, picked: r.picked}))
+      );*/
     }
 
     runButton.addEventListener('click', () => {
+      statusMessage.textContent = 'Выполняется симуляция...';
       simulate();
       drawChart();
     });
