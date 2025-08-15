@@ -1,0 +1,398 @@
+/* =========================
+   Общие стили
+========================= */
+body {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  background-color: #fefefc;
+  color: #333;
+  padding: 2em;
+  max-width: 900px;
+  margin: auto;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+  color: #2a6d66;
+  margin-top: 1em;
+}
+
+h1 {
+  font-size: 2em;
+  text-align: center;
+}
+
+h2 {
+  border-bottom: 2px solid #88c;
+  padding-bottom: 0.2em;
+}
+
+/* Ссылки */
+a {
+  color: #0055aa;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Цитаты */
+blockquote {
+  font-style: italic;
+  color: #555;
+  border-left: 4px solid #ccc;
+  padding-left: 1em;
+  margin-left: 0;
+}
+
+/* Выделение формул */
+.formula {
+  background: #eef;
+  padding: 0.5em;
+  margin: 1em 0;
+  border-left: 4px solid #88c;
+  font-family: monospace;
+}
+
+/* Коды */
+code {
+  background: #f4f4f4;
+  padding: 2px 5px;
+  font-size: 0.95em;
+  border-radius: 3px;
+}
+
+/* Пожелание от ИИ */
+.ai-wish {
+  background: #f0fff0;
+  border-left: 4px solid #7cba7c;
+  padding: 1em;
+  margin-top: 2em;
+}
+
+/* Навигация */
+nav {
+  text-align: center;
+  margin: 1.5em 0;
+}
+nav a {
+  margin: 0 1em;
+  font-weight: bold;
+}
+nav a:hover {
+  text-decoration: underline;
+}
+
+nav button {
+  background-color: #2a75bb;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+nav button:hover {
+  background-color: #1a4f7a;
+}
+
+/* Секции */
+section {
+  margin-bottom: 2em;
+}
+
+/* Списки */
+ul {
+  padding-left: 1.2em;
+}
+li {
+  margin-bottom: 0.3em;
+}
+
+/* Iframe */
+iframe {
+  overflow: hidden;
+  border: none;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Шапка */
+header {
+  text-align: center;
+  margin-bottom: 2em;
+}
+
+/* Подвал */
+footer {
+  background-color: #2a6d66;
+  color: #fff;
+  text-align: center;
+  padding: 1em;
+  margin-top: 2em;
+  border-radius: 5px;
+}
+
+/* Кнопка "вверх" */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  display: block;
+  z-index: 1000;
+}
+.back-to-top:hover {
+  background-color: #0056b3;
+}
+
+    select {
+      font-size: 1.1rem;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 2px solid #b36b00;
+      width: 100%;
+      max-width: 350px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      cursor: pointer;
+      background: white;
+      color: #b36b00;
+      transition: background-color 0.3s ease;
+    }
+    select:hover {
+      background-color: #ffecb3;
+    }
+    #story {
+      margin-top: 30px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #b36b00;
+      min-height: 120px;
+    }
+	    input[type="number"] {
+      width: 150px;
+      font-size: 1.2rem;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 2px solid #a64d00;
+      border-radius: 5px;
+      text-align: center;
+    }
+    #feedback {
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 2em;
+    }
+    #score {
+      margin-top: 20px;
+      font-size: 1.1rem;
+    }
+#problem, #problem1 {font-size: 1.1em; margin-top: 20px; }
+#message, #message1, #message2, #message3, #message4 { margin-top: 15px; font-size:  1.1em;}
+#size-text {
+    font-size: 22px;
+  }
+      #question {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+	  }
+    #storyResult, #chatResult {
+      margin-top: 15px;
+      background: #d0e2f0;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      line-height: 1.5;
+      min-height: 100px;
+      white-space: pre-wrap;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    #chatMessages {
+      height: 200px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #222;
+    }
+    .chat-user {
+      color: #2a6599;
+      font-weight: bold;
+    }
+    .chat-ai {
+      color: #4a4a4a;
+      margin-left: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.1rem;
+      border: 2px solid #2a6599;
+      border-radius: 8px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    .card {
+      background-color: #f9f9f9;
+      margin: 1em auto;
+      padding: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      max-width: 600px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .card:hover {
+      background-color: #eef;
+    }
+    .content {
+      display: none;
+      margin-top: 1em;
+    }
+    .block { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa; }
+    .btn { background-color: #4444cc; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    .btn:hover { background-color: #3333aa; }
+    .category-title { font-weight: bold; margin-top: 10px; }
+    .quote { font-style: italic; color: #555; margin: 1em 0; }
+    .thought { background: #eef; padding: 1em; margin: 1em 0; border-left: 5px solid #77f; }
+    #demoBox {
+      width: 100%;
+      height: 150px;
+      background-color: #e0f7fa;
+      border: 2px solid #0288d1;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      color: #0277bd;
+      margin-bottom: 20px;
+      user-select: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #demoBox:hover {
+      background-color: #b3e5fc;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      border: 1px solid #ddd;
+      margin-bottom: 40px;
+      white-space: pre-wrap; /* Чтобы переносить длинные строки */
+    }
+    p {
+      line-height: 1.5;
+      font-size: 1rem;
+      max-width: 700px;
+      margin: 0 auto 20px auto;
+    }
+    .comment {
+      color: #555;
+      font-style: italic;
+      margin-bottom: 15px;
+    }
+
+/* =========================
+   Стили для блока загадок
+========================= */
+#puzzle {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  min-height: 3em;
+}
+input[type="text"] {
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 2px solid #2a75bb;
+  border-radius: 5px;
+}
+button {
+  background-color: #2a75bb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #1a4f7a;
+}
+#feedback {
+  margin-top: 15px;
+  font-weight: bold;
+  min-height: 2em;
+}
+#hint {
+  margin-top: 10px;
+  font-style: italic;
+  color: #555;
+}
+
+/* =========================
+   Адаптивные стили
+========================= */
+
+/* Для планшетов */
+@media (max-width: 900px) {
+  body {
+    padding: 1.5em;
+  }
+  nav a {
+    margin: 0 0.6em;
+  }
+}
+
+/* Для телефонов */
+@media (max-width: 600px) {
+  body {
+    padding: 1em;
+    font-size: 0.95em;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5em;
+  }
+  nav a {
+    display: inline-block;
+    padding: 0.3em 0.5em;
+    background: #eef;
+    border-radius: 4px;
+  }
+  iframe {
+    height: auto;
+  }
+}
