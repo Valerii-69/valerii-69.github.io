@@ -7,7 +7,7 @@
 <meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>Обучающая мини-игра: Вычисления - Занимательная математика с ИИ</title>
-  <style>
+<!--  <style>
     body {
       font-family: Arial, sans-serif;
       max-width: 600px;
@@ -62,6 +62,9 @@
     font-size: 22px;
   }
   </style>
+-->
+<link rel="stylesheet" href="../style.css">
+
 </head>
 <body>
   <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
@@ -72,6 +75,63 @@
   <button id="checkBtn">Проверить</button>
   <div id="feedback"></div>
   <div id="score">Правильных ответов: 0 из 0</div>
+<br>
+<h1>Обучающая мини-игра: Угадай число от 1 до 100</h1>
+<!-- Поле для ввода предположения-->
+<input type="number" id="guessInput" placeholder="Введите число" />
+<button onclick="checkGuess()">Проверить</button>
+<!-- Место для сообщений-->
+ <div class="message" id="message"></div>
+<button id="newGameBtn" onclick="startGame" style="display:none;">Начать заново</button>
+<br>
+<h1>Обучающая мини-игра: Калькулятор-вызов</h1>
+<div class="problem" id="problem"></div>
+<!-- Поле для ответа -->
+<input type="number" id="answerInput1" placeholder="Твoй ответ" />
+<button onclick="checkAnswer()">Проверить</button>
+<div class="message1" id="message1"></div>
+<button id="newProblemBtn" onclick="generateProblem()" style="display:none; ">Новый пример</button>
+<br>
+
+<h1>Обучающая мини-игра: Математический кроссворд</h1>
+<b>Заполни пустые клетки, решая уравнения без подсказок.</b>
+<table>
+<tr><td class="size-text">2 + 3 =</td><td><input type="number" id="cell1"></td><td id="cell1" hidden>5</td></tr>
+<tr><td class="size-text">7 - 4 =</td><td><input type="number" id="cell2"></td><td id="cell2" hidden>3</td></tr>
+<tr><td class="size-text">5 × 2 =</td><td><input type="number" id="cell3"></td><td id="cell3" hidden>10</td></tr>
+<tr><td class="size-text">3 + 3 =</td><td><input type="number" id="cell4"></td><td id="cell4" hidden>6</td></tr>
+<tr><td class="size-text">12 / 4 =</td><td><input type="number" id="cell5"></td><td id="cell5" hidden>3</td></tr>
+<tr><td class="size-text">5 × 3 =</td><td><input type="number" id="cell6"></td><td id="cell6" hidden>15</td></tr>
+<tr><td class="size-text">12 + 3 =</td><td><input type="number" id="cell7"></td><td id="cell7" hidden>15</td></tr>
+<tr><td class="size-text">9 - 4 =</td><td><input type="number" id="cell8"></td><td id="cell8" hidden>5</td></tr>
+<tr><td class="size-text">3 × 6 =</td><td><input type="number" id="cell9"></td><td id="cell9" hidden>18</td></tr>
+<tr><td class="size-text">21 - 3 =</td><td><input type="number" id="cell10"></td><td id="cell10" hidden>18</td></tr>
+<tr><td class="size-text">7 + 4 =</td><td><input type="number" id="cell11"></td><td id="cell11" hidden>11</td></tr>
+<tr><td class="size-text">15 / 5 =</td><td><input type="number" id="cell12"></td><td id="cell12" hidden>3</td></tr>
+</table>
+<button onclick="checkCrossword()">Проверить ответы (нажать дважды)</button>
+<div class="message2" id="result"></div>
+
+<br>
+<h1>Обучающая мини-игра: Бинарные загадки</h1>
+<div class="problem1" id="problem1"></div>
+<input type="text" id="binaryInput" placeholder="Ваш ответ: типа 10110..." />
+<button onclick="checkBinary()">Проверить</button>
+<div class="message2" id="result1"></div>
+<button id="newNumberBtn" onclick="generateNumber()" style="display:none;">Hовая задача</button>
+<br>
+<h1>Обучающая мини-игра: Угадай квадрат числа</h1> 
+<h4>Введите квадрат числа <span id="number"></span>:</h4>
+<input type="number" id="answer" />
+<button onclick="checkAnswer1()">Проверить</button>
+<div class="message3" id="result2"></div>
+<br>
+<h1>Обучающая мини-игра: Реши уравнение вида<br> ах + b = c</h1>
+<h4>Найдите х, если <span id="equation"> </span></h4>
+<input type="number" id="answer1" />
+<button onclick="checkAnswer2()">Проверить</button>
+<div class="message4" id="result3"></div>
+<button id="newNumberBtn1" onclick="generateNumber1()" style="display:none;">Hовая задача</button>
 
   <script>
     const questions = [
@@ -127,16 +187,7 @@
     });
 
     loadQuestion();
-  </script>
-<br>
-<h1>Обучающая мини-игра: Угадай число от 1 до 100</h1>
-<!-- Поле для ввода предположения-->
-<input type="number" id="guessInput" placeholder="Введите число" />
-<button onclick="checkGuess()">Проверить</button>
-<!-- Место для сообщений-->
- <div class="message" id="message"></div>
-<button id="newGameBtn" onclick="startGame" style="display:none;">Начать заново</button>
-<script>
+
 let secretNumber; // Загаданное число
 let attempts; // Счётчик попыток
 
@@ -170,17 +221,9 @@ message.textContent = 'Загаданное число меньше. Попро�
 }
 }
 // Запускаем игру при загрузке страницы
-window.onload = startGame;
-</script>
-<br>
-<h1>Обучающая мини-игра: Калькулятор-вызов</h1>
-<div class="problem" id="problem"></div>
-<!-- Поле для ответа -->
-<input type="number" id="answerInput1" placeholder="Твoй ответ" />
-<button onclick="checkAnswer ()">Проверить</button>
-<div class="message1" id="message1"></div>
-<button id="newProblemBtn" onclick="generateProblem()" style="display:none; ">Новый пример</button>
-<script>
+//window.onload = startGame;
+startGame();
+
 let currentAnswer;
 // Функция для создания случайного арифметического примера 
 function generateProblem() { 
@@ -226,29 +269,8 @@ msg.textContent = 'X Неправильно, попробуй ещё раз!';
 }
 }
 // Запускаем игру при загрузке страницы
-window.onload = generateProblem;
-</script>
-<br>
-
-<h1>Обучающая мини-игра: Математический кроссворд</h1>
-<b>Заполни пустые клетки, решая уравнения без подсказок.</b>
-<table>
-<tr><td class="size-text">2 + 3 =</td><td><input type="number" id="cell1"></td><td id="cell1" hidden>5</td></tr>
-<tr><td class="size-text">7 - 4 =</td><td><input type="number" id="cell2"></td><td id="cell2" hidden>3</td></tr>
-<tr><td class="size-text">5 × 2 =</td><td><input type="number" id="cell3"></td><td id="cell3" hidden>10</td></tr>
-<tr><td class="size-text">3 + 3 =</td><td><input type="number" id="cell4"></td><td id="cell4" hidden>6</td></tr>
-<tr><td class="size-text">12 / 4 =</td><td><input type="number" id="cell5"></td><td id="cell5" hidden>3</td></tr>
-<tr><td class="size-text">5 × 3 =</td><td><input type="number" id="cell6"></td><td id="cell6" hidden>15</td></tr>
-<tr><td class="size-text">12 + 3 =</td><td><input type="number" id="cell7"></td><td id="cell7" hidden>15</td></tr>
-<tr><td class="size-text">9 - 4 =</td><td><input type="number" id="cell8"></td><td id="cell8" hidden>5</td></tr>
-<tr><td class="size-text">3 × 6 =</td><td><input type="number" id="cell9"></td><td id="cell9" hidden>18</td></tr>
-<tr><td class="size-text">21 - 3 =</td><td><input type="number" id="cell10"></td><td id="cell10" hidden>18</td></tr>
-<tr><td class="size-text">7 + 4 =</td><td><input type="number" id="cell11"></td><td id="cell11" hidden>11</td></tr>
-<tr><td class="size-text">15 / 5 =</td><td><input type="number" id="cell12"></td><td id="cell12" hidden>3</td></tr>
-</table>
-<button onclick="checkCrossword()">Проверить ответы (нажать дважды)</button>
-<div class="message2" id="result"></div>
-<script>
+//window.onload = generateProblem;
+generateProblem();
 // Правильные ответы для каждой ячейки
 const answers = {
 cell1: 5,
@@ -296,16 +318,7 @@ resultDiv.style.color = 'red';
     }
   }
 
-</script>
 
-<br>
-<h1>Обучающая мини-игра: Бинарные загадки</h1>
-<div class="problem1" id="problem1"></div>
-<input type="text" id="binaryInput" placeholder="Ваш ответ: типа 10110..." />
-<button onclick="checkBinary()">Проверить</button>
-<div class="message" id="result1"></div>
-<button id="newNumberBtn" onclick="generateNumber()" style="display:none;">Hовая задача</button>
-<script>
 let decimalNumber;
 decimalNumber = Math.floor(Math.random() * 100) + 1; // от 1 до 100
 document.getElementById('problem1').textContent = `Преобразуй число ${decimalNumber} в двоичную систему`;
@@ -341,20 +354,13 @@ message.textContent = 'X Не совсем так. Попробуй еще ра�
 message.style.color = 'red';
 }
 }
-window.onload = generateNumber;
-</script>
-<br>
-<h1>Обучающая мини-игра: Угадай квадрат числа</h1> 
-<b>Введите квадрат числа <span id="number"></span>:</b>
-<input type="number" id="answer" />
-<button onclick="checkAnswer()">Проверить</button>
-<p id="result2"></p>
-<script>
+//window.onload = generateNumber;
+generateNumber();
 // Генерируем случайное число от 1 до 20
 const num = Math.floor(Math.random() * 20) + 1;
 document.getElementById('number').textContent = num;
 
-function checkAnswer() { 
+function checkAnswer1() { 
 let userAnswer = +document.getElementById('answer').value;
 let correctAnswer = num ** 2; // Квадрат числа (num^2)
 const message = document.getElementById('result2');
@@ -367,15 +373,7 @@ message.textContent = `X Неверно! Правильный ответ: ${corr
 message.style.color = 'red';
 }
 }
-</script>
-<br>
-<h1>Обучающая мини-игра: Реши уравнение вида ах + b = c</h1>
-<b>Найдите х, если <span id="equation"> </span></b>
-<input type="number" id="answer1" />
-<button onclick="checkAnswer ()">Проверить</button>
-<p id="result3"></p>
-<button id="newNumberBtn1" onclick="generateNumber1()" style="display:none;">Hовая задача</button>
-<script>
+
 // Генерируем коэффициенты a, b, c
 let a = Math.floor(Math.random() * 10) + 1; //a != 0
 let b = Math.floor(Math.random() * 20) - 10; // от -10 до 9
@@ -398,7 +396,7 @@ const message = document.getElementById('result3');
 // Вычисляем правильное значение х
 
 
-function checkAnswer() {
+function checkAnswer2() {
 let userAnswer = +document.getElementById('answer1').value;
 // Сравниваем с точностью до 0.001
 
@@ -411,13 +409,10 @@ message.textContent = `X Неверно! Правильный ответ: х = $
 message.style.color = 'red';
  }
  }
-window.onload = generateNumber1;
+//window.onload = generateNumber1;
+generateNumber1();
 </script>
 <br>
-
-
-
-
   <iframe src="../stories/emulat_futbol_mjach.html" width="720" height="580" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
   <iframe src="../stories/vozdushniy_shar.html" width="720" height="640" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
   <iframe src="../stories/grebnoy_vint.html" width="720" height="860" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>

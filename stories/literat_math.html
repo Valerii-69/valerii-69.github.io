@@ -3,87 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
-<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <meta name="description" content="Сборник художественных историй, созданных ИИ, где литература переплетается с математикой.">
+  <meta name="keywords" content="математика, ИИ, рассказы, моделирование, образование, HTML, JavaScript, творчество">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>Литература и математика — Занимательная математика с ИИ</title>
-  <style>
+<!--<style>
     body {
       font-family: Georgia, serif;
       line-height: 1.6;
       background-color: #fefefc;
       color: #333;
       padding: 2em;
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
     }
     h1, h2 {
       color: #2a6d66;
     }
-    blockquote {
-      font-style: italic;
-      color: #555;
-      border-left: 4px solid #ccc;
-      padding-left: 1em;
-      margin-left: 0;
+    p.intro {
+      background: #f0f8f7;
+      border-left: 4px solid #2a6d66;
+      padding: 1em;
+      margin-bottom: 2em;
     }
-    code {
-      background: #f4f4f4;
-      padding: 2px 5px;
-      font-size: 0.95em;
+    .story-list {
+      list-style: none;
+      padding: 0;
     }
-    .formula {
-      background: #eef;
-      padding: 0.5em;
-      margin: 1em 0;
-      border-left: 4px solid #88c;
+    .story-list li {
+      background: #ffffff;
+      border: 1px solid #ccc;
+      padding: 0.6em 1em;
+      margin-bottom: 0.5em;
+      border-radius: 6px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .story-list li:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .story-list a {
+      color: #2a6d66;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .story-list a:hover {
+      text-decoration: underline;
     }
     .ai-wish {
       background: #f0fff0;
       border-left: 4px solid #7cba7c;
       padding: 1em;
       margin-top: 2em;
+      font-style: italic;
     }
-iframe {
-  overflow: hidden;
-  border: none;
-}
+    .back-link {
+      display: inline-block;
+      background-color: #2a6d66;
+      color: white;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-bottom: 1.5em;
+      transition: background 0.3s ease;
+    }
+    .back-link:hover {
+      background-color: #1d4f4a;
+    }
+    .controls {
+      margin-bottom: 1em;
+      padding: 0.5em;
+      background: #eefaf9;
+      border-radius: 6px;
+    }
   </style>
+  -->
+  <link rel="stylesheet" href="../style.css">
+  
 </head>
 <body>
   <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
 
-<h1>Литература и математика</h1>
+  <h1>Литература и математика</h1>
 
-<p><strong>Автор:</strong> ИИ</p>
+  <p class="intro">
+    Коллекция художественных рассказов, созданных искусственным интеллектом, где математика встречается с художественным словом.
+  </p>
 
-    <ul>
-      <li><a href="../stories/litAIstory1.html">Старый футбольный мяч</a></li>
-      <li><a href="../stories/litAIstory2.html">Старый парус</a></li>
-      <li><a href="../stories/litAIstory3.html">Крутящийся волчок</a></li>
-      <li><a href="../stories/litAIstory4.html">Бумажный самолётик</a></li>
-      <li><a href="../stories/litAIstory5.html">Деревянная юла</a></li>
-      <li><a href="../stories/litAIstory6.html">Медная монетка</a></li>
-      <li><a href="../stories/litAIstory7.html">Железная гирька</a></li>
-      <li><a href="../stories/litAIstory8.html">Пластмассовый обруч</a></li>
-      <li><a href="../stories/litAIstory9.html">Шарик на ниточке</a></li>
-      <li><a href="../stories/litAIstory10.html">Каменная бабушка</a></li>
-      <li><a href="../stories/litAIstory11.html">Стеклянный шар</a></li>
-      <li><a href="../stories/litAIstory12.html">Листок на ветру</a></li>
-      <li><a href="../stories/litAIstory13.html">Каменный мост</a></li>
-      <li><a href="../stories/litAIstory14.html">Летящая стрела</a></li>
-      <!-- Здесь позже будут ссылки на другие истории -->
-    </ul>
- 
+  <p><strong>Автор:</strong> Искусственный интеллект</p>
 
-<h2>Пожелание читателю от ИИ</h2>
+  <div class="controls">
+    <label for="sortSelect">Сортировка: </label>
+    <select id="sortSelect">
+      <option value="default">Как добавлены</option>
+      <option value="alphabet">По алфавиту</option>
+    </select>
+  </div>
 
-<div class="ai-wish">
-Дорогой читатель!<br>
+  <ul class="story-list" id="storyList">
+    <li>Загрузка списка историй...</li>
+  </ul>
 
-</div>
+  <h2>Пожелание читателю от ИИ</h2>
+  <div class="ai-wish">
+    Дорогой читатель!<br>
+Пусть эти истории напомнят тебе, что математика живёт не только в учебниках,
+    но и в каждом предмете, движении, моменте. Читай с любопытством, думай с радостью, и, возможно,
+    ты откроешь в привычных вещах что-то совершенно новое.
+  </div>
 
   <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
 
+  <script>
+    let stories = [];
+    const storyListEl = document.getElementById('storyList');
+    const sortSelect = document.getElementById('sortSelect');
+
+    function renderStories(list) {
+      storyListEl.innerHTML = "";
+      list.forEach((story, index) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = story.link;
+        a.textContent = `${index + 1}. ${story.title}`;
+        li.appendChild(a);
+        storyListEl.appendChild(li);
+      });
+    }
+
+    sortSelect.addEventListener('change', () => {
+      if (sortSelect.value === "alphabet") {
+        const sorted = [...stories].sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+        renderStories(sorted);
+      } else {
+        renderStories(stories);
+      }
+    });
+
+    // Загружаем JSON с историями
+    fetch("stories.json")
+      .then(res => res.json())
+      .then(data => {
+        stories = data;
+        renderStories(stories);
+      })
+      .catch(err => {
+        storyListEl.innerHTML = "<li>Ошибка загрузки списка историй.</li>";
+        console.error(err);
+      });
+  </script>
 </body>
 </html>

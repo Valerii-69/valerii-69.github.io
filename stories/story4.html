@@ -7,7 +7,7 @@
 <meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>Сон о Вселенной из качающихся частиц — Занимательная математика с ИИ</title>
-  <style>
+<!--  <style>
     body {
       font-family: Georgia, serif;
       line-height: 1.6;
@@ -49,7 +49,9 @@ iframe {
   border: none;
 }
   </style>
-</head>
+-->
+
+<link rel="stylesheet" href="../style.css"></head>
 <body>
   <a href="../index.html" class="back-link">&larr; Вернуться на главную</a>
 
@@ -147,12 +149,25 @@ iframe {
  На основании этого строится распределение вероятностей появления таких устойчивых состояний.<br>
 </blockquote>
 
-<h2>Попытка построения модели</h2>
+<h2>Математическая модель (набросок)</h2>
+<pre><code>
+// Пусть каждая частица в группе описывается уравнением:
+x_i(t) = A * sin(ω * t + φ_i)
 
-<p>Модель опирается на статистику и химическое моделирование, учитывает концентрации, структуру молекул и реакцию рецепторов. С помощью машинного обучения можно повысить точность прогнозов до нужного уровня.</p>
+// Где:
+// A — амплитуда качания
+// ω — частота
+// φ_i — фаза конкретной частицы
+// t — время
 
-<img src="../images/vselennaja_model.png" alt="Модель Вселенной" width="100%"/>
+// Энергия группы:
+E_group = Σ (1/2) * m * (dx_i/dt)^2
 
+// Прочность материи зависит от средней энергии между группами и согласованности фаз
+CohesionIndex = Σ cos(φ_i - φ_j) / (n * (n-1))  // средняя фазовая когерентность
+
+// Чем выше индекс, тем "твёрже" структура
+</code></pre>
   <iframe src="../stories/istoriya4_2.html" width="680" height="400" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
   <iframe src="../stories/istoriya4_3.html" width="680" height="580" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
 
