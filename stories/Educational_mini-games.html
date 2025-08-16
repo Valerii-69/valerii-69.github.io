@@ -109,7 +109,7 @@
 <tr><td class="size-text">7 + 4 =</td><td><input type="number" id="cell11"></td><td id="cell11" hidden>11</td></tr>
 <tr><td class="size-text">15 / 5 =</td><td><input type="number" id="cell12"></td><td id="cell12" hidden>3</td></tr>
 </table>
-<button onclick="checkCrossword()">Проверить ответы (нажать дважды)</button>
+<button onclick="checkCrossword()">Проверить ответы (нажми дважды)</button>
 <div class="message2" id="result"></div>
 
 <br>
@@ -132,8 +132,491 @@
 <button onclick="checkAnswer2()">Проверить</button>
 <div class="message4" id="result3"></div>
 <button id="newNumberBtn1" onclick="generateNumber1()" style="display:none;">Hовая задача</button>
+ <h1>Обучающая мини-игра: Быстрые вычисления<br> за 60 секунд</h1>
+  <div id="problems6"></div>
+  <button id="start6">Начать игру</button>
+  <div id="timer6"></div>
+  <button id="check6" style="display:none;">Проверить ответы</button>
+  <div class="message" id="feedback6"></div>
+<h1>Обучающая мини-игра: Найди НОД<br> (наибольший общий Делитель) двух чисел</h1>
+<p>Найдите НОД чисел <span id="num13v"></span> и <span id="num23v"></span> : </p>
+<input type="number" id="answer3v" />
+<button onclick="setPrime3v()">Задать числа</button>
+<button onclick="checkAnswer3v()">Проверить</button>
+<p id="result3v"></p>
+<h1>Обучающая мини-игра: Определи, является ли число простым</h1>
+<p>число: <span id="number4v"></span></p>
+<button onclick="setPrime4v()">Задать число</button>
+<button onclick="isPrime4v()">Проверить</button>
+<p id="result4v"></p>
+<h1>Обучающая мини-игра: Вычисли площадь круга</h1> 
+<p>Радиус круга: <span id="radius5v"></span></p>
+<input type="number" id="answer5v" placeholder="Введите площадь" />
+<button onclick="setPrime5v()">Задать радиус</button>
+<button onclick="checkAnswer5v()">Проверить</button>
+<p id="result5v"></p>
+<h1>Обучающая мини-игра: Найди корни квадратного уравнения:<br> ax2 + bx + c = 0</h1>
+<p>Уравнение: <span id="equation6v"></span></p>
+<p>Введите корни (х1 и x2) через запятую:</p>
+<input type="text" id="answer6v" placeholder="например: 2, -3" /> 
+<button onclick="setPrime6v()">Новый пример</button>
+<button onclick="checkAnswer6v()">Проверить</button>
+<p id="result6v"></p>
+<h1>Обучающая мини-игра: Вычисли площадь треугольника<br> по сторонам а, b, c</h1>
+<p>Стороны треугольника: <span id="sides7v"></span></p>
+<input type="number" id="answer7v" placeholder="Введите площадь" />
+<button onclick="setPrime7v()">Новый пример</button>
+<button onclick="checkAnswer7v()">Проверить</button>
+<p id="result7v"></p>
+<h1>Обучающая мини-игра: Сложи или вычти дроби</h1> 
+<p>Выполни операцию: <span id="frac18v"></span><span id="op8v"></span><span id="frac28v"></span> = ? </p>
+<p>Введите результат в виде несократимой дроби (числитель / знаменатель): </p>
+<input type="text" id="answer8v" placeholder="напр. 3/4" /> 
+<button onclick="setPrime8v()">Новый пример</button>
+<button onclick="checkAnswer8v()">Проверить</button>
+<p id="result8v"></p>
+<h1>Обучающая мини-игра: Преобразуй градусы в радианы</h1>
+<p>Угол в градусах: <span id="degrees9v"></span></p>
+<input type="number" id="answer9v" step="0.001" placeholder="Введите радианы" /> 
+<button onclick="setPrime9v()">Новый пример</button>
+<button onclick="checkAnswer9v()">Проверить</button>
+<p id="result9v"></p>
+<h1>Обучающая мини-игра: Вычисли сумму первых<br> n членов арифметической прогрессии</h1>
+<p>a1 = <span id="a110v"></span>, d = <span id="d10v"></span>, n = <span id="n10v"></span></p>
+<input type="number" id="answer10v" placeholder="Введите сумму" />
+<button onclick="setPrime10v()">Новый пример</button>
+<button onclick="checkAnswer10v()">Проверить</button>
+<p id="result10v"></p>
 
   <script>
+
+// Генерация параметров прогрессии
+let a110v = Math.floor(Math.random() * 10) + 1;
+let d10v = Math.floor(Math.random() * 9) + 1;
+let n10v = Math.floor(Math.random() * 10) + 5;
+document.getElementById('a110v').textContent = a110v;
+document.getElementById('d10v').textContent = d10v;
+document.getElementById('n10v').textContent = n10v;
+// Формула суммы: Sn = n / 2 * (2 * a1 + (n - 1) * d)
+let correctSum10v = n10v / 2 * (2 * a110v + (n10v - 1) * d10v);
+
+function setPrime10v(){
+// Генерация параметров прогрессии
+ a110v = Math.floor(Math.random() * 10) + 1;
+ d10v = Math.floor(Math.random() * 9) + 1;
+ n10v = Math.floor(Math.random() * 10) + 5;
+document.getElementById('a110v').textContent = a110v;
+document.getElementById('d10v').textContent = d10v;
+document.getElementById('n10v').textContent = n10v;
+// Формула суммы: Sn = n / 2 * (2 * a1 + (n - 1) * d)
+ correctSum10v = n10v / 2 * (2 * a110v + (n10v - 1) * d10v);
+// checkAnswer();
+}
+
+
+function checkAnswer10v() { 
+let userAnswer10v = parseFloat(document.getElementById('answer10v').value);
+if(isNaN(userAnswer10v)) {
+ document.getElementById('result10v').textContent = 'Введите число';
+return;
+}
+if(Math.abs(userAnswer10v - correctSum10v) < 0.01) {
+document.getElementById('result10v').textContent = `V Верно! Сумма = ${correctSum10v.toFixed(2)}`; 
+} else {
+document.getElementById('result10v').textContent = `X Неверно! Правильная сумма ${correctSum10v.toFixed(2)}`;
+}
+} 
+
+
+
+
+
+let deg9v = Math.floor(Math.random() * 361); //0 - 360 градусов
+document.getElementById('degrees9v').textContent = deg9v;
+// Формула: радианы = градусы * (п / 180)
+let correctRad9v = deg9v * Math.PI / 180;
+
+function setPrime9v(){
+deg9v = Math.floor(Math.random() * 361); //0 - 360 градусов
+document.getElementById('degrees9v').textContent = deg9v;
+// Формула: радианы = градусы * (п / 180)
+correctRad9v = deg9v * Math.PI / 180;
+}
+
+function checkAnswer9v() {
+ let userAnswer9v = parseFloat(document.getElementById('answer9v').value);
+
+if(isNaN(userAnswer9v)) { document.getElementById('result9v').textContent = 'Введите число';
+return;
+}
+// Принимаем ответ с точностью 0.01
+if(Math.abs(userAnswer9v - correctRad9v) < 0.01) {
+document.getElementById('result9v').textContent = `V Верно! Радианы = ${correctRad9v.toFixed(3)}`; } 
+else {
+document.getElementById('result9v').textContent = `X Неверно! Правильное значение = ${correctRad9v.toFixed(3)}`;
+}
+}
+
+
+
+
+
+// Функция нахождения НОД - для сокращения дробей
+function gcd(a, b) { 
+while (b !== 0) { 
+[a, b] = [b, a % b];
+}
+return a;
+}
+
+function setPrime8v(){
+// Генерируем дроби и операцию (+ или -)
+numerators8v = []; 
+denominators8v = [];
+ 
+for (let i = 0; i < 2; i++){
+numerators8v.push(Math.floor(Math.random() * 9) + 1);
+denominators8v.push(Math.floor(Math.random() * 9) + 1);
+}
+op8v = Math.random() < 0.5 ? '+' : '-';
+// Отображаем дроби и оператор
+document.getElementById('frac18v').textContent = `${numerators8v[0]}/${denominators8v[0]}`;
+document.getElementById('frac28v').textContent = `${numerators8v[1]}/${denominators8v[1]}`;
+document.getElementById('op8v').textContent = op8v;
+[resNum8v, resDen8v] = calculate();
+}
+
+
+// Функция сокращения дроби 
+function reduceFraction(numerator, denominator) {
+const div8v = gcd(Math.abs(numerator), Math.abs(denominator));
+return [numerator / div8v, denominator / div8v];
+}
+// Генерируем дроби и операцию (+ или -)
+let numerators8v = []; 
+let denominators8v = [];
+ 
+for (let i = 0; i < 2; i++){
+numerators8v.push(Math.floor(Math.random() * 9) + 1);
+denominators8v.push(Math.floor(Math.random() * 9) + 1);
+}
+let op8v = Math.random() < 0.5 ? '+' : '-';
+// Отображаем дроби и оператор
+document.getElementById('frac18v').textContent = `${numerators8v[0]}/${denominators8v[0]}`;
+document.getElementById('frac28v').textContent = `${numerators8v[1]}/${denominators8v[1]}`;
+document.getElementById('op8v').textContent = op8v;
+
+// Считаем результат операции с дробями
+function calculate() {
+let a8v = numerators8v[0]; 
+let b8v = denominators8v[0];
+let c8v = numerators8v[1]; 
+let d8v = denominators8v[1]; 
+let num8v;
+let den8v;
+
+
+if (op8v === '+') {
+num8v = a8v * d8v + c8v * b8v;
+} else {
+num8v = a8v * d8v - c8v * b8v;
+}
+den8v = b8v * d8v;
+return reduceFraction (num8v, den8v); 
+}
+let [resNum8v, resDen8v] = calculate();
+
+function checkAnswer8v() { 
+const input8v = document.getElementById('answer8v').value.trim();
+const parts8v = input8v.split('/');
+if(parts8v.length !== 2) {
+document.getElementById('result8v').textContent = 'Введите результат в формате числитель/знаменатель';
+return;
+}
+
+const userNum8v = parseInt(parts8v[0]);
+const userDen8v = parseInt(parts8v[1]);
+if(isNaN(userNum8v) || isNaN(userDen8v) || userDen8v === 0){
+document.getElementById('result8v').textContent = 'Некорректный ввод дроби';
+return;
+}
+const [correctNum8v, correctDen8v] = reduceFraction(userNum8v, userDen8v);
+if(correctNum8v === resNum8v && correctDen8v === resDen8v) {
+document.getElementById('result8v').textContent = `V Верно! Oтвет: ${resNum8v}/${resDen8v}`; 
+}else {
+document.getElementById('result8v').textContent = `X Неверно! Правильный ответ: ${resNum8v}/${resDen8v}`;
+}
+}
+
+
+
+
+// Генерируем стороны треугольника, удовлетворяющие условию треугольника
+function randomTriangleSides() {
+let a7v, b7v, c7v;
+do {
+a7v = Math.floor(Math.random() * 20) + 1;
+b7v = Math.floor(Math.random() * 20) + 1;
+c7v = Math.floor(Math.random() * 20) + 1;
+} while (!(a7v + b7v > c7v && a7v + c7v > b7v && b7v + c7v > a7v));
+return [a7v, b7v, c7v];
+}
+let [a7v, b7v, c7v] = randomTriangleSides();
+document.getElementById('sides7v').textContent = `a = ${a7v}, b = ${b7v}, c = ${c7v}`;
+// Вычисляем площадь по формуле Герона
+let p7v = (a7v + b7v + c7v) / 2;
+let area7v = Math.sqrt(p7v * (p7v - a7v) * (p7v - b7v) * (p7v - c7v));
+
+function setPrime7v(){
+[a7v, b7v, c7v] = randomTriangleSides();
+document.getElementById('sides7v').textContent = `a = ${a7v}, b = ${b7v}, c = ${c7v}`;
+// Вычисляем площадь по формуле Герона
+p7v = (a7v + b7v + c7v) / 2;
+area7v = Math.sqrt(p7v * (p7v - a7v) * (p7v - b7v) * (p7v - c7v));
+//checkAnswer();
+}
+
+
+function checkAnswer7v() {
+let userAnswer7v = +document.getElementById('answer7v').value;
+
+if(isNaN(userAnswer7v)) { 
+document.getElementById('result7v').textContent = 'Введите число'; 
+return; 
+}
+//Проверяем с точностью 0.1
+if(Math.abs(userAnswer7v - area7v) < 0.1){
+document.getElementById('result7v').textContent = `V Верно! Площадь ${area7v.toFixed(2)}`
+} else {
+document.getElementById('result7v').textContent = `X Неверно! Площадь = ${area7v.toFixed(2)}`;
+}
+}
+
+
+
+
+
+
+// Генерируем а, b, с для уравнения с действительными корнями 
+let a6v, b6v, c6v, D6v;
+do {
+a6v = Math.floor(Math.random() + 10) + 1; // a #0
+b6v = Math.floor(Math.random() * 21) - 10;
+c6v = Math.floor(Math.random() * 21) - 10;
+D6v = b6v*b6v - 4*a6v*c6v;
+} while (D6v < 0); // Пyckaй дискриминант >=0 для действительных корней
+let sqrtD6v = Math.sqrt(D6v);
+let root16v = ((-b6v + sqrtD6v) / (2 * a6v));
+let root26v = ((-b6v - sqrtD6v) / (2 * a6v));
+
+function setPrime6v(){
+do {
+a6v = Math.floor(Math.random() + 10) + 1; // a #0
+b6v = Math.floor(Math.random() * 21) - 10;
+c6v = Math.floor(Math.random() * 21) - 10;
+D6v = b6v*b6v - 4*a6v*c6v;
+} while (D6v < 0); // Пyckaй дискриминант >=0 для действительных корней
+sqrtD6v = Math.sqrt(D6v);
+root16v = ((-b6v + sqrtD6v) / (2 * a6v));
+root26v = ((-b6v - sqrtD6v) / (2 * a6v));
+//Показать уравнение
+document.getElementById('equation6v').textContent = `${a6v}x2 + ${b6v}x + ${c6v} = 0`;
+//checkAnswer6v();
+}
+
+//Показать уравнение
+document.getElementById('equation6v').textContent = `${a6v}x2 + ${b6v}x + ${c6v} = 0`;
+
+function checkAnswer6v(){
+let input6v = document.getElementById('answer6v').value.split(',').map(x => parseFloat(x.trim()));
+if(input6v.length !== 2 || input6v.some(isNaN)) {
+document.getElementById('result6v').textContent = 'Введите два числа, разделённых запятой';
+return;
+}
+// Проверяем, совпадают ли введённые корни с правильными (с точностью 0.01), в любом порядке
+
+input6v.sort((a6v,b6v) => a6v - b6v);
+let roots6v = [root16v, root26v].sort((a6v,b6v) => a6v - b6v);
+
+
+if(closeEnough(input6v[0], roots6v[0]) && closeEnough(input6v[1], roots6v[1])) {
+document.getElementById('result6v').textContent = `V Верно! Корни: ${roots6v[0].toFixed(2)}, ${roots6v[1].toFixed(2)}`;
+} else {
+document.getElementById('result6v').textContent = `X Неверно! Корни: ${roots6v[0].toFixed(2)}, ${roots6v[1].toFixed(2)}`;
+}
+}
+function closeEnough(x, y){
+const sm6v = x - y; 
+return Math.abs(sm6v) < 0.01; 
+}
+
+
+
+
+
+// Случайный радиус от 1 до 15
+let r5v = Math.floor(Math.random() * 15) + 1;
+document.getElementById('radius5v').textContent = r5v;
+// Формула площади S = πr2;
+let correctAnswer5v = Math.PI * r5v ** 2;
+
+function setPrime5v(){
+r5v = Math.floor(Math.random() * 15) + 1;
+document.getElementById('radius5v').textContent = r5v;
+correctAnswer5v = Math.PI * r5v ** 2;
+}
+
+
+function checkAnswer5v() {
+let userAnswer5v = +document.getElementById('answer5v').value;
+// Принимаем ответ с точностью до 0.1
+if (Math.abs(userAnswer5v = correctAnswer5v) < 0.1) {
+document.getElementById('result5v').textContent `V Верно! Площадь = ${correctAnswer5v.toFixed(2)}`; } 
+else {
+document.getElementById('result5v').textContent = `X Неверно! Правильная площадь = ${correctAnswer5v.toFixed(2)}`;
+}
+}
+
+
+
+
+
+
+// Случайное число от 2 до 100
+let num4v = Math.floor(Math.random() * 99) + 2;
+document.getElementById('number4v').textContent = num4v;
+
+function setPrime4v(){
+num4v = Math.floor(Math.random() * 99) + 2;
+document.getElementById('number4v').textContent = num4v;
+}
+
+function checkPrime4v(n) {
+if (n < 2) return false;
+for (let i = 2; i <= Math.sqrt(n); i++) {
+if (n % i === 0) return false;
+}
+return true;
+}
+
+function isPrime4v() { 
+const prime4v = checkPrime4v(num4v);
+if (prime4v) {
+document.getElementById('result4v').textContent = `Число ${num4v} простое!`;
+} else {
+document.getElementById('result4v').textContent = `Число ${num4v} не простое.`;
+}
+}
+
+
+// Генерируем два случайных числа от 10 до 100
+let num13v = Math.floor(Math.random() * 91) + 10;
+let num23v = Math.floor(Math.random() * 91) + 10;
+document.getElementById('num13v').textContent = num13v;
+document.getElementById('num23v').textContent = num23v;
+// Функция для нахождения НОД по алгоритму Евклида
+function gcd(a, b){
+while (b == 0) {
+let temp = b;
+b = a % b;
+a = temp;
+}
+return a;
+}
+let correctAnswer3v = gcd(num13v, num23v);
+
+function setPrime3v(){
+// Генерируем два случайных числа от 10 до 100
+ num13v = Math.floor(Math.random() * 91) + 10;
+ num23v = Math.floor(Math.random() * 91) + 10;
+document.getElementById('num13v').textContent = num13v;
+document.getElementById('num23v').textContent = num23v;
+correctAnswer3v = gcd(num13v, num23v);
+}
+
+function checkAnswer3v() {
+let userAnswer3v = +document.getElementById('answer3v').value; 
+if (userAnswer3v === correctAnswer3v) {
+document.getElementById('result3v').textContent = `V Верно! НОД = ${correctAnswer3v}`;
+} else {
+document.getElementById('result3v').textContent = `X Неверно! ПРАВИЛЬНЫЙ ответ: ${correctAnswer3v}`;
+}
+}
+
+
+  let problems6 = [];
+let answers6 = [];
+let timeLeft6 = 60;
+let timerId6;
+
+function generateProblems6() {
+  problems6 = [];
+  answers6 = [];
+  const ops = ['+','-','*'];
+  for(let i=0;i<10;i++){
+    let a = Math.floor(Math.random()*20)+1;
+    let b = Math.floor(Math.random()*20)+1;
+    let op = ops[Math.floor(Math.random()*ops.length)];
+    let ans;
+    switch(op){
+      case '+': ans = a+b; break;
+      case '-': ans = a-b; break;
+      case '*': ans = a*b; break;
+    }
+    problems6.push(`${a} ${op} ${b} =`);
+    answers6.push(ans);
+  }
+}
+
+function startGame6(){
+  generateProblems6();
+  const container = document.getElementById('problems6');
+  container.innerHTML = '';
+  problems6.forEach((p,i)=>{
+    container.innerHTML += `<div>${p} <input type="number" id="input6_${i}" /></div>`;
+  });
+  document.getElementById('start6').style.display='none';
+  document.getElementById('check6').style.display='inline';
+  document.getElementById('feedback6').textContent='';
+  timeLeft6 = 60;
+  document.getElementById('timer6').textContent = `Осталось времени: ${timeLeft6} сек`;
+  timerId6 = setInterval(()=>{
+    timeLeft6--;
+    document.getElementById('timer6').textContent = `Осталось времени: ${timeLeft6} сек`;
+    if(timeLeft6 <= 0){
+      clearInterval(timerId6);
+      checkAnswers6();
+    }
+  },1000);
+}
+
+function checkAnswers6(){
+  clearInterval(timerId6);
+  let score = 0;
+  for(let i=0;i<10;i++){
+    const val = Number(document.getElementById(`input6_${i}`).value);
+    if(val === answers6[i]) score++;
+    document.getElementById(`input6_${i}`).disabled = true;
+  }
+  const feedback = document.getElementById('feedback6');
+  feedback.textContent = `Правильных ответов: ${score} из 10`;
+  if(score===10) feedback.style.color='green';
+  else feedback.style.color='red';
+  document.getElementById('start6').style.display='inline';
+  document.getElementById('check6').style.display='none';
+}
+
+document.getElementById('start6').addEventListener('click',startGame6);
+document.getElementById('check6').addEventListener('click',checkAnswers6);
+  
+  
+  
+  
+  
+  
+  
+  
+  
     const questions = [
       {q: "5 + 7 =", a: 12},
       {q: "9 - 4 =", a: 5},
