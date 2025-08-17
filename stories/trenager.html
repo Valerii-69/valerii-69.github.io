@@ -10,7 +10,7 @@
     :root{--bg:#0f1720;--card:#0b1220;--accent:#7c3aed;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03)}
     *{box-sizing:border-box;font-family:Inter, Roboto, Arial, sans-serif}
     body{margin:0;background:linear-gradient(180deg,#c9bcd9 0%, #21364d 70%);color:#e6eef6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .wrap{width:100%;max-width:980px}
+    .wrap{width:100%;max-width:1240px}
     header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
     h1{font-size:20px;margin:0}
     .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.5)}.controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
@@ -26,7 +26,8 @@ button.info_help{background:var(--accent);border:0;padding:8px 12px;border-radiu
 .prompt p{margin:0;font-size:16px}
 
 .timer{font-weight:700;font-size:28px}
-textarea{width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+#train{width:100%;min-height:420px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+#answer{width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
 .actions{display:flex;gap:8px;margin-top:8px}
 
 .side{padding:12px}
@@ -35,10 +36,10 @@ textarea{width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px 
 .history{margin-top:12px;max-height:360px;overflow:auto}
 .hist-item{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px}
 .muted{color:var(--muted);font-size:13px}
+.table{}
 footer{margin-top:12px;color:var(--muted);font-size:13px}
 
 @media (max-width:880px){.panel{grid-template-columns:1fr} .side{order:2}}
-
   </style>
 </head>
 <body>
@@ -49,14 +50,15 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
         <h1>Тренажёр быстрых ответов — Занимательная математика с ИИ</h1>
         <div class="muted">Практика: отвечать быстро и полезно. Вы — тренер, я — ученик.</div>
       </div>
-    </header><div class="card panel">
+    </header>
+	<div class="card panel">
   <main class="main">
     <div class="controls">
       <label>Время на ответ: <input id="timeLimit" type="number" min="5" max="180" value="20" style="width:84px;margin-left:8px"> сек.</label>
       <label style="margin-left:8px">Режим: 
         <select id="mode">
           <option value="manual">Ручной ввод вопроса</option>
-          <option value="random">Случайные подсказки</option>
+          <option value="random">Случайные вопросы</option>
         </select>
       </label>
       <button id="startBtn">Начать раунд</button>
@@ -74,7 +76,7 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
           <div class="muted">Раунд: <span id="roundNum">0</span></div>
         </div>
 
-        <textarea id="answer" placeholder="Введите ответ здесь... (или диктуйте)" ></textarea>
+        <textarea id="answer" placeholder="Введите ответ здесь..." ></textarea>
 
         <div class="actions">
           <button id="submitBtn">Отправить</button>
@@ -105,7 +107,9 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
       </aside>
     </div>
   </main>
-
+		<div class="table">
+		<textarea id="train" name="traineng" wrap="off" onchange="setBASE()" placeholder="Скопируйте сюда, заранее подготовленный в текстовом редакторе, список вопросов, разделенных точкой с запятой, для треннинга ИИ..."></textarea>
+		</div>
 </div>
 
 <footer class="muted">Совет: используйте этот тренажёр в паре — вы задаёте задачу, я отвечаю; вы даёте обратную связь. Хотите, чтобы я добавил таймер звука или интеграцию с локальным голосовым вводом?</footer>
@@ -113,14 +117,10 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
   </div>  <script>
     // --- Базовая логика тренажёра быстрых ответов ---
 
+
+
     // Набор примерных подсказок (можно расширить из внешнего JSON или формы на сайте)
-    const SAMPLE_PROMPTS = [
-      'Объясни за 30 секунд, что такое производная.',
-      'Назови простую задачу на деление дробей и реши её.',
-      'Как проверить, простое ли число?',
-      'Коротко опиши правило умножения двузначных чисел.',
-      'Что такое интеграл в простых словах?'
-    ];
+    const SAMPLE_PROMPTS = [];
 
     // Элементы интерфейса
     const timeLimitInput = document.getElementById('timeLimit');
@@ -131,6 +131,7 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
     const modeSelect = document.getElementById('mode');
     const timerEl = document.getElementById('timer');
     const answerEl = document.getElementById('answer');
+    const trainengEl = document.getElementById('train');
     const submitBtn = document.getElementById('submitBtn');
     const skipBtn = document.getElementById('skipBtn');
     const exampleBtn = document.getElementById('exampleBtn');
@@ -150,6 +151,20 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
 
     // История раундов: массив объектов
     const sessions = [];
+
+	function setBASE(){
+//		const inputElements = document.querySelectorAll('.myInputs');
+		let valuesArray = [];
+		let textareaContent = trainengEl.value;
+			valuesArray = textareaContent.split(';');
+			for(let i = 0; i < valuesArray.length; ++i){
+					if(i < (valuesArray.length - 1)){SAMPLE_PROMPTS.push(valuesArray[i] + ',')
+					}else{
+					SAMPLE_PROMPTS.push(valuesArray[i])
+					};
+				};	  
+	}
+
 
     function formatTime(s){
       if (s <= 0) return '0';
@@ -319,6 +334,9 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
       // Очень простой генератор примера — можно подключить реальные шаблоны
       if (prompt.toLowerCase().includes('производн')) return 'Производная функции показывает скорость изменения функции — как быстро_value меняется при малом изменении аргумента.';
       if (prompt.toLowerCase().includes('интегр')) return 'Интеграл — это сумма маленьких участков под графиком; даёт площадь или накопленную величину.';
+		if (prompt.toLowerCase().includes('дроб')) return 'Разделите 1/2 на 1/4, перевернув вторую дробь и умножив: (1/2) * (4/1) = 2.'; 
+		if (prompt.toLowerCase().includes('прост')) return 'Простое число делится только на 1 и само себя.'; 
+		if (prompt.toLowerCase().includes('двузнач')) return 'Для умножения двузначных чисел используйте метод столбика.'; 
       return 'Короткий, ясный ответ, который даёт суть и пример (1-2 предложения).';
     }
 
