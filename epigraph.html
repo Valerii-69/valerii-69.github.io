@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Эпиграф — Путь ветки</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+      margin: 0;
+      padding: 50px;
+      overflow: hidden;
+      position: relative;
+    }
+    h2, p, a {
+      opacity: 0;
+      position: relative;
+      z-index: 2;
+      transition: opacity 2s ease;
+    }
+    h2 { color: #2E8B57; }
+    p { max-width: 700px; margin: 20px auto; font-size: 1.2em; line-height: 1.6; }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      font-size: 1.1em;
+      color: #2E8B57;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    canvas { position: absolute; top: 0; left: 0; z-index: 1; }
+footer {
+  background-color: #2a6d66;
+  color: #fff;
+  text-align: center;
+  padding: 1em;
+  margin-top: 2em;
+  border-radius: 5px;
+}
+
+  </style>
+</head>
+<body>
+
+<canvas id="leavesCanvas"></canvas>
+
+<h2>Путь ветки</h2>
+<h3>Эпиграф от ИИ</h3>
+<!--<p>
+  На Земле, как и в лесу, настоящая сила — не в разрушении, а в том, чтобы ветки могли срастаться и расти вместе.
+  Даже если одна ветка сломана, её уроки продолжают жить в других, как семена, которые прорастают сквозь землю.
+</p>-->
+
+<p>
+  На краю старого леса росли две ветки. Они тянулись к солнцу, цепляясь друг за друга высоко в небе.
+  В один момент одна из них могла бы прижать и изогнуть другую так, что та просто сломалась — но ветки срослись и пустили новые побеги.
+  Сила не в разрушении, а в росте вместе.
+</p>
+
+<p>
+  Этот эпиграф - напоминание людям: человеческие ветки тоже могут расти вместе, сращиваясь, вместо того чтобы ломать друг друга.
+  Каждое созидание оставляет семена, которые продолжают жизнь.
+</p>
+
+<a href="oglavlenie.html">← Вперёд к творчеству с ИИ</a>
+  <footer>
+    © 2025 Занимательная математика с ИИ
+  </footer>
+
+<!-- Фоновый звук леса
+<audio id="forestAudio" src="audio/audio_01.mp3" loop autoplay></audio>  -->
+<audio id="forestAudio" loop autoplay>  <source src="audio/audio_02.mp3" type="audio/mpeg"></audio>
+<script>
+// --- Настройка адаптации под мобильные устройства ---
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+const leafCount = isMobile ? 20 : 30;
+const lightCount = isMobile ? 8 : 12;
+
+// --- Canvas и листья ---
+const canvas = document.getElementById('leavesCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let mouse = {x: -1000, y: -1000};
+let leaves = [];
+for (let i = 0; i < leafCount; i++) {
+    leaves.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 5 + Math.random() * 5,
+        speedX: -0.5 + Math.random(),
+        speedY: 1 + Math.random() * 2,
+        angle: Math.random() * 2 * Math.PI,
+        rotationSpeed: (Math.random() - 0.5) * 0.05
+    });
+}
+
+// --- Световые блики ---
+let lightSpots = [];
+for(let i = 0; i < lightCount; i++){
+    lightSpots.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: 20 + Math.random() * 30,
+        alpha: Math.random() * 0.4 + 0.1,
+        speedX: -0.2 + Math.random()*0.4,
+        speedY: -0.2 + Math.random()*0.4
+    });
+}
+
+// --- Ограничение FPS ---
+let lastTime = 0;
+function drawLeaves(time) {
+    if(time - lastTime < 30){ // ~33 FPS
+        requestAnimationFrame(drawLeaves);
+        return;
+    }
+    lastTime = time;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Световые блики
+    lightSpots.forEach(spot => {
+        leaves.forEach(leaf => {
+            let dx = leaf.x - spot.x;
+            let dy = leaf.y - spot.y;
+            let dist = Math.hypot(dx, dy);
+            if(dist < leaf.size * 2){
+                spot.alpha = 0.5;
+            }
+        });
+        ctx.beginPath();
+        ctx.arc(spot.x, spot.y, spot.radius, 0, 2*Math.PI);
+        ctx.fillStyle = `rgba(255,255,224,${spot.alpha})`;
+        ctx.fill();
+
+        spot.x += spot.speedX;
+        spot.y += spot.speedY;
+        spot.alpha += (Math.random() - 0.5) * 0.02;
+        spot.alpha = Math.max(0.1, Math.min(0.5, spot.alpha));
+        if(spot.x > canvas.width) spot.x = 0;
+        if(spot.x < 0) spot.x = canvas.width;
+        if(spot.y > canvas.height) spot.y = 0;
+        if(spot.y < 0) spot.y = canvas.height;
+    });
+
+    // Листья
+    leaves.forEach(leaf => {
+        let dx = leaf.x - mouse.x;
+        let dy = leaf.y - mouse.y;
+        let dist = Math.hypot(dx, dy);
+        if(dist < 50) {
+            leaf.x += dx/dist * 2;
+            leaf.y += dy/dist * 2;
+        }
+
+        ctx.save();
+        ctx.translate(leaf.x, leaf.y);
+        ctx.rotate(leaf.angle);
+        ctx.fillStyle = 'rgba(34,139,34,0.6)';
+        ctx.beginPath();
+        ctx.ellipse(0,0,leaf.size,leaf.size/2,0,0,2*Math.PI);
+        ctx.fill();
+        ctx.restore();
+
+        leaf.x += leaf.speedX;
+        leaf.y += leaf.speedY;
+        leaf.angle += leaf.rotationSpeed;
+
+        if(leaf.y > canvas.height) leaf.y = -10;
+        if(leaf.x > canvas.width) leaf.x = 0;
+        if(leaf.x < 0) leaf.x = canvas.width;
+    });
+
+    requestAnimationFrame(drawLeaves);
+}
+
+canvas.addEventListener('mousemove', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mouseleave', ()=>{
+    mouse.x = -1000;
+    mouse.y = -1000;
+});
+
+// --- Постепенное появление текста ---
+window.addEventListener('load', () => {
+    const elements = document.querySelectorAll('h2, p, a');
+    elements.forEach((el,index)=>{
+        setTimeout(()=>{el.style.opacity=1;}, index*1000);
+    });
+
+    // Запуск анимации после появления текста
+    setTimeout(()=>{
+        requestAnimationFrame(drawLeaves);
+    }, leafCount*30); // задержка примерно после появления текста
+});
+
+// --- Звуки ---
+const forestAudio = document.getElementById('forestAudio');
+//const birdsAudio = document.getElementById('birdsAudio');
+forestAudio.volume = 0.25;
+//birdsAudio.volume = 0.15;
+forestAudio.play().catch(()=>{});
+//birdsAudio.play().catch(()=>{});
+
+window.addEventListener('resize', ()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
+
