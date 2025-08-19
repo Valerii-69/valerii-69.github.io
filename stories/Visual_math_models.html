@@ -1,134 +1,268 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
-<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <title>Визуализация математической модели: Маятник - Занимательная математика с ИИ</title>
-  <style>
+  <meta charset="UTF-8">
+  <title>Занимательная математика с ИИ — Визуальные модели</title>
+<!--  <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 0 20px;
-      background: #f4f7f8;
-      color: #333;
+      margin: 0; padding: 0;
+      line-height: 1.6;
+      background: #f5f5f5;
+      color: #222;
+    }
+    header {
+      background: #222;
+      color: #fff;
+      padding: 20px;
       text-align: center;
     }
-    h1 {
-      color: #336699;
-      margin-bottom: 10px;
+    nav {
+      background: #eee;
+      padding: 10px;
+      text-align: center;
     }
-    canvas {
-      background: #eef6fb;
-      border: 1px solid #ccc;
-      display: block;
-      margin: 20px auto;
-    }
-    .controls {
-      margin-top: 15px;
-    }
-    label {
+    nav a {
       margin: 0 10px;
+      text-decoration: none;
+      color: #333;
       font-weight: bold;
     }
-    input[type=range] {
-      width: 200px;
-      vertical-align: middle;
+    nav a:hover {
+      color: #0066cc;
+    }
+    section {
+      background: #fff;
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 800px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
   </style>
+-->
+<!--  <link rel="stylesheet" href="style_AI_03_merzanie.css">-->
+  <link rel="stylesheet" href="../style.css">
+
 </head>
 <body>
   <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
-  <h1>Маятник: визуализация колебаний</h1>
-  <canvas id="pendulum" width="500" height="400"></canvas>
-  <div class="controls">
-    <label for="lengthRange">Длина маятника (м): <span id="lengthVal">1.0</span></label>
-    <input type="range" id="lengthRange" min="0.5" max="3" step="0.1" value="1" />
-    <label for="angleRange">Начальный угол (град): <span id="angleVal">30</span></label>
-    <input type="range" id="angleRange" min="5" max="90" step="1" value="30" />
-  </div>
+  <header>
+    <h1>Визуальные математические модели</h1>
+    <p>Коллекция интерактивных иллюстраций</p>
+  </header>
 
-  <script>
-    const canvas = document.getElementById('pendulum');
-    const ctx = canvas.getContext('2d');
+  <!-- Навигация -->
+  <nav>
+    <a href="#fibSpiral">Спираль Фибоначчи</a>
+    <a href="#randomWalk">Случайное блуждание</a>
+    <a href="#koch">Снежинка Коха</a>
+    <a href="#waves">Интерференция</a>
+    <a href="#mandelbrot">Мандельброт</a>
+    <a href="#pendulum">Маятник</a>
+    <a href="#lissajous">Лиссажу</a>
+  </nav>
 
-    const originX = canvas.width / 2;
-    const originY = 50;
+  <!-- ====== Твои старые секции (которые уже есть на сайте) ====== -->
+  <!-- ... -->
 
-    let length = 1.0; // м
-    let angleDeg = 30; // градусы
-    let angle = angleDeg * Math.PI / 180;
-    let angularVelocity = 0;
-    let angularAcceleration = 0;
+  <!-- ====== Новые секции ====== -->
 
-    const g = 9.81; // м/с²
-    const damping = 0.01;
+  <!-- 1. Спираль Фибоначчи -->
+  <section>
+    <h2>Спираль Фибоначчи</h2>
+    <p>Спираль, построенная из квадратов чисел Фибоначчи, приближается к золотому сечению.</p>
+    <canvas id="fibSpiral" width="400" height="400"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("fibSpiral"),ctx=c.getContext("2d");
+        let fib=[1,1];
+        for(let i=2;i<12;i++) fib[i]=fib[i-1]+fib[i-2];
+        let x=200,y=200,angle=0;
+        ctx.strokeStyle="blue";
+        for(let i=0;i<fib.length;i++){
+          let s=fib[i]*10;
+          ctx.beginPath();
+          ctx.arc(x,y,s,angle,angle+Math.PI/2);
+          ctx.stroke();
+          x+=s*Math.cos(angle+Math.PI/2);
+          y+=s*Math.sin(angle+Math.PI/2);
+          angle+=Math.PI/2;
+        }
+      })();
+    </script>
+  </section>
 
-    const lengthRange = document.getElementById('lengthRange');
-    const angleRange = document.getElementById('angleRange');
-    const lengthVal = document.getElementById('lengthVal');
-    const angleVal = document.getElementById('angleVal');
+  <!-- 2. Случайное блуждание -->
+  <section>
+    <h2>Случайное блуждание</h2>
+    <p>Точка случайно перемещается по плоскости, демонстрируя стохастический процесс.</p>
+    <canvas id="randomWalk" width="400" height="400"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("randomWalk"),ctx=c.getContext("2d");
+        let x=200,y=200;
+        ctx.fillStyle="black";
+        function step(){
+          ctx.fillRect(x,y,2,2);
+          let r=Math.random();
+          if(r<0.25)x+=2;
+          else if(r<0.5)x-=2;
+          else if(r<0.75)y+=2;
+          else y-=2;
+          requestAnimationFrame(step);
+        }
+        step();
+      })();
+    </script>
+  </section>
 
-    lengthRange.addEventListener('input', () => {
-      length = parseFloat(lengthRange.value);
-      lengthVal.textContent = length.toFixed(1);
-    });
+  <!-- 3. Фрактал Коха -->
+  <section>
+    <h2>Снежинка Коха</h2>
+    <p>Фрактальная кривая, построенная итеративным способом.</p>
+    <canvas id="koch" width="400" height="400"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("koch"),ctx=c.getContext("2d");
+        function drawKoch(x1,y1,x2,y2,iter){
+          if(iter==0){ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);return;}
+          let dx=(x2-x1)/3,dy=(y2-y1)/3;
+          let xA=x1+dx,yA=y1+dy;
+          let xB=x1+2*dx,yB=y1+2*dy;
+          let xC=(xA+xB)/2 - Math.sqrt(3)*(yB-yA)/2;
+          let yC=(yA+yB)/2 + Math.sqrt(3)*(xB-xA)/2;
+          drawKoch(x1,y1,xA,yA,iter-1);
+          drawKoch(xA,yA,xC,yC,iter-1);
+          drawKoch(xC,yC,xB,yB,iter-1);
+          drawKoch(xB,yB,x2,y2,iter-1);
+        }
+        ctx.beginPath();
+        drawKoch(50,300,350,300,4);
+        ctx.stroke();
+      })();
+    </script>
+  </section>
 
-    angleRange.addEventListener('input', () => {
-      angleDeg = parseFloat(angleRange.value);
-      angle = angleDeg * Math.PI / 180;
-      angularVelocity = 0; // сброс скорости при смене угла
-      angleVal.textContent = angleDeg;
-    });
+  <!-- 4. Интерференция волн -->
+  <section>
+    <h2>Интерференция волн</h2>
+    <p>Наложение двух синусоид создает красивый узор интерференции.</p>
+    <canvas id="waves" width="400" height="200"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("waves"),ctx=c.getContext("2d");
+        let t=0;
+        function draw(){
+          ctx.clearRect(0,0,c.width,c.height);
+          ctx.beginPath();
+          for(let x=0;x<c.width;x++){
+            let y=100+40*Math.sin(0.05*x+t)+40*Math.sin(0.07*x+2*t);
+            ctx.lineTo(x,y);
+          }
+          ctx.stroke();
+          t+=0.05;
+          requestAnimationFrame(draw);
+        }
+        draw();
+      })();
+    </script>
+  </section>
 
-    function drawPendulum(theta) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  <!-- 5. Множество Мандельброта -->
+  <section>
+    <h2>Множество Мандельброта</h2>
+    <p>Один из самых известных фракталов, демонстрирующий сложность из простых правил.</p>
+    <canvas id="mandelbrot" width="400" height="300"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("mandelbrot"),ctx=c.getContext("2d");
+        const img=ctx.createImageData(c.width,c.height);
+        for(let px=0;px<c.width;px++){
+          for(let py=0;py<c.height;py++){
+            let x0=(px/c.width)*3.5-2.5;
+            let y0=(py/c.height)*2-1;
+            let x=0,y=0,iter=0,maxIter=50;
+            while(x*x+y*y<=4 && iter<maxIter){
+              let xt=x*x-y*y+x0;
+              y=2*x*y+y0;
+              x=xt;
+              iter++;
+            }
+            let color=iter==maxIter?0:255-iter*5;
+            let idx=(py*c.width+px)*4;
+            img.data[idx]=color;
+            img.data[idx+1]=color;
+            img.data[idx+2]=color;
+            img.data[idx+3]=255;
+          }
+        }
+        ctx.putImageData(img,0,0);
+      })();
+    </script>
+  </section>
 
-      // Точка подвеса
-      ctx.beginPath();
-      ctx.arc(originX, originY, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = '#444';
-      ctx.fill();
+  <!-- 6. Маятник -->
+  <section>
+    <h2>Маятник</h2>
+    <p>Колебания простого маятника под действием силы тяжести.</p>
+    <canvas id="pendulum" width="400" height="300"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("pendulum"),ctx=c.getContext("2d");
+        let angle=Math.PI/4,speed=0,g=0.01,L=100;
+        function draw(){
+          ctx.clearRect(0,0,c.width,c.height);
+          let ax=-g/L*Math.sin(angle);
+          speed+=ax;
+          angle+=speed;
+          let x=200+L*Math.sin(angle),y=50+L*Math.cos(angle);
+          ctx.beginPath();
+          ctx.moveTo(200,50);ctx.lineTo(x,y);ctx.stroke();
+          ctx.beginPath();ctx.arc(x,y,10,0,2*Math.PI);ctx.fill();
+          requestAnimationFrame(draw);
+        }
+        draw();
+      })();
+    </script>
+  </section>
 
-      // Конец маятника
-      const x = originX + length * 150 * Math.sin(theta);
-      const y = originY + length * 150 * Math.cos(theta);
+  <!-- 7. Фигуры Лиссажу -->
+  <section>
+    <h2>Фигуры Лиссажу</h2>
+    <p>Красивые кривые, возникающие при наложении двух гармонических колебаний.</p>
+    <canvas id="lissajous" width="400" height="300"></canvas>
+    <script>
+      (function(){
+        const c=document.getElementById("lissajous"),ctx=c.getContext("2d");
+        let t=0;
+        function draw(){
+          ctx.clearRect(0,0,c.width,c.height);
+          ctx.beginPath();
+          for(let i=0;i<1000;i++){
+            let x=200+100*Math.sin(3*t+i*0.01);
+            let y=150+100*Math.sin(2*t+i*0.013);
+            ctx.lineTo(x,y);
+          }
+          ctx.stroke();
+          t+=0.01;
+          requestAnimationFrame(draw);
+        }
+        draw();
+      })();
+    </script>
+  </section>
+<a href="#" class="back-to-top">Наверх</a>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
 
-      // Верёвка
-      ctx.beginPath();
-      ctx.moveTo(originX, originY);
-      ctx.lineTo(x, y);
-      ctx.strokeStyle = '#336699';
-      ctx.lineWidth = 4;
-      ctx.stroke();
-
-      // Груз
-      ctx.beginPath();
-      ctx.arc(x, y, 20, 0, 2 * Math.PI);
-      ctx.fillStyle = '#2a75bb';
-      ctx.fill();
-      ctx.strokeStyle = '#1a4f7a';
-      ctx.stroke();
-    }
-
-    function updatePhysics() {
-      // Уравнение движения маятника (малые углы)
-      angularAcceleration = (-g / length) * Math.sin(angle);
-      angularVelocity += angularAcceleration * 0.02;
-      angularVelocity *= (1 - damping);
-      angle += angularVelocity * 0.02;
-    }
-
-    function animate() {
-      updatePhysics();
-      drawPendulum(angle);
-      requestAnimationFrame(animate);
-    }
-
-    animate();
-  </script>
 </body>
 </html>

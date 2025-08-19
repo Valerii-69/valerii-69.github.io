@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Занимательная математика с ИИ</title>
+  <link rel="stylesheet" href="style_AI_01.css">
+<!--  <link rel="stylesheet" href="style_AI_03_merzanie.css">-->
+  <script>
+    function loadPage(page) {
+      document.getElementById("content").src = page;
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Занимательная математика с ИИ</h1>
+  </header>
+
+  <nav>
+<!--    <button onclick="loadPage('history.html')">Истории</button>
+    <button onclick="loadPage('posidelki.html')">Посиделки</button>
+    <button onclick="loadPage('gallery.html')">Галерея</button>
+    <button onclick="loadPage('open-problems.html')">Нерешённые задачи</button>
+    <button onclick="loadPage('history.html')">Истории</button>-->
+    <button onclick="loadPage('posidelki.html')">Посиделки</button>
+    <button onclick="loadPage('gallery.html')">Галерея</button>
+    <button onclick="loadPage('open-problems.html')">Нерешённые задачи</button>
+  </nav>
+
+  <main>
+    <iframe id="content" src="posidelki.html"></iframe>
+  </main>
+
+<!--  <footer>
+    <p>&copy; 2025 Валерий. Проект "Занимательная математика с ИИ"</p>
+  </footer>-->
+    <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

@@ -1,0 +1,187 @@
+/* Общие стили для всего сайта */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: #fafafa;
+  color: #222;
+  line-height: 1.6;
+}
+
+header {
+  background: #4a90e2;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  animation: headerGlow 3s ease-in-out infinite;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  animation: textFadeIn 1.5s ease-out forwards;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+nav a {
+  text-decoration: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+nav a:hover {
+  background: #357abd;
+}
+
+nav a.active {
+  background: #2a5d9f;
+}
+
+main {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 0 15px;
+  animation: textFadeIn 1.5s ease-out forwards;
+}
+
+/* Секции и статьи */
+section {
+  margin-bottom: 40px;
+}
+
+h2 {
+  color: #4a90e2;
+  text-align: center;
+  margin-bottom: 20px;
+  animation: glowPulse 2.5s infinite;
+}
+
+article {
+  margin-bottom: 15px;
+}
+
+/* Галерея */
+.gallery-images {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+.gallery-images img {
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.gallery-images img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+}
+
+.puzzle {
+  background: #f0f8ff;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Карточки задач */
+.problem {
+  background: #f0f8ff;
+  padding: 15px;
+  margin: 15px auto;
+  max-width: 700px;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.problem:hover {
+  transform: translateY(-3px);
+}
+
+.problem h3 {
+  color: #4a90e2;
+  margin-top: 0;
+  animation: glowPulse 2.5s infinite;
+}
+
+/* Footer */
+footer {
+  background: #eee;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 0.9rem;
+}
+
+/* Анимации */
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 5px #4a90e2; }
+  50% { text-shadow: 0 0 20px #7abaff; }
+}
+
+@keyframes headerGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255,255,255,0.3); }
+  50% { box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+}
+
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  .gallery-images img {
+    width: 100%;
+    height: auto;
+  }
+
+  nav {
+    gap: 8px;
+  }
+}
+/*
+.reader-wish {
+  background: #fff8dc;
+  border-left: 5px solid #4a90e2;
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 800px;
+  border-radius: 6px;
+  font-style: italic;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  animation: textFadeIn 1.5s ease-out forwards;
+}*/
+.reader-wish {
+  background: #fff8dc;
+  border-left: 5px solid #4a90e2;
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 800px;
+  border-radius: 6px;
+  font-style: italic;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  animation: wishFadePulse 3s ease-in-out infinite;
+}
+
+@keyframes wishFadePulse {
+  0%, 100% { opacity: 0.8; transform: translateY(0px); text-shadow: 0 0 3px #4a90e2; }
+  50% { opacity: 1; transform: translateY(-3px); text-shadow: 0 0 10px #7abaff; }
+}
