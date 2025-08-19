@@ -185,3 +185,22 @@ footer {
   0%, 100% { opacity: 0.8; transform: translateY(0px); text-shadow: 0 0 3px #4a90e2; }
   50% { opacity: 1; transform: translateY(-3px); text-shadow: 0 0 10px #7abaff; }
 }
+	#my-pdf,  
+	#my-pdf1,  
+	#my-pdf2, 
+	#my-pdf3,  
+	#my-pdf4, 
+	#my-pdf5, 
+	#my-pdf6, 
+	#my-pdf7,  
+	#my-pdf8, 
+	#my-pdf9,  
+	#my-pdf10, 
+	#my-pdf11,  
+	#my-pdf12, 
+	#my-pdf13,  
+	#my-pdf14{height:200px;
+	background: #fff8dc;
+  border-left: 15px solid #4a90e2;
+  border-bottom: 15px solid #fff8dc;
+  } 
