@@ -11,7 +11,7 @@
 <body>
   <main>
 <!--    <section>-->
-      <h2>Диалоги</h2>
+      <h2>Диалоги с ИИ</h2>
 <!--      <p>Здесь собраны беседы с ИИ — о науке, философии, жизни и случайных открытиях.</p>
       <article>
         <h3>Пример диалога</h3>
@@ -34,47 +34,63 @@ riboza.pdf
 delenie_kletki.pdf
 blagodarnost_for_AI.pdf
 kvarki.pdf
-
     </section>-->
+	
+	<select id="dialSelect">
+     <option value=1>Почему некоторые кварки называются ОЧАРОВАННЫМИ?</option>
+     <option value=2>Как словами выразить благосклонное отношение к тебе и твоим создателям?</option>
+     <option value=3>Как новые БОЛОГИЧЕСКИЕ клетки сохраняют первоначальный размер?</option>
+     <option value=4>Какие функции у рибозы?</option>
+     <option value=5>Действительно ли рибоза конструирует новую клетку?</option>
+     <option value=6>Что такое: обучение на быстрых ответах?</option>
+     <option value=7>Парадоксы человеческой логики.</option>
+     <option value=8>Ты знаешь кто такой блогер?</option>
+     <option value=9>Ты знаешь как устроен мозг человека и как он 'работает'?</option>
+     <option value=10>Ошибки ChatGPT.</option>
+     <option value=11>А ты, когда ведёшь беседу с читателем, можешь задавать наводящие вопросы?</option>
+     <option value=12>Путь ветки.</option>
+     <option value=13>Секреты чисел.</option>
+     <option value=14>Секреты чисел I.</option>
+     <option value=15>Секреты чисел II.</option>
+	</select>
+<button id="generateBtn">Читать</button>
+	
   <section>
-<!--  <iframe src="../besedi/kvarki.pdf" width="680" height="400" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
-      <embed src="../besedi/kvarki.pdf" type="application/pdf" width="600" height="400">-->
 	<div id="my-pdf"></div>  
-	<div id="my-pdf1"></div>  
-	<div id="my-pdf2"></div>  
-	<div id="my-pdf3"></div>  
-	<div id="my-pdf4"></div>  
-	<div id="my-pdf5"></div>  
-	<div id="my-pdf6"></div>  
-	<div id="my-pdf7"></div>  
-	<div id="my-pdf8"></div>  
-	<div id="my-pdf9"></div>  
-	<div id="my-pdf10"></div>  
-	<div id="my-pdf11"></div>  
-	<div id="my-pdf12"></div>  
-	<div id="my-pdf13"></div>  
-	<div id="my-pdf14"></div>  
   </section>
 
     <section class="reader-wish">
       <p>Дорогой читатель, задавай вопросы ИИ и наблюдай за чудесами науки!</p>
     </section>
   </main>
-<script>PDFObject.embed("../besedi/kvarki.pdf", "#my-pdf");</script>
-<script>PDFObject.embed("../besedi/blagodarnost_for_AI.pdf", "#my-pdf1");</script>
-<script>PDFObject.embed("../besedi/delenie_kletki.pdf", "#my-pdf2");</script>
-<script>PDFObject.embed("../besedi/riboza.pdf", "#my-pdf3");</script>
-<script>PDFObject.embed("../besedi/riboza_and_atf.pdf", "#my-pdf4");</script>
-<script>PDFObject.embed("../besedi/trenager_for_AI.pdf", "#my-pdf5");</script>
-<script>PDFObject.embed("../besedi/paradox.pdf", "#my-pdf6");</script>
-<script>PDFObject.embed("../besedi/bloger.pdf", "#my-pdf7");</script>
-<script>PDFObject.embed("../besedi/mozg.pdf", "#my-pdf8");</script>
-<script>PDFObject.embed("../besedi/oshibki_AI.pdf", "#my-pdf9");</script>
-<script>PDFObject.embed("../besedi/voprosi_ot_AI.pdf", "#my-pdf10");</script>
-<script>PDFObject.embed("../besedi/doroga_vetki_gizni.pdf", "#my-pdf11");</script>
-<script>PDFObject.embed("../besedi/tayni_chisel.pdf", "#my-pdf12");</script>
-<script>PDFObject.embed("../besedi/tayni_chisel_01.pdf", "#my-pdf13");</script>
-<script>PDFObject.embed("../besedi/tayni_chisel_02.pdf", "#my-pdf14");</script>
+<script>
+const spsDialog = {
+15:['tayni_chisel_02.pdf'],
+14:['tayni_chisel_01.pdf'],
+13:['tayni_chisel.pdf'],
+12:['doroga_vetki_gizni.pdf'],
+11:['voprosi_ot_AI.pdf'],
+10:['oshibki_AI.pdf'],
+9:['mozg.pdf'],
+8:['bloger.pdf'],
+7:['paradox.pdf'],
+6:['trenager_for_AI.pdf'],
+5:['riboza_and_atf.pdf'],
+4:['riboza.pdf'],
+3:['delenie_kletki.pdf'],
+2:['blagodarnost_for_AI.pdf'],
+1:['kvarki.pdf']
+};
+
+    const dialSelect = document.getElementById("dialSelect");
+    const generateBtn = document.getElementById("generateBtn");
+
+    generateBtn.addEventListener("click", () => {
+      const i = dialSelect.value;
+		PDFObject.embed("../besedi/" + spsDialog[i], "#my-pdf");
+		    });
+
+</script>
   <footer>
     <p>© 2025 Занимательная математика с ИИ</p>
   </footer>

@@ -185,22 +185,46 @@ footer {
   0%, 100% { opacity: 0.8; transform: translateY(0px); text-shadow: 0 0 3px #4a90e2; }
   50% { opacity: 1; transform: translateY(-3px); text-shadow: 0 0 10px #7abaff; }
 }
-	#my-pdf,  
-	#my-pdf1,  
-	#my-pdf2, 
-	#my-pdf3,  
-	#my-pdf4, 
-	#my-pdf5, 
-	#my-pdf6, 
-	#my-pdf7,  
-	#my-pdf8, 
-	#my-pdf9,  
-	#my-pdf10, 
-	#my-pdf11,  
-	#my-pdf12, 
-	#my-pdf13,  
-	#my-pdf14{height:200px;
+	#my-pdf {height:250px;
 	background: #fff8dc;
   border-left: 15px solid #4a90e2;
   border-bottom: 15px solid #fff8dc;
-  } 
+  }
+    select {
+      font-size: 1.1rem;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 2px solid #fff8dc;
+      width: 100%;
+      max-width: 700px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      cursor: pointer;
+      background: white;
+      color: #b36b00;
+      transition: background-color 0.3s ease;
+    }
+	button {
+      font-size: 1.1rem;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 2px solid #fff8dc;
+      width: 100%;
+      max-width: 150px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      cursor: pointer;
+      background: white;
+      color: #4a90e2;
+      transition: background-color 0.3s ease;
+  margin-bottom: 20px;
+  animation: glowPulse 2.5s infinite;
+    }
+    select:hover, button:hover {
+      background-color: #ffecb3;
+    }
+  
