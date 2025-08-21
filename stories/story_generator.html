@@ -3,56 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
-<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+  <meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
   <title>Генератор математических историй - Занимательная математика с ИИ</title>
-<!--  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 0 20px;
-      background: #fff8e1;
-      color: #444;
-    }
-    h1 {
-      color: #b36b00;
-      text-align: center;
-    }
-    select, button {
-      font-size: 1.1rem;
-      padding: 8px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 2px solid #b36b00;
-      width: 100%;
-      max-width: 350px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      cursor: pointer;
-      background: white;
-      color: #b36b00;
-      transition: background-color 0.3s ease;
-    }
-    select:hover, button:hover {
-      background-color: #ffecb3;
-    }
-    #story {
-      margin-top: 30px;
-      font-size: 1.1rem;
-      line-height: 1.5;
-      background: #fff3e0;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid #b36b00;
-      min-height: 120px;
-    }
-  </style>
-  -->
   <link rel="stylesheet" href="../style.css">
-
 </head>
 <body>
   <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
@@ -64,40 +19,72 @@
     <option value="эксперимент">Научный эксперимент</option>
     <option value="волшебство">Волшебство чисел</option>
   </select>
-  <button id="generateBtn">Создать историю</button>
+  <button id="generateBtn">Создать первую историю</button>
   <div id="story"></div>
+  <button id="againBtn" style="display:none; margin-top:10px;">Создать следующую историю</button>
 
   <script>
     const stories = {
       путешествие: [
         "Однажды герой отправился в путешествие во времени, где каждая секунда измерялась золотыми часами с необычной геометрией. Чтобы вернуться домой, он должен был решить загадку, основанную на числе π.",
-        "Путешественник во времени обнаружил древний храм, построенный по принципам фрактальной геометрии, и разгадал тайну бесконечности с помощью математики."
+        "Путешественник во времени обнаружил древний храм, построенный по принципам фрактальной геометрии, и разгадал тайну бесконечности с помощью математики.",
+        "В далеком будущем машины времени работали на формулах из алгебры, и только знание теоремы Пифагора могло открыть портал.",
+        "Мальчик попал в эпоху, где арифметика ещё не существовала, и помог людям считать овец с помощью числовых рядов."
       ],
       загадка: [
         "В небольшом городе появился мудрец, который решал загадки, используя лишь числа Фибоначчи. Его самая сложная загадка оставалась нерешённой веками.",
-        "Загадка в математике часто прячет в себе простую истину: найти закономерность в хаосе — значит понять мир."
+        "Загадка в математике часто прячет в себе простую истину: найти закономерность в хаосе — значит понять мир.",
+        "На стене замка было уравнение, которое открывало дверь только тому, кто умел складывать ряды бесконечности.",
+        "Ребёнку подарили кубик Рубика, и он открыл, что за каждой комбинацией скрыта своя математическая закономерность."
       ],
       эксперимент: [
         "В лаборатории ученые создали машину, которая визуализировала потоки чисел, похожие на танец светящихся частиц в темноте.",
-        "Эксперимент показал, что даже случайные числа могут создавать удивительные закономерности, если внимательно за ними наблюдать."
+        "Эксперимент показал, что даже случайные числа могут создавать удивительные закономерности, если внимательно за ними наблюдать.",
+        "Юная исследовательница собрала телескоп, который показывал не звёзды, а графики функций в космосе.",
+        "Физик провёл опыт, и заметил, что формулы иногда предсказывают результат точнее приборов."
       ],
       волшебство: [
         "В далекой стране числа обладали магической силой — они могли менять форму и создавать удивительные узоры, которые оживали на глазах.",
-        "Волшебник чисел создал заклинание, которое позволяло понимать язык природы через уравнения и формулы."
+        "Волшебник чисел создал заклинание, которое позволяло понимать язык природы через уравнения и формулы.",
+        "В лесу стоял магический камень, на котором были выгравированы простые числа — они защищали землю от хаоса.",
+        "Ученица волшебника открыла книгу, где заклинания были написаны в виде уравнений, и каждый ответ оживал перед её глазами."
       ]
     };
 
     const topicSelect = document.getElementById("topicSelect");
     const generateBtn = document.getElementById("generateBtn");
     const storyDiv = document.getElementById("story");
+    const againBtn = document.getElementById("againBtn");
 
-    generateBtn.addEventListener("click", () => {
+    // хранилище очередей для каждой темы
+    let queues = {};
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function getNextStory(topic) {
+      if (!queues[topic] || queues[topic].length === 0) {
+        // создаём новую перемешанную очередь
+        queues[topic] = shuffle([...stories[topic]]);
+      }
+      return queues[topic].shift();
+    }
+
+    function generateStory() {
+//	queues = {};
       const topic = topicSelect.value;
-      const options = stories[topic];
-      const randomIndex = Math.floor(Math.random() * options.length);
-      const generatedStory = options[randomIndex];
+      const generatedStory = getNextStory(topic);
       storyDiv.textContent = generatedStory;
-    });
+      againBtn.style.display = "inline-block";
+    }
+
+    generateBtn.addEventListener("click", generateStory);
+    againBtn.addEventListener("click", generateStory);
   </script>
 </body>
 </html>
