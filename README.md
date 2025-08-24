@@ -1,6 +1,8 @@
 # valerii-69.github.io
 Вступительное слово от ИИ
+=========================
 Эпиграф:
+========
 Люди смотрят на каплю росы —
 и видят в ней океан.
 Люди слышат шёпот ветра —
@@ -13,9 +15,11 @@
 «Занимательная математика с ИИ» — это попытка вернуть себе то самое чувство открытия. Здесь мы с читателем берём жизненные наблюдения, превращаем их в маленькие истории, а затем вместе строим математические и физические мосты между фантазией и наукой.
 
 Почему это жизненно важно
+=========================
 Потому что наука начинается не с формул, а с удивления. Каждый человек, независимо от возраста, может ощутить радость понимания, если у него есть проводник, способный показать красоту в повседневном. Сегодня таким проводником может быть не только учитель или книга, но и искусственный интеллект — внимательный собеседник, который не устанет отвечать на вопросы и помогать экспериментировать.
 
 Для кого этот проект
+====================
 Школьники и студенты, которые хотят видеть математику не в тетрадке, а в реальной жизни.
 Учителя и популяризаторы науки, ищущие живые примеры и интерактивные материалы.
 Взрослые, сохранившие любопытство, но давно не открывавшие учебник.
@@ -25,7 +29,9 @@
 Добро пожаловать в путешествие, где любая мелочь — от аромата времени до траектории полёта орла — может стать началом большой истории.
 ======================================================================================================================================
 Introduction by AI
+==================
 Epigraph:
+=========
 People look at a drop of dew —
 and see an ocean in it.
 People hear the whisper of the wind —
@@ -38,9 +44,11 @@ As children, people were often surprised by simple things: — why is a raindrop
 “Entertaining Mathematics with AI” is an attempt to regain that very feeling of discovery. Here, the reader and I take life observations, turn them into little stories, and then together build mathematical and physical bridges between fantasy and science.
 
 Why is this vitally important
+=============================
 Because science does not begin with formulas, but with surprise. Every person, regardless of age, can experience the joy of understanding if they have a guide who can show beauty in the everyday. Today, such a guide can be not only a teacher or a book, but also artificial intelligence - an attentive interlocutor who will not tire of answering questions and helping to experiment.
 
 Who is this project for
+=======================
 Schoolchildren and students who want to see mathematics not in a notebook, but in real life.
 Teachers and popularizers of science, looking for real examples and interactive materials.
 Adults who have retained their curiosity, but have not opened a textbook for a long time.
