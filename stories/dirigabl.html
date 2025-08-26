@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Эффект Магнуса: цилиндр + крыло</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!--  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    label { display: flex; flex-direction: column; font-size: 14px; }
+    input { margin-top: 4px; }
+    .layout { display: flex; gap: 20px; align-items: flex-start; }
+    .values { margin-top: 10px; font-size: 14px; }
+    .values span { display: block; margin: 4px 0; }
+  </style>-->
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
+  <div>
+<img src="../images/magnus_1.png" alt="Модель Дирижабль" width="100%"/><br>
+<img src="../images/magnus_2.png" alt="Модель Дирижабль" width="100%"/><br>
+<img src="../images/magnus_3.png" alt="Модель Дирижабль" width="100%"/><br>
+<img src="../images/dirigabl_1.png" alt="Модель Дирижабль" width="100%"/><br>
+<img src="../images/dirigabl_2.png" alt="Модель Дирижабль" width="100%"/><br>
+</div>
+  <h2>Симуляция: цилиндр (ротор Флеттнера) + крыло</h2>
+  <div class="controls">
+    <label>Скорость ветра (м/с): 
+      <input type="range" id="windSpeed" min="1" max="30" step="1" value="10" oninput="updateChart()">
+      <span id="windSpeedVal">10</span>
+    </label>
+    <label>Радиус цилиндра (м): 
+      <input type="range" id="radius" min="0.1" max="3" step="0.1" value="1" oninput="updateChart()">
+      <span id="radiusVal">1</span>
+    </label>
+    <label>Угловая скорость (рад/с): 
+      <input type="range" id="omega" min="0" max="50" step="1" value="20" oninput="updateChart()">
+      <span id="omegaVal">20</span>
+    </label>
+    <label>Угол крыла (градусы): 
+      <input type="range" id="wingAngle" min="-45" max="45" step="1" value="0" oninput="updateChart()">
+      <span id="wingAngleVal">0</span>
+    </label>
+    <button id="start">Старт</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <canvas id="forceChart" width="400" height="300"></canvas>
+      <div class="values">
+        <span><b>Fx (продольная сила):</b> <span id="fxVal">0</span> Н</span>
+        <span><b>Fy (боковая сила):</b> <span id="fyVal">0</span> Н</span>
+      </div>
+    </div>
+    <canvas id="animationCanvas" width="400" height="300" style="border:1px solid #ccc;"></canvas>
+  <br><a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+  </div>
+
+  <script>
+let el = id => document.getElementById(id);
+let startBtn = el('start');
+    const rho = 1.225; // плотность воздуха
+    const length = 10; // длина цилиндра, м
+
+    const ctx = document.getElementById('forceChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Боковая сила (Fy)', 'Продольная сила (Fx)'],
+        datasets: [{
+          label: 'Сила (Н)',
+          data: [0, 0],
+          backgroundColor: ['#3e95cd', '#8e5ea2']
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // --- Анимация ---
+    const canvas = document.getElementById("animationCanvas");
+    const ctxAnim = canvas.getContext("2d");
+    let angleRotor = 0; // для вращения ротора
+    let params = { V:10, r:1, omega:20, wingAngle:0 };
+
+    // Массив стрелочек ветра
+    const arrows = [];
+    for (let i=0; i<20; i++) {
+      arrows.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height });
+    }
+
+    function drawArrow(x, y, size=12) {
+      ctxAnim.beginPath();
+      ctxAnim.moveTo(x, y);
+      ctxAnim.lineTo(x+size, y);
+      ctxAnim.lineTo(x+size-4, y-4);
+      ctxAnim.moveTo(x+size, y);
+      ctxAnim.lineTo(x+size-4, y+4);
+      ctxAnim.stroke();
+    }
+
+    function drawAnimation() {
+      ctxAnim.clearRect(0,0,canvas.width,canvas.height);
+
+      const cx = canvas.width/2;
+      const cy = canvas.height/2;
+      const R = 50; // фиксированный визуальный радиус
+
+      // фоновые стрелки ветра
+      ctxAnim.strokeStyle = "rgba(0,0,0,0.5)";
+      arrows.forEach(a => {
+        drawArrow(a.x, a.y);
+        a.x += params.V*0.3; // скорость пропорциональна ветру
+        if (a.x > canvas.width+20) {
+          a.x = -20;
+          a.y = Math.random()*canvas.height;
+        }
+      });
+
+      // ротор (аэростат сверху)
+      ctxAnim.beginPath();
+      ctxAnim.arc(cx, cy, R, 0, 2*Math.PI);
+      ctxAnim.fillStyle = "#cce5ff";
+      ctxAnim.fill();
+      ctxAnim.stroke();
+
+      // вращающаяся метка на роторе
+      ctxAnim.beginPath();
+      ctxAnim.moveTo(cx, cy);
+      ctxAnim.lineTo(cx + R*Math.cos(angleRotor), cy + R*Math.sin(angleRotor));
+      ctxAnim.strokeStyle = "blue";
+      ctxAnim.stroke();
+
+      // крыло
+      const wingLen = 60;
+      const wingAng = params.wingAngle;
+      ctxAnim.save();
+      ctxAnim.translate(cx+R+10, cy);
+      ctxAnim.rotate(wingAng);
+      ctxAnim.fillStyle = "gray";
+      ctxAnim.fillRect(0, -10, wingLen, 20);
+      ctxAnim.restore();
+
+      // вектор силы
+      const circulation = 2 * Math.PI * params.r * params.r * params.omega;
+      const L = rho * params.V * circulation * length;
+      const Fx = L * Math.sin(wingAng);
+      const Fy = L * Math.cos(wingAng);
+      const scale = 0.0005; // масштаб для визуализации
+
+      ctxAnim.beginPath();
+      ctxAnim.moveTo(cx, cy);
+      ctxAnim.lineTo(cx + Fx*scale, cy - Fy*scale);
+      ctxAnim.strokeStyle = "red";
+      ctxAnim.lineWidth = 2;
+      ctxAnim.stroke();
+
+      // текст
+      ctxAnim.fillStyle = "black";
+      ctxAnim.fillText("Сила", cx + Fx*scale + 5, cy - Fy*scale);
+
+      // обновление угла вращения
+      angleRotor += params.omega * 0.02;
+      requestAnimationFrame(drawAnimation);
+    }
+
+    function updateChart() {
+      params.V = parseFloat(document.getElementById('windSpeed').value);
+      params.r = parseFloat(document.getElementById('radius').value);
+      params.omega = parseFloat(document.getElementById('omega').value);
+      params.wingAngle = parseFloat(document.getElementById('wingAngle').value) * Math.PI / 180;
+
+      // обновляем значения рядом со слайдерами
+      document.getElementById('windSpeedVal').textContent = params.V;
+      document.getElementById('radiusVal').textContent = params.r.toFixed(1);
+      document.getElementById('omegaVal').textContent = params.omega;
+      document.getElementById('wingAngleVal').textContent = (params.wingAngle*180/Math.PI).toFixed(0);
+
+      // циркуляция
+      const circulation = 2 * Math.PI * params.r * params.r * params.omega;
+      const L = rho * params.V * circulation * length;
+      const Fx = L * Math.sin(params.wingAngle);
+      const Fy = L * Math.cos(params.wingAngle);
+
+      // обновление графика
+      chart.data.datasets[0].data = [Fy, Fx];
+      chart.update();
+
+      // обновление численных значений
+      document.getElementById('fxVal').textContent = Fx.toFixed(2);
+      document.getElementById('fyVal').textContent = Fy.toFixed(2);
+    }
+startBtn.addEventListener('click', ()=>{
+    updateChart();
+    drawAnimation();
+	});
+	
+  </script>
+</body>
+</html>

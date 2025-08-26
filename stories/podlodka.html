@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Подводная лодка: скорость, RCS и внешний вид</title>
+<!--<style>
+body { font-family: sans-serif; margin: 20px; }
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+label { display: flex; flex-direction: column; font-size: 14px; }
+input { margin-top: 4px; }
+canvas { border:1px solid #ccc; margin-top:20px; }
+.values span { display:block; margin:4px 0; }
+</style>-->
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
+<div>
+<img src="../images/podlodka_1.png" alt="Модель Подлодка" width="100%"/><br>
+<img src="../images/podlodka_2.png" alt="Модель Подлодка" width="100%"/><br>
+<h2>Подводная лодка: скорость, заметность и внешний вид</h2>
+
+<div class="controls">
+<label>Степень гладкости (α): 
+<input type="range" id="alpha" min="0" max="1" step="0.01" value="0.05" oninput="updateParams()">
+<span id="alphaVal">0.05</span>
+</label>
+<label>Сила двигателя (F_prop, Н): 
+<input type="range" id="Fprop" min="0" max="10000" step="100" value="5000" oninput="updateParams()">
+<span id="FpropVal">5000</span>
+</label>
+</div>
+
+<div class="values">
+<span><b>Сопротивление воды (Н):</b> <span id="FdragVal">0</span></span><br>
+<span><b>Скорость лодки (м/с):</b> <span id="vVal">0</span></span><br>
+<span><b>Радарная заметность (RCS, м²):</b> <span id="RCSVal">0</span></span><br>
+    <button id="start">Старт</button>
+</div>
+
+<canvas id="speedChart" width="600" height="250"></canvas>
+<canvas id="rcsChart" width="600" height="250"></canvas>
+<canvas id="visualCanvas" width="600" height="200"></canvas>
+<br><a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let rho = 1000;      // плотность воды, кг/м³
+let S = 50;           // площадь корпуса, м²
+let m = 50000;        // масса лодки, кг
+let C_f = 0.002;      // сопротивление гладкой поверхности
+let C_p = 0.008;      // сопротивление пористой поверхности
+let RCS_min = 1;      // минимальная заметность
+let RCS_max = 50;     // максимальная заметность
+
+let alpha = 0.05;          
+let F_prop = 5000;      
+let v = 0;              
+let el = id => document.getElementById(id);
+let startBtn = el('start');
+let ctxSpeed = document.getElementById('speedChart').getContext('2d');
+let speedChart = new Chart(ctxSpeed, {
+type: 'line',
+data: { labels: [0], datasets: [{label:'Скорость (м/с)', data:[0], borderColor:'blue', fill:false}] },
+options: { scales: { x: { title:{text:'Время (с)', display:true} }, y:{title:{text:'Скорость (м/с)', display:true}, beginAtZero:true} } }
+});
+
+let ctxRCS = document.getElementById('rcsChart').getContext('2d');
+let rcsChart = new Chart(ctxRCS, {
+type: 'line',
+data: { labels: [0], datasets: [{label:'RCS (м²)', data:[RCS_max], borderColor:'red', fill:false}] },
+options: { scales: { x: { title:{text:'Время (с)', display:true} }, y:{title:{text:'RCS (м²)', display:true}, beginAtZero:true} } }
+});
+
+const visualCanvas = document.getElementById('visualCanvas');
+const ctxVis = visualCanvas.getContext('2d');
+
+function updateParams() {
+  alpha = parseFloat(document.getElementById('alpha').value);
+  F_prop = parseFloat(document.getElementById('Fprop').value);
+  document.getElementById('alphaVal').textContent = alpha.toFixed(2);
+  document.getElementById('FpropVal').textContent = F_prop;
+}
+
+let t = 0;
+ let animationFrameId;
+ let labelspeedChartCount = 0;
+ let labelrcsChartCount = 0;
+ let vS=0,rcsS=0;
+function simulateStep() {
+  const C_eff = C_p*(1-alpha) + C_f*alpha;
+  const F_drag = 0.5 * rho * v*v * S * C_eff;
+  const a = (F_prop - F_drag)/m;
+  v += a;//*0.1; 
+  t += 0.1;
+
+  const RCS = RCS_min*(1-alpha) + RCS_max*alpha;
+
+  document.getElementById('FdragVal').textContent = F_drag.toFixed(2);
+//  document.getElementById('vVal').textContent = v.toFixed(2);
+//  document.getElementById('RCSVal').textContent = RCS.toFixed(2);
+
+  speedChart.data.labels.push(t.toFixed(1));
+  speedChart.data.datasets[0].data.push(v.toFixed(2));
+  labelspeedChartCount = speedChart.data.datasets[0].data.length;
+  vS = speedChart.data.datasets[0].data[labelspeedChartCount-1];
+  if(vS < v){
+  document.getElementById('vVal').textContent = v.toFixed(2);
+  }
+  
+  rcsChart.data.labels.push(t.toFixed(1));
+  rcsChart.data.datasets[0].data.push(RCS.toFixed(2));
+  labelrcsChartCount = rcsChart.data.datasets[0].data.length;
+  rcsS = rcsChart.data.datasets[0].data[labelrcsChartCount-1];
+	if(rcsS >= RCS){
+	document.getElementById('RCSVal').textContent = RCS.toFixed(2);
+	}
+	
+  if(speedChart.data.labels.length < 200){
+  speedChart.update();
+  rcsChart.update();
+
+   drawVisual(alpha);
+//	simulateStep();
+  animationFrameId = requestAnimationFrame(simulateStep);
+  }else{
+	pauseAnimation();
+	alert('Прогноз закончен.');
+	}
+}
+
+    function pauseAnimation() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null; // Clear the ID
+      }
+    }
+    function resumeAnimation() {
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(simulateStep);
+      }
+    }
+
+
+
+
+// Визуализация корпуса: цвет от серого (пористый) до синего (гладкий)
+function drawVisual(alpha) {
+  ctxVis.clearRect(0,0,visualCanvas.width, visualCanvas.height);
+  const w = 500; const h = 100;
+  const x = 50; const y = 50;
+
+  // цвет: interpolate между серым (#555555) и синим (#1E90FF)
+  const r = Math.round(85*(1-alpha) + 30*alpha);
+  const g = Math.round(85*(1-alpha) + 144*alpha);
+  const b = Math.round(85*(1-alpha) + 255*alpha);
+  ctxVis.fillStyle = `rgb(${r},${g},${b})`;
+
+  // рисуем "корпус лодки"
+  ctxVis.beginPath();
+  ctxVis.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI*2);
+  ctxVis.fill();
+
+  // контур
+  ctxVis.strokeStyle = "#000000";
+  ctxVis.lineWidth = 2;
+  ctxVis.stroke();
+}
+startBtn.addEventListener('click', ()=>{
+ rho = 1000;      // плотность воды, кг/м³
+ S = 50;           // площадь корпуса, м²
+ m = 50000;        // масса лодки, кг
+ C_f = 0.002;      // сопротивление гладкой поверхности
+ C_p = 0.008;      // сопротивление пористой поверхности
+ RCS_min = 1;      // минимальная заметность
+ RCS_max = 50;     // максимальная заметность
+
+ alpha = el('alpha').value;          
+ F_prop = 5000;      
+ v = 0;              
+t = 0;
+    speedChart.data.labels=[]; speedChart.data.datasets[0].data=[];
+    rcsChart.data.labels=[]; rcsChart.data.datasets[0].data=[];
+
+  speedChart.update();
+  rcsChart.update();
+  drawVisual(alpha);
+
+simulateStep();
+});
+
+</script>
+</body>
+</html>

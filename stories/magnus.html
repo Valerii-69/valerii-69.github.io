@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Крученый мяч — модель и симулятор (Magnus effect)</title>
+<!--<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{margin:12px;background:#f6f8fa;color:#111;display:flex;gap:12px;flex-wrap:wrap}
+  .panel{background:white;border-radius:8px;box-shadow:0 6px 18px rgba(17,24,39,0.08);padding:12px;max-width:380px}
+  h1{font-size:18px;margin:0 0 8px}
+  label{display:block;font-size:13px;margin:8px 0 4px}
+  input[type=range]{width:100%}
+  input[type=number]{width:100%;padding:6px;border-radius:6px;border:1px solid #ddd}
+  button{padding:8px 12px;border-radius:8px;border:none;background:#0366d6;color:white;cursor:pointer;margin-right:8px}
+  button.secondary{background:#e6eefc;color:#0366d6}
+  #canvasWrap{flex:1;min-width:480px;min-height:480px;display:flex;align-items:center;justify-content:center}
+  canvas{background:linear-gradient(180deg,#dff0ff,#ffffff);border-radius:8px;box-shadow:0 6px 18px rgba(17,24,39,0.06)}
+  .small{font-size:12px;color:#444}
+  .row{display:flex;gap:8px}
+  .stat{font-family:monospace;background:#f3f5f7;padding:6px;border-radius:6px;margin-top:8px}
+  footer{font-size:12px;color:#666;margin-top:8px}
+</style>-->
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
+<img src="../images/mjach_1.png" alt="Модель Крученый мяч" width="100%"/><br>
+<img src="../images/mjach_2.png" alt="Модель Крученый мяч" width="100%"/><br>
+<div class="panel" id="controls">
+  <h1>Симулятор: кручёный мяч (Magnus)</h1>
+
+  <label>Начальная скорость (м/с) <span id="vval">30</span></label>
+  <input id="speed" type="range" min="1" max="60" value="30">
+
+  <label>Угол броска (°) <span id="angval">20</span></label>
+  <input id="angle" type="range" min="-30" max="80" value="20">
+
+  <label>Вращение (RPM) — оборотов в минуту <span id="rpmval">1500</span></label>
+  <input id="rpm" type="range" min="-4000" max="4000" value="1500">
+
+  <label>Радиус мяча (м) <span id="rval">0.11</span></label>
+  <input id="radius" type="range" min="0.03" max="0.3" step="0.01" value="0.11">
+
+  <label>Масса мяча (кг) <span id="mval">0.43</span></label>
+  <input id="mass" type="range" min="0.05" max="1.5" step="0.01" value="0.43">
+
+  <label>Коэфф. сопротивления C<sub>d</sub> <span id="cdval">0.47</span></label>
+  <input id="cd" type="range" min="0.1" max="1.2" step="0.01" value="0.47">
+
+  <label>k<sub>cl</sub> (эмпирический) <span id="kclval">1.0</span></label>
+  <input id="kcl" type="range" min="0" max="3" step="0.01" value="1.0">
+
+  <label>Плотность воздуха (kg/m³) <span id="rhoval">1.225</span></label>
+  <input id="rho" type="range" min="0.8" max="1.4" step="0.01" value="1.225">
+
+  <div style="margin-top:10px" class="row">
+    <button id="start">Старт</button>
+    <button id="pause" class="secondary">Пауза</button>
+    <button id="reset" class="secondary">Сброс</button>
+  </div>
+
+  <div class="stat small" id="readouts">
+    <div>t = <span id="t">0.00</span> с</div>
+    <div>x = <span id="x">0.00</span> м, y = <span id="y">0.00</span> м</div>
+    <div>vx = <span id="vx">0.00</span> м/с, vy = <span id="vy">0.00</span> м/с</div>
+    <div>rpm = <span id="rpmr">1500</span>, ω = <span id="w">157.08</span> рад/с</div>
+  </div>
+
+  <footer>Модель: gravity + drag + Magnus (см. справку в коде). Параметры — эмпирические.</footer>
+</div>
+</div>
+<div id="canvasWrap">
+  <canvas id="canvas" width="900" height="600"></canvas>
+</div>
+
+<script>
+/*
+  Симулятор кручёного мяча (2D).
+  Модель:
+    m dv/dt = F_g + F_d + F_m
+  F_g = (0, -m g)
+  F_d = -0.5 * rho * C_d * A * v * v_hat * v   (в коде: -0.5*rho*C_d*A*v*vel)
+  F_m = 0.5 * rho * A * C_l * v^2 * n_hat
+    C_l = k_cl * (r * omega / v)   (если v>eps)
+    n_hat = perp unit vector to v: (-vy, vx)/v
+  В коде реализованы защиты от деления на ноль и настройка коэффициентов.
+*/
+
+// === UI элементы ===
+const el = id => document.getElementById(id);
+const speed = el('speed'), angle = el('angle'), rpm = el('rpm'),
+      radius = el('radius'), mass = el('mass'), cd = el('cd'), kcl = el('kcl'),
+      rho = el('rho');
+
+const vval = el('vval'), angval = el('angval'), rpmval = el('rpmval'),
+      rval = el('rval'), mval = el('mval'), cdval = el('cdval'),
+      kclval = el('kclval'), rhoval = el('rhoval');
+
+const startBtn = el('start'), pauseBtn = el('pause'), resetBtn = el('reset');
+const tOut = el('t'), xOut = el('x'), yOut = el('y'), vxOut = el('vx'), vyOut = el('vy'), rpmOut = el('rpmr'), wOut = el('w');
+
+const cvs = el('canvas');
+const ctx = cvs.getContext('2d');
+
+function updateDisplays(){
+  vval.textContent = speed.value;
+  angval.textContent = angle.value;
+  rpmval.textContent = rpm.value;
+  rval.textContent = +radius.value;
+  mval.textContent = +mass.value;
+  cdval.textContent = +cd.value;
+  kclval.textContent = +kcl.value;
+  rhoval.textContent = +rho.value;
+}
+[ speed, angle, rpm, radius, mass, cd, kcl, rho ].forEach(inp => {
+  inp.addEventListener('input', ()=>{ updateDisplays(); updateDerived(); });
+});
+updateDisplays();
+
+// === сцена и параметры ===
+const g = 9.81;
+let params = {};
+function updateDerived(){
+  params.v0 = +speed.value;
+  params.angle = (+angle.value) * Math.PI/180;
+  params.rpm = +rpm.value;
+  params.omega = params.rpm * 2 * Math.PI / 60; // rad/s
+  params.r = +radius.value;
+  params.m = +mass.value;
+  params.Cd = +cd.value;
+  params.kcl = +kcl.value;
+  params.rho = +rho.value;
+  params.A = Math.PI * params.r * params.r;
+  rpmOut.textContent = params.rpm;
+  wOut.textContent = params.omega.toFixed(2);
+}
+updateDerived();
+
+// === интеграция ===
+let state = {}; // x,y,vx,vy,t
+function resetState(){
+  state.t = 0;
+  state.x = 0;
+  state.y = 1.0; // стартовая высота 1 м
+  state.vx = params.v0 * Math.cos(params.angle);
+  state.vy = params.v0 * Math.sin(params.angle);
+  traj = [{x:state.x, y:state.y}];
+  playing = false;
+}
+updateDerived();
+
+let playing = false;
+let lastFrame = null;
+let traj = [];
+let sim_dt = 0.005; // внутренняя фиксированная dt интеграции (s)
+resetState();
+
+startBtn.addEventListener('click', ()=>{ playing = true; lastFrame = performance.now(); });
+pauseBtn.addEventListener('click', ()=>{ playing = false; });
+resetBtn.addEventListener('click', ()=>{ updateDerived(); resetState(); draw(); });
+
+// RK4 шаг для устойчивости
+function computeForces(vx, vy){
+  const v = Math.hypot(vx, vy);
+  // Gravity
+  const Fg = {x:0, y: -params.m * g};
+
+  // Drag: -0.5 * rho * Cd * A * v * v_vec
+  let Fd = {x:0, y:0};
+  if (v > 1e-8){
+    const magFd = 0.5 * params.rho * params.Cd * params.A * v * v; // v^2
+    Fd.x = - magFd * (vx / v);
+    Fd.y = - magFd * (vy / v);
+  }
+
+  // Magnus:
+  // C_l = k_cl * (r * omega / v)
+  // Fm = 0.5 * rho * A * C_l * v^2 * n_hat  where n_hat = (-vy, vx)/v
+  let Fm = {x:0, y:0};
+  if (v > 1e-6){
+    const S = (params.r * params.omega) / v; // spin ratio
+    const Cl = params.kcl * S;
+    const magFm = 0.5 * params.rho * params.A * Cl * v * v;
+    // perp unit vector
+    const nx = - vy / v;
+    const ny = vx / v;
+    Fm.x = magFm * nx;
+    Fm.y = magFm * ny;
+  }
+  return {Fg, Fd, Fm};
+}
+
+function deriv(s){
+  // s = {x,y,vx,vy}
+  const f = computeForces(s.vx, s.vy);
+  const ax = (f.Fg.x + f.Fd.x + f.Fm.x) / params.m;
+  const ay = (f.Fg.y + f.Fd.y + f.Fm.y) / params.m;
+  return {dx: s.vx, dy: s.vy, dvx: ax, dvy: ay};
+}
+
+function rk4_step(dt){
+  const s0 = {x: state.x, y: state.y, vx: state.vx, vy: state.vy};
+
+  const k1 = deriv(s0);
+
+  const s1 = {x: s0.x + 0.5*dt*k1.dx, y: s0.y + 0.5*dt*k1.dy,
+              vx: s0.vx + 0.5*dt*k1.dvx, vy: s0.vy + 0.5*dt*k1.dvy};
+  const k2 = deriv(s1);
+
+  const s2 = {x: s0.x + 0.5*dt*k2.dx, y: s0.y + 0.5*dt*k2.dy,
+              vx: s0.vx + 0.5*dt*k2.dvx, vy: s0.vy + 0.5*dt*k2.dvy};
+  const k3 = deriv(s2);
+
+  const s3 = {x: s0.x + dt*k3.dx, y: s0.y + dt*k3.dy,
+              vx: s0.vx + dt*k3.dvx, vy: s0.vy + dt*k3.dvy};
+  const k4 = deriv(s3);
+
+  state.x += dt * (k1.dx + 2*k2.dx + 2*k3.dx + k4.dx) / 6;
+  state.y += dt * (k1.dy + 2*k2.dy + 2*k3.dy + k4.dy) / 6;
+  state.vx += dt * (k1.dvx + 2*k2.dvx + 2*k3.dvx + k4.dvx) / 6;
+  state.vy += dt * (k1.dvy + 2*k2.dvy + 2*k3.dvy + k4.dvy) / 6;
+  state.t += dt;
+}
+
+// преобразование мировых координат (м) в пиксели
+function draw(){
+  // canvas cleared and scaled so ground is near bottom
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  const pad = 40;
+  // вычислим масштаб: хотим видеть весь пройденный путь по x
+  const maxX = Math.max(20, Math.max(...traj.map(p=>p.x)) + 5);
+  const maxY = Math.max(5, ...traj.map(p=>p.y) + 2);
+
+  const scaleX = (cvs.width - pad*2) / maxX;
+  const scaleY = (cvs.height - pad*2) / (Math.max(5, Math.max(...traj.map(p=>p.y)) + 2));
+  const scale = Math.min(scaleX, scaleY);
+
+  const toPx = (mx, my) => {
+    const px = pad + mx * scale;
+    const py = cvs.height - (pad + my * scale);
+    return {px, py};
+  };
+
+  // draw grid
+  ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+  ctx.lineWidth = 1;
+  for(let gx=0; gx<=10; gx++){
+    const x = gx * (maxX/10);
+    const p = toPx(x,0);
+    ctx.beginPath(); ctx.moveTo(p.px,0); ctx.lineTo(p.px,cvs.height); ctx.stroke();
+  }
+
+  // draw trajectory
+  ctx.beginPath();
+  for(let i=0;i<traj.length;i++){
+    const p = toPx(traj[i].x, traj[i].y);
+    if (i===0) ctx.moveTo(p.px, p.py); else ctx.lineTo(p.px, p.py);
+  }
+  ctx.strokeStyle = '#e03b3b';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // draw ball
+  const pos = toPx(state.x, state.y);
+  const pixR = Math.max(3, params.r * scale);
+  ctx.beginPath();
+  ctx.fillStyle = '#ffdd80';
+  ctx.arc(pos.px, pos.py, pixR, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#b36b00'; ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // draw velocity vector
+  const vscale = 12;
+  ctx.beginPath();
+  ctx.moveTo(pos.px, pos.py);
+  ctx.lineTo(pos.px + state.vx * vscale, pos.py - state.vy * vscale);
+  ctx.strokeStyle = '#034f84';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // draw Magnus force vector (for visualization)
+  const forces = computeForces(state.vx, state.vy);
+  const Ftotx = forces.Fg.x + forces.Fd.x + forces.Fm.x;
+  const Ftoty = forces.Fg.y + forces.Fd.y + forces.Fm.y;
+  const fscale = 0.06; // визуальная шкала
+  // Draw F_m in green
+  ctx.beginPath();
+  ctx.moveTo(pos.px, pos.py);
+  ctx.lineTo(pos.px + forces.Fm.x * fscale, pos.px? pos.py - forces.Fm.y * fscale : pos.py - forces.Fm.y * fscale );
+  ctx.strokeStyle = '#0a7a16';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // draw total force (black)
+  ctx.beginPath();
+  ctx.moveTo(pos.px, pos.py);
+  ctx.lineTo(pos.px + Ftotx * fscale, pos.py - Ftoty * fscale);
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ground line
+  const zero = toPx(0,0);
+  ctx.beginPath(); ctx.moveTo(0, zero.py); ctx.lineTo(cvs.width, zero.py);
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // labels
+  ctx.fillStyle = '#000';
+  ctx.font = '12px monospace';
+  ctx.fillText(`t=${state.t.toFixed(2)} s`, 10, 18);
+  ctx.fillText(`x=${state.x.toFixed(2)} m  y=${state.y.toFixed(2)} m`, 10, 36);
+}
+
+function stepSim(dtReal){
+  // advance the simulation by dtReal seconds using fixed small steps
+  let remain = dtReal;
+  while(remain > 1e-6){
+    const dt = Math.min(sim_dt, remain);
+    rk4_step(dt);
+    traj.push({x: state.x, y: state.y});
+    // stop when hits ground
+    if (state.y <= 0){
+      state.y = 0;
+      playing = false;
+      break;
+    }
+    remain -= dt;
+  }
+}
+
+// main loop
+function frame(now){
+  if (!lastFrame) lastFrame = now;
+  const elapsed = (now - lastFrame) / 1000;
+  lastFrame = now;
+
+  if (playing){
+    // update params in case user changed while running
+    updateDerived();
+    // advance sim by elapsed seconds
+    stepSim(elapsed);
+  }
+
+  // update UI numbers
+  tOut.textContent = state.t.toFixed(2);
+  xOut.textContent = state.x.toFixed(2);
+  yOut.textContent = state.y.toFixed(2);
+  vxOut.textContent = state.vx.toFixed(2);
+  vyOut.textContent = state.vy.toFixed(2);
+
+  draw();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// initialize initial draw
+draw();
+
+</script>
+</body>
+</html>
