@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Панель администратора</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    table { border-collapse: collapse; margin: 10px 0; width: 100%; max-width: 600px; }
+    th, td { border: 1px solid #ccc; padding: 5px 10px; text-align: left; }
+    h1, h2 { margin-top: 20px; }
+    #miniWidget { margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>Панель администратора</h1>
+
+  <div id="miniWidget">
+    <h2>Мини-виджет (топ-3 раздела)</h2>
+    <ul id="miniList"></ul>
+  </div>
+
+  <h2>Топ-страницы за сутки</h2>
+  <table id="topPagesTable">
+    <thead><tr><th>Страница</th><th>Посещений</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Топ-разделы за сутки</h2>
+  <table id="topSectionsTable">
+    <thead><tr><th>Раздел</th><th>Посещений</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Динамика посещений по часам</h2>
+  <canvas id="visitsChart" width="800" height="400"></canvas>
+
+  <!-- mini-widget.js -->
+  <script>
+  (async function(){
+    const sheetId = "1iEYqWNyH1Tf6zS4z6EfcXL1mmpBZho56gDwBMjnZKBI"; //"ВАШ_ID_ТАБЛИЦЫ"; // вставьте ID таблицы
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+
+    let sectionCounts = {};
+
+    async function fetchData(){
+      try{
+        const res = await fetch(csvUrl);
+        const text = await res.text();
+        const rows = text.trim().split("\n").slice(1).map(r=>r.split(","));
+        const prevCounts = {...sectionCounts};
+        sectionCounts = {};
+        rows.forEach(r=>{
+          const section = r[6] || "Не указан";
+          sectionCounts[section] = (sectionCounts[section]||0)+1;
+        });
+        return prevCounts;
+      }catch(e){console.error(e); return {};}
+    }
+
+    function renderMini(prevCounts){
+      const ul = document.getElementById("miniList");
+      ul.innerHTML = "";
+      const top3 = Object.entries(sectionCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      top3.forEach(([sec,count])=>{
+        const li = document.createElement("li");
+        li.textContent = `${sec}: ${count}`;
+        li.style.transition = "background 0.3s";
+        if(prevCounts[sec] !== undefined && prevCounts[sec] !== count){
+          li.style.background = "yellow";
+          setTimeout(()=>li.style.background="",500);
+        }
+        ul.appendChild(li);
+      });
+    }
+
+    async function updateMini(){
+      const prev = await fetchData();
+      renderMini(prev);
+    }
+
+    await updateMini();
+    setInterval(updateMini,8000);
+  })();
+  </script>
+
+  <!-- admin.js -->
+  <script>
+  (async function(){
+    const sheetId = "1iEYqWNyH1Tf6zS4z6EfcXL1mmpBZho56gDwBMjnZKBI"; //"ВАШ_ID_ТАБЛИЦЫ"; // вставьте ID таблицы
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+
+    async function fetchData(){
+      const res = await fetch(csvUrl);
+      const text = await res.text();
+      return text.trim().split("\n").slice(1).map(r=>r.split(","));
+    }
+
+    function getTodayRows(rows){
+      const today = new Date().toISOString().slice(0,10);
+      return rows.filter(r => r[0].startsWith(today));
+    }
+
+    function countByField(rows,index){
+      const counts = {};
+      rows.forEach(r=>{
+        const key = r[index] || "Не указан";
+        counts[key] = (counts[key]||0)+1;
+      });
+      return counts;
+    }
+
+    function fillTable(id,obj){
+      const tbody = document.getElementById(id).querySelector("tbody");
+      tbody.innerHTML = "";
+      Object.entries(obj).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${k}</td><td>${v}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getHourlyCounts(rows){
+      const hoursCount = Array(24).fill(0);
+      rows.forEach(r=>{
+        const hour = new Date(r[0]).getHours();
+        hoursCount[hour]++;
+      });
+      return hoursCount;
+    }
+
+    async function updateAdmin(){
+      const rows = await fetchData();
+      const todayRows = getTodayRows(rows);
+
+      const pageCounts = countByField(todayRows,1);
+      const sectionCounts = countByField(todayRows,6);
+
+      fillTable("topPagesTable", pageCounts);
+      fillTable("topSectionsTable", sectionCounts);
+
+      const hourly = getHourlyCounts(todayRows);
+      const ctx = document.getElementById("visitsChart").getContext("2d");
+      if(window.visitsChart) window.visitsChart.destroy();
+      window.visitsChart = new Chart(ctx,{
+        type:"line",
+        data:{
+          labels:Array.from({length:24},(_,i)=>i+":00"),
+          datasets:[{
+            label:"Посещений за сутки",
+            data:hourly,
+            borderColor:"blue",
+            backgroundColor:"rgba(0,0,255,0.1)",
+            fill:true
+          }]
+        },
+        options:{responsive:true, plugins:{legend:{display:true}}}
+      });
+    }
+
+    await updateAdmin();
+    setInterval(updateAdmin,10000);
+  })();
+  </script>
+</body>
+</html>
