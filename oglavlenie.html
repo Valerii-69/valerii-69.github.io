@@ -190,7 +190,6 @@
 
 <script>
 (async function() {
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxv45YdEHTVgkHFzw1B--fXxe0Zat9pFtlniJcxzYUUblruS_0jIb-zZ6i6c1qNpYry/exec"; //"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
   const pageUrl = window.location.href;
 
   // Получаем IP посетителя
@@ -221,10 +220,17 @@
 	
   const ip = await getIP();
   const geo = await getGeo(ip);
-
+ //"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
+ const scriptURL = "https://script.google.com/macros/s/AKfycbxv45YdEHTVgkHFzw1B--fXxe0Zat9pFtlniJcxzYUUblruS_0jIb-zZ6i6c1qNpYry/exec" +
+    `?page=${encodeURIComponent(pageUrl)}` +
+    `&section=${encodeURIComponent(section)}` +
+    `&ua=${encodeURIComponent(ua)}` +
+    `&ip=${encodeURIComponent(ip)}` +
+    `&geo1=${encodeURIComponent(geo.country)}` +
+    `&geo2=${encodeURIComponent(geo.city)}`; 
   // Отправляем данные на Web App
   try {
-    await fetch(scriptURL, {
+    await fetch(scriptURL/*, {
       method: "GET",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
@@ -235,7 +241,7 @@
         country: geo.country,
         city: geo.city
       })
-    });
+    }*/);
   } catch(e) {
     console.error("Ошибка отправки посещения", e);
   }
@@ -259,6 +265,7 @@
 
 </body>
 </html>
+
 
 
 
