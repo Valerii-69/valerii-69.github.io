@@ -186,8 +186,79 @@
   btn2.addEventListener('click', () => setActive(2));
 })();*/
 </script>
+<div id="visitCounter" style="margin-top:10px;font-weight:bold;"></div>
+
+<script>
+(async function() {
+	//"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbya8TS34Fl6HHyQkrvtuyoZAm2mcPykBY1rR5fh12hzfVD6NacOpX4u4KRJ8Of39iF5iA/exec";
+  const pageUrl = window.location.href;
+
+  // Получаем IP посетителя
+  async function getIP() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip;
+    } catch {
+      return "";
+    }
+  }
+
+  // Получаем географию по IP
+  async function getGeo(ip) {
+    if (!ip) return {country:"", city:""};
+    try {
+      const res = await fetch(`http://ip-api.com/json/${ip}`);
+      const data = await res.json();
+      return {country: data.country, city: data.city};
+    } catch {
+      return {country:"", city:""};
+    }
+  }
+
+  const ip = await getIP();
+  const geo = await getGeo(ip);
+
+  // Отправляем данные на Web App
+  try {
+    await fetch(scriptURL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        date: new Date(),
+        page: pageUrl,
+        ip: ip,
+        ua: navigator.userAgent,
+        country: geo.country,
+        city: geo.city
+      })
+    });
+  } catch(e) {
+    console.error("Ошибка отправки посещения", e);
+  }
+
+  // Получаем текущий счётчик
+  async function updateCounter() {
+    try {
+      const res = await fetch(scriptURL);
+      const data = await res.json();
+      const count = data[pageUrl] || 0;
+      document.getElementById("visitCounter").innerText =
+        `Посещений на этой странице: ${count}`;
+    } catch(e) {
+      console.error("Ошибка получения счётчика", e);
+    }
+  }
+
+  updateCounter();
+  setInterval(updateCounter, 60000); // обновляем каждые 10 секунд
+})();
+</script>
+
 </body>
 </html>
+
 
 
 
