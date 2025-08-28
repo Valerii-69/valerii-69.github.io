@@ -186,6 +186,83 @@
   btn2.addEventListener('click', () => setActive(2));
 })();*/
 </script>
+<div id="visitCounter" style="margin-top:10px;font-weight:bold;"></div>
+
+<script>
+(async function() {
+  const scriptURL = "https://script.google.com/macros/s/AKfycbyA_QGCbiLCD4G9PI0FUk7O3VqbVmd3daBxFS_4ODtuAruw6qGB5ygx2IVRUnHT_Rju/exec";
+  const pageUrl = window.location.href;
+
+  // Укажи раздел для каждой страницы
+  const section = document.body.dataset.section || "Не указан";
+
+  // Получаем IP через CORS-дружественный API
+  async function getIP() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip;
+    } catch {
+      return "";
+    }
+  }
+
+  // Получаем страну и город через ipapi.co
+  async function getGeo(ip) {
+    if (!ip) return {country:"", city:""};
+    try {
+      const res = await fetch(`https://ipapi.co/${ip}/json/`);
+      const data = await res.json();
+      return {
+        country: data.country_name || "",
+        city: data.city || ""
+      };
+    } catch {
+      return {country:"", city:""};
+    }
+  }
+
+  const ip = await getIP();
+  const geo = await getGeo(ip);
+
+  // Отправляем данные на Web App
+  try {
+    await fetch(scriptURL, {
+      method: "POST",
+	   mode: "no-cors",
+		headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        date: new Date(),
+        page: pageUrl,
+        section: section,
+        ip: ip,
+        ua: navigator.userAgent,
+        country: geo.country,
+        city: geo.city
+      })
+    });
+  } catch(e) {
+    console.error("Ошибка отправки посещения", e);
+  }
+
+  // Получаем счётчик для этой страницы
+  async function updateCounter() {
+    try {
+      const res = await fetch(scriptURL);
+      const data = await res.json();
+      const count = data[pageUrl] || 0;
+      document.getElementById("visitCounter").innerText =
+        `Посещений на этой странице: ${count}`;
+    } catch(e) {
+      console.error("Ошибка получения счётчика", e);
+    }
+  }
+
+  updateCounter();
+  setInterval(updateCounter, 60000); // обновляем каждую минуту
+})();
+</script>
 
 </body>
 </html>
+
