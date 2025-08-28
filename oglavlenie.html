@@ -204,18 +204,21 @@
     }
   }
 
-  // Получаем географию по IP
+  // Получаем страну и город через ipapi.co
   async function getGeo(ip) {
     if (!ip) return {country:"", city:""};
     try {
-      const res = await fetch(`https://ip-api.com/json/${ip}`);
+      const res = await fetch(`https://ipapi.co/${ip}/json/`);
       const data = await res.json();
-      return {country: data.country, city: data.city};
+      return {
+        country: data.country_name || "",
+        city: data.city || ""
+      };
     } catch {
       return {country:"", city:""};
     }
   }
-
+	
   const ip = await getIP();
   const geo = await getGeo(ip);
 
@@ -243,8 +246,7 @@
       const res = await fetch(scriptURL);
       const data = await res.json();
       const count = data[pageUrl] || 0;
-      document.getElementById("visitCounter").innerText =
-        `Посещений на этой странице: ${count}`;
+      document.getElementById("visitCounter").innerText = `Посещений на этой странице: ${count}`;
     } catch(e) {
       console.error("Ошибка получения счётчика", e);
     }
@@ -257,6 +259,7 @@
 
 </body>
 </html>
+
 
 
 
