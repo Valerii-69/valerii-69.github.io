@@ -225,7 +225,7 @@
   // Отправляем данные на Web App
   try {
     await fetch(scriptURL, {
-      method: "POST",
+      method: "GET",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
         date: new Date(),
@@ -259,6 +259,7 @@
 
 </body>
 </html>
+
 
 
 
