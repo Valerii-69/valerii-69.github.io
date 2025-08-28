@@ -190,8 +190,9 @@
 
 <script>
 (async function() {
-	//"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
+  // ссылка на Web App
   const scriptURL = "https://script.google.com/macros/s/AKfycbya8TS34Fl6HHyQkrvtuyoZAm2mcPykBY1rR5fh12hzfVD6NacOpX4u4KRJ8Of39iF5iA/exec";
+  const proxy = "https://corsproxy.io/?"; // обход CORS
   const pageUrl = window.location.href;
 
   // Получаем IP посетителя
@@ -205,13 +206,13 @@
     }
   }
 
-  // Получаем географию по IP
+  // Получаем географию по IP (через HTTPS!)
   async function getGeo(ip) {
     if (!ip) return {country:"", city:""};
     try {
-      const res = await fetch(`http://ip-api.com/json/${ip}`);
+      const res = await fetch(`https://ip-api.com/json/${ip}`);
       const data = await res.json();
-      return {country: data.country, city: data.city};
+      return {country: data.country || "", city: data.city || ""};
     } catch {
       return {country:"", city:""};
     }
@@ -222,11 +223,11 @@
 
   // Отправляем данные на Web App
   try {
-    await fetch(scriptURL, {
+    await fetch(proxy + encodeURIComponent(scriptURL), {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
-        date: new Date(),
+        date: new Date().toISOString(),
         page: pageUrl,
         ip: ip,
         ua: navigator.userAgent,
@@ -241,8 +242,18 @@
   // Получаем текущий счётчик
   async function updateCounter() {
     try {
-      const res = await fetch(scriptURL);
-      const data = await res.json();
+      const res = await fetch(proxy + encodeURIComponent(scriptURL));
+      const text = await res.text();
+
+      // если сервер возвращает текст — пробуем парсить JSON
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.warn("Ответ не JSON, пришёл текст:", text);
+        return;
+      }
+
       const count = data[pageUrl] || 0;
       document.getElementById("visitCounter").innerText =
         `Посещений на этой странице: ${count}`;
@@ -252,12 +263,14 @@
   }
 
   updateCounter();
-  setInterval(updateCounter, 60000); // обновляем каждые 10 секунд
+  setInterval(updateCounter, 60000); // обновляем каждую минуту
 })();
 </script>
 
+
 </body>
 </html>
+
 
 
 
