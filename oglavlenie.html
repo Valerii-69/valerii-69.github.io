@@ -191,7 +191,9 @@
 <script>
 (async function() {
   const pageUrl = window.location.href;
-
+  const section = document.body.dataset.section || "Не указан";
+  const ua = navigator.userAgent;
+	
   // Получаем IP посетителя
   async function getIP() {
     try {
@@ -223,7 +225,7 @@
  //"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
  const scriptURL = "https://script.google.com/macros/s/AKfycbxv45YdEHTVgkHFzw1B--fXxe0Zat9pFtlniJcxzYUUblruS_0jIb-zZ6i6c1qNpYry/exec" +
     `?page=${encodeURIComponent(pageUrl)}` +
-   /* `&section=${encodeURIComponent(section)}` +*/
+    `&section=${encodeURIComponent(section)}` +
     `&ua=${encodeURIComponent(ua)}` +
     `&ip=${encodeURIComponent(ip)}` +
     `&geo1=${encodeURIComponent(geo.country)}` +
@@ -265,6 +267,7 @@
 
 </body>
 </html>
+
 
 
 
