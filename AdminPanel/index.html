@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Маркер просмотренного</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f9f9f9;
+    }
+    h3 { color: #333; }
+    input {
+      padding: 8px;
+      margin: 5px;
+      width: 300px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #4CAF50;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h3>Добавить ссылку</h3>
+  <input id="url" type="text" placeholder="Вставь URL">
+  <input id="title" type="text" placeholder="Заголовок">
+  <button onclick="addUrl()">Добавить</button>
+
+  <h3>Статус:</h3>
+  <pre id="status"></pre>
+
+  <script>
+    // 👉 ВСТАВЬ СВОЙ URL от Google Apps Script
+	//"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyp53PyYogd7A3CtIDNAlCRd-qOW-w6e3J-C3hp-m6kbg2LXsZyLlIkNEGvQyUOLNuY/exec";
+    async function addUrl() {
+      let url = document.getElementById("url").value.trim();
+      let title = document.getElementById("title").value.trim();
+      if (!url) return;
+
+      try {
+        let response = await fetch(scriptURL, {
+          method: "POST",
+          body: JSON.stringify({ url, title }),
+          headers: { "Content-Type": "application/json" }
+        });
+
+        let result = await response.json();
+        document.getElementById("status").textContent = 
+          `Ссылка: ${url}\nСтатус: ${result.status}`;
+      } catch (e) {
+        document.getElementById("status").textContent = "Ошибка отправки!";
+      }
+    }
+  </script>
+</body>
+</html>

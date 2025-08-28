@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Маркер просмотренного</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f9f9f9;
+    }
+    h3 { color: #333; }
+    input {
+      padding: 8px;
+      margin: 5px;
+      width: 300px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #4CAF50;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background: #45a049; }
+    #status { margin-top: 20px; font-weight: bold; }
+    #history { margin-top: 30px; background: #fff; padding: 15px; border-radius: 8px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    th { background: #eee; }
+  </style>
+</head>
+<body>
+  <h3>Добавить ссылку</h3>
+  <input id="url" type="text" placeholder="Вставь URL">
+  <input id="title" type="text" placeholder="Заголовок">
+  <button onclick="addUrl()">Добавить</button>
+
+  <h3>Статус:</h3>
+  <pre id="status"></pre>
+
+  <div id="history">
+    <h3>Последние добавленные ссылки</h3>
+    <table id="linksTable">
+      <thead>
+        <tr><th>Дата</th><th>URL</th><th>Заголовок</th><th>Статус</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    // 👉 ВСТАВЬ СВОЙ URL от Google Apps Script
+    const scriptURL = "ВСТАВЬ_ССЫЛКУ_НА_WEB_APP";
+
+    async function addUrl() {
+      let url = document.getElementById("url").value.trim();
+      let title = document.getElementById("title").value.trim();
+      if (!url) return;
+
+      try {
+        let response = await fetch(scriptURL, {
+          method: "POST",
+          body: JSON.stringify({ url, title }),
+          headers: { "Content-Type": "application/json" }
+        });
+
+        let result = await response.json();
+        document.getElementById("status").textContent = 
+          `Ссылка: ${url}\nСтатус: ${result.status}`;
+
+        // Обновляем историю после добавления
+        loadHistory();
+      } catch (e) {
+        document.getElementById("status").textContent = "Ошибка отправки!";
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        // Загружаем CSV-версию таблицы
+        const sheetId = "1WfhbuFEuC_mbXac8HXxXZTN5CJIGQf5SCM4d_F8MqXc"; // ⚡ возьми ID из ссылки на Google Sheet
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        let res = await fetch(url);
+        let csv = await res.text();
+
+        let rows = csv.trim().split("\n").map(r => r.split(","));
+        let tbody = document.querySelector("#linksTable tbody");
+        tbody.innerHTML = "";
+
+        // Пропускаем первую строку (заголовки) и берём последние 10
+        rows.slice(1).slice(-10).reverse().forEach(r => {
+          let tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r[0]}</td><td><a href="${r[1]}" target="_blank">${r[1]}</a></td><td>${r[2]}</td><td>${r[3]}</td>`;
+          tbody.appendChild(tr);
+        });
+
+      } catch (e) {
+        console.error("Ошибка загрузки истории", e);
+      }
+    }
+
+    // Загружаем при старте
+    loadHistory();
+  </script>
+</body>
+</html>
