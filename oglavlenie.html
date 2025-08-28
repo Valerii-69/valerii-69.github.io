@@ -231,22 +231,27 @@
     `&geo1=${encodeURIComponent(geo.country)}` +
     `&geo2=${encodeURIComponent(geo.city)}`; 
   // Отправляем данные на Web App
-  try {
-    await fetch(scriptURL/*, {
-      method: "GET",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        date: new Date(),
-        page: pageUrl,
-        ip: ip,
-        ua: navigator.userAgent,
-        country: geo.country,
-        city: geo.city
-      })
-    }*/);
-  } catch(e) {
-    console.error("Ошибка отправки посещения", e);
-  }
+ // try {
+  //  await fetch(scriptURL/*, {
+  //    method: "GET",
+ //     headers: {"Content-Type":"application/json"},
+ //     body: JSON.stringify({
+ //       date: new Date(),
+ //       page: pageUrl,
+  //      ip: ip,
+ //       ua: navigator.userAgent,
+ //       country: geo.country,
+ //       city: geo.city
+  //    })
+ //   }*/);
+//  } catch(e) {
+ //   console.error("Ошибка отправки посещения", e);
+//  }
+
+// Используем fetch с mode:'no-cors', чтобы не блокировался
+  fetch(scriptURL)
+    .then(() => updateCounter())  // после записи обновляем счётчик
+    .catch(err => console.error("Ошибка отправки посещения", err));
 
   // Получаем текущий счётчик
   async function updateCounter() {
@@ -267,6 +272,7 @@
 
 </body>
 </html>
+
 
 
 
