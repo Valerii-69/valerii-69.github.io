@@ -190,15 +190,14 @@
 
 <script>
 (async function() {
-  // ссылка на Web App
-  const scriptURL = "https://script.google.com/macros/s/AKfycbya8TS34Fl6HHyQkrvtuyoZAm2mcPykBY1rR5fh12hzfVD6NacOpX4u4KRJ8Of39iF5iA/exec";
-  const proxy = "https://corsproxy.io/?"; // обход CORS
+  // ⚡️ ВСТАВЬ URL своего Web App (Deploy → Web App → Anyone)
+  const scriptURL = "https://script.google.com/macros/s/AKfycbyLSVc7t32tZ1AuKeM3l9QLkHgv5_e5uZeXCY6rxT6h39JBG0-YjpSOdwdQHWkM71SR8A/exec";
   const pageUrl = window.location.href;
 
   // Получаем IP посетителя
   async function getIP() {
     try {
-      const res = await fetch("https://api.ipify.org?format=json");
+      const res = await fetch("https://api.ipify.org?format=json"); // HTTPS
       const data = await res.json();
       return data.ip;
     } catch {
@@ -206,13 +205,16 @@
     }
   }
 
-  // Получаем географию по IP (через HTTPS!)
+  // Получаем географию по IP
   async function getGeo(ip) {
     if (!ip) return {country:"", city:""};
     try {
-      const res = await fetch(`https://ip-api.com/json/${ip}`);
+      const res = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,city`); // HTTPS
       const data = await res.json();
-      return {country: data.country || "", city: data.city || ""};
+      if (data.status === "success") {
+        return {country: data.country, city: data.city};
+      }
+      return {country:"", city:""};
     } catch {
       return {country:"", city:""};
     }
@@ -223,11 +225,11 @@
 
   // Отправляем данные на Web App
   try {
-    await fetch(proxy + encodeURIComponent(scriptURL), {
+    await fetch(scriptURL, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
-        date: new Date().toISOString(),
+        date: new Date(),
         page: pageUrl,
         ip: ip,
         ua: navigator.userAgent,
@@ -242,18 +244,15 @@
   // Получаем текущий счётчик
   async function updateCounter() {
     try {
-      const res = await fetch(proxy + encodeURIComponent(scriptURL));
+      const res = await fetch(scriptURL);
       const text = await res.text();
-
-      // если сервер возвращает текст — пробуем парсить JSON
       let data;
       try {
         data = JSON.parse(text);
       } catch {
-        console.warn("Ответ не JSON, пришёл текст:", text);
+        console.error("Ответ не JSON, пришёл текст:", text);
         return;
       }
-
       const count = data[pageUrl] || 0;
       document.getElementById("visitCounter").innerText =
         `Посещений на этой странице: ${count}`;
@@ -263,13 +262,15 @@
   }
 
   updateCounter();
-  setInterval(updateCounter, 60000); // обновляем каждую минуту
+  setInterval(updateCounter, 60000); // обновляем каждые 60 секунд
 })();
 </script>
 
 
+
 </body>
 </html>
+
 
 
 
