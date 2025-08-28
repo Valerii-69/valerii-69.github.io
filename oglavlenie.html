@@ -186,10 +186,10 @@
   btn2.addEventListener('click', () => setActive(2));
 })();*/
 </script>
-<div id="visitCounter" style="margin-top:10px;font-weight:bold;"></div>
+<!--<div id="visitCounter" style="margin-top:10px;font-weight:bold;"></div>-->
 
 <script>
-(async function() {
+/*(async function() {
   const scriptURL = "https://script.google.com/macros/s/AKfycbwiGhLXISjFQubQxhCnKec02gQUBYZ1ZSgzvfgGrIpmGrkheWbsWchKyoQxt5raEUkMkg/exec";
   const pageUrl = window.location.href;
 
@@ -259,14 +259,44 @@
 
   updateCounter();
   setInterval(updateCounter, 60000); // обновляем каждую минуту
+})();*/
+</script>
+
+<script>
+(async function() {
+  const scriptURL = "ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
+
+  try {
+    await fetch(scriptURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: new Date(),
+        page: window.location.href,
+        ip: "",          // Опционально, можно оставить пустым
+        ua: navigator.userAgent
+      })
+    });
+
+    // Можно показать счётчик на странице
+    if (!window.visitCounterDiv) {
+      window.visitCounterDiv = document.createElement("div");
+      window.visitCounterDiv.style.marginTop = "10px";
+      window.visitCounterDiv.style.fontWeight = "bold";
+      window.visitCounterDiv.innerText = "Посещение зафиксировано!";
+      document.body.appendChild(window.visitCounterDiv);
+    }
+  } catch (e) {
+    console.error("Ошибка отправки посещения", e);
+  }
 })();
 </script>
 
 
 
-
 </body>
 </html>
+
 
 
 
