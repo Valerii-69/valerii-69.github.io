@@ -190,50 +190,74 @@
 
 <script>
 (async function() {
-  const scriptURL = "https://script.google.com/macros/s/AKfycbx3fM5oNl9JTm_sAumqZSGeF9CnCClUfYGztMJmqmcMBDob1CQiwevx1wUsL2KPAGGcAw/exec"; //"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
-
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxv45YdEHTVgkHFzw1B--fXxe0Zat9pFtlniJcxzYUUblruS_0jIb-zZ6i6c1qNpYry/exec"; //"ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WEB_APP";
   const pageUrl = window.location.href;
 
-  // Фиксируем посещение
+  // Получаем IP посетителя
+  async function getIP() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip;
+    } catch {
+      return "";
+    }
+  }
+
+  // Получаем географию по IP
+  async function getGeo(ip) {
+    if (!ip) return {country:"", city:""};
+    try {
+      const res = await fetch(`https://ip-api.com/json/${ip}`);
+      const data = await res.json();
+      return {country: data.country, city: data.city};
+    } catch {
+      return {country:"", city:""};
+    }
+  }
+
+  const ip = await getIP();
+  const geo = await getGeo(ip);
+
+  // Отправляем данные на Web App
   try {
     await fetch(scriptURL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
         date: new Date(),
         page: pageUrl,
-        ua: navigator.userAgent
+        ip: ip,
+        ua: navigator.userAgent,
+        country: geo.country,
+        city: geo.city
       })
     });
-  } catch (e) {
+  } catch(e) {
     console.error("Ошибка отправки посещения", e);
   }
 
-  // Получаем текущее количество посещений
+  // Получаем текущий счётчик
   async function updateCounter() {
     try {
       const res = await fetch(scriptURL);
       const data = await res.json();
       const count = data[pageUrl] || 0;
-      document.getElementById("visitCounter").innerText = 
-          `Посещений на этой странице: ${count}`;
-    } catch (e) {
+      document.getElementById("visitCounter").innerText =
+        `Посещений на этой странице: ${count}`;
+    } catch(e) {
       console.error("Ошибка получения счётчика", e);
     }
   }
 
   updateCounter();
-
-  // Обновляем счётчик каждые 10 секунд
-  //setInterval(updateCounter, 10000);
+//  setInterval(updateCounter, 10000); // обновляем каждые 10 секунд
 })();
 </script>
 
-
-
-
 </body>
 </html>
+
 
 
 
