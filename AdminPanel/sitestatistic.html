@@ -51,7 +51,7 @@
 
   <script>
     // 👉 ВСТАВЬ СВОЙ URL от Google Apps Script
-    const scriptURL = "ВСТАВЬ_ССЫЛКУ_НА_WEB_APP";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyp53PyYogd7A3CtIDNAlCRd-qOW-w6e3J-C3hp-m6kbg2LXsZyLlIkNEGvQyUOLNuY/exec"; //"ВСТАВЬ_ССЫЛКУ_НА_WEB_APP";
 
     async function addUrl() {
       let url = document.getElementById("url").value.trim();
@@ -61,6 +61,7 @@
       try {
         let response = await fetch(scriptURL, {
           method: "POST",
+          mode: "no-cors",
           body: JSON.stringify({ url, title }),
           headers: { "Content-Type": "application/json" }
         });
@@ -105,3 +106,4 @@
   </script>
 </body>
 </html>
+
