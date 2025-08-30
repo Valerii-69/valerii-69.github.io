@@ -66,22 +66,23 @@
 
   // Отправляем данные на Web App
   try {
-   let response = await fetch(scriptURL, {
+   await fetch(scriptURL, {
       method: "POST",
 	   mode: "no-cors",
 		headers: {"Content-Type":"application/json"},
          body: JSON.stringify({ url, title })
     });
-        let result = await response.json();
+       /* let result = await response.json();
         document.getElementById("status").textContent = 
-          `Ссылка: ${url}\nСтатус: ${result.status}`;
+          `Ссылка: ${url}\nСтатус: ${result.status}`;*/
   } catch(e) {
-    console.log("Ошибка отправки посещения", e);
+    console.error("Ошибка отправки посещения",e);
   }
 }
   </script>
 </body>
 </html>
+
 
 
 
