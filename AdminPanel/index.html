@@ -49,7 +49,7 @@
       let title = document.getElementById("title").value.trim();
       if (!url) return;
 
-      try {
+     /* try {
         let response = await fetch(scriptURL, {
           method: "POST",
 		  mode: "no-cors",
@@ -62,10 +62,26 @@
           `Ссылка: ${url}\nСтатус: ${result.status}`;
       } catch (e) {
         document.getElementById("status").textContent = "Ошибка отправки!";
-      }
-    }
+      }*/
+
+  // Отправляем данные на Web App
+  try {
+   let response = await fetch(scriptURL, {
+      method: "POST",
+	   mode: "no-cors",
+		headers: {"Content-Type":"application/json"},
+         body: JSON.stringify({ url, title })
+    });
+        let result = await response.json();
+        document.getElementById("status").textContent = 
+          `Ссылка: ${url}\nСтатус: ${result.status}`;
+  } catch(e) {
+    console.error("Ошибка отправки посещения", e);
+  }
+}
   </script>
 </body>
 </html>
+
 
 
