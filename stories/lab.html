@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Лаборатория с ИИ — Волшебная версия</title>
+<style>
+body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
+h2 { color: #004d99; }
+input, textarea {width: 600px;}
+.experiment-block {
+  margin: 20px auto; padding: 15px; width:700px;
+  box-shadow: 4px 4px 12px rgba(0,0,0,0.3);
+  border-radius: 10px; background: #fff8f0;
+}
+canvas { border:1px solid #ccc; background:#fff; margin-top:20px; }
+.note { margin-top:10px; padding:10px; background:#f0faf5; border-left:4px solid #004d99; font-style:italic; }
+button { margin:10px; padding:8px 16px; font-size:16px; }
+</style>
+</head>
+<body>
+<h1>Лаборатория с ИИ — Волшебная версия</h1>
+<div id="labContainer"></div>
+<button id="newLabAI" onclick="addExperiment()">Добавить новую лабораторную работу от ИИ</button>
+
+<h1>Лаборатория читателя 📝</h1>
+
+<div class="experiment-block">
+<h2>Предложи свою лабораторную работу</h2>
+<form id="readerLabForm">
+<input type="text" id="nameLab" name="title" placeholder="Вставь сюда -> Название работы: (Например - Танцующие изюминки 🍇)" required value=''><br>
+<input type="text" name="name" placeholder="Вставь сюда -> Ваше имя (по желанию):  (Например - Читатель)" value=''><br>
+<textarea name="description" placeholder="Вставь сюда -> Описание эксперимента:  (Например - Наблюдайте, как изюминки «танцуют» в газированной воде.)" required></textarea><br>
+<textarea name="note" placeholder="Вставь сюда -> Пожелания читателю: (Например - ✨ Пусть в вашей жизни будет как можно больше маленьких чудес!)"></textarea><br>
+<textarea name="code" placeholder="Вставь сюда -> Простейший код JS: (Например - // ===== 1. Танцующие изюминки со свечением =====
+function initRaisins(){
+const canvas = document.getElementById('labCanvas');
+  const ctx = canvas.getContext('2d'); 
+  const raisins=[];
+  for(let i=0;i<10;i++){
+    raisins.push({x:Math.random()*580, y:Math.random()*380, speed:Math.random()*1+0.5, dir:Math.random()>0.5?1:-1, glow:Math.random()*0.5+0.5});
+  }
+  function animate(){
+    ctx.clearRect(0,0,600,400);
+    for(const r of raisins){
+      r.y -= r.speed*r.dir;
+      if(r.y<0) r.dir=1; if(r.y>395) r.dir=-1;
+      r.glow = 0.5 + 0.5*Math.sin(Date.now()/200 + r.x);
+      ctx.beginPath();
+      ctx.arc(r.x,r.y,7,0,2*Math.PI);
+      ctx.fillStyle=`rgba(139,69,19,${r.glow})`; ctx.fill();
+      ctx.shadowBlur = 10*r.glow; ctx.shadowColor = 'orange';
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+)" rows="50"></textarea><br>
+<input type="text" id="verified" name="verified" placeholder="Верификация js" hidden value="false"><br>
+<button type="submit">Отправить на проверку</button>
+</form>
+</div>
+
+<h2>Список идей читателей</h2>
+<div id="readerLabs"></div>
+<div id="previewArea"></div>
+<iframe id="lab-preview" width="780" height="640"></iframe>
+
+<script>
+const readerLabs = [];
+const form = document.getElementById('readerLabForm');
+let verif = document.getElementById('verified');
+const readerLabsDiv = document.getElementById('readerLabs');
+const btn = document.createElement('button'); 
+const btn1 = document.createElement('button');
+
+  let data = new FormData(form);
+  let bool = (data.get('verified') === "true"); 
+  // Локальное сохранение
+  let lab = {
+    title: data.get('title'),
+    description: data.get('description'),
+    note: data.get('note'),
+    code: data.get('code'),
+    name: data.get('name') || "Аноним",
+    verified: bool
+  };
+
+// Вставьте сюда URL вашего Apps Script веб-приложения
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyDMZwiDg6FEMCSqosZ2jRKCu_Tij1f3oEPqBzoTP9CsH6OsEyCWOGwYpFY9os2eN1Rw/exec';
+
+// ================= Проверка кода на запрещённые слова =================
+function validateReaderJS(code){
+    const forbidden = ['fetch','XMLHttpRequest','localStorage','sessionStorage','document.cookie','eval','Function','import','require','while(true)','alert('];
+    for(let f of forbidden){
+        if(code.includes(f)) return {ok:false, error:'Обнаружено запрещённое использование: '+f};
+    }
+    try{ new Function(code); } catch(e){ return {ok:false, error:e.message}; }
+    return {ok:true};
+}
+
+
+
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  
+ data = new FormData(form); 
+ lab = {
+    title: data.get('title'),
+    description: data.get('description'),
+    note: data.get('note'),
+    code: data.get('code'),
+    name: data.get('name') || "Аноним",
+    verified: bool
+  }; 
+  
+  readerLabs.push(lab);
+  displayLabs();
+
+  alert('Спасибо! Ваша лабораторная работа отправлена на проверку.');
+//  form.reset();
+});
+
+function displayLabs(){
+  readerLabsDiv.innerHTML='';
+  readerLabs.forEach((lab,index)=>{
+    const labBlock=document.createElement('div');
+    labBlock.className='lab-item';
+    labBlock.innerHTML=`
+      <strong>${lab.title}</strong> 
+      <span class="${lab.verified?'verified':'noverified'}">${lab.verified?'✔ Проверено':'❌ Не проверено'}</span><br>
+      <em>${lab.description}</em><br>
+      <span>${lab.note}</span><br>
+      <span>Автор: ${lab.name}</span><br>
+      ${lab.code ? '<pre>'+lab.code+'</pre>' : ''}
+    `;
+
+    // Кнопка модерации
+    if(!lab.verified){
+      btn1.textContent='Проверить и опубликовать';
+      btn1.onclick=()=>{
+        const validation = validateReaderJS(lab.code);
+        if(!validation.ok){ alert("Ошибка в коде: "+validation.error); return; }
+ 
+        lab.verified = true;
+		verif.value = "true";
+		data = new FormData(form);
+lab = {
+    title: data.get('title'),
+    description: data.get('description'),
+    note: data.get('note'),
+    code: data.get('code'),
+    name: data.get('name') || "Аноним",
+    verified: bool
+  }; 
+  
+  // Отправка в Google Sheet
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    body: data
+  })
+  .then(resp => resp.json())
+  .then(res => console.log('Данные отправлены в Google Sheet:', res))
+  .catch(err => console.error('Ошибка отправки:', err));
+
+        displayLabs();
+        alert('Лабораторная работа проверена! Теперь можно посмотреть её работу в Песочнице.');
+      };
+      labBlock.appendChild(btn);
+    } else {
+      const pubBtn = document.createElement('button');
+      pubBtn.textContent='Опубликовать в Песочнице.';
+      pubBtn.onclick=()=>{
+ 
+
+ try{
+		// functionNAME - имя функции из описания читателя *** textarea name="code" ***
+		let functionNAME = lab.code.substring(lab.code.indexOf('function',0)+9, lab.code.indexOf('(){',0));
+  const previewArea = document.getElementById('previewArea');
+  previewArea.innerHTML = ""; // очищаем старый предпросмотр
+
+  // создаем iframe для предпросмотра
+const iframe = document.getElementById('lab-preview');
+  iframe.width = "780";
+  iframe.height = "640";
+  iframe.style.border = "2px solid #aaa";
+  iframe.style.borderRadius = "12px";
+  iframe.style.marginTop = "15px";
+  iframe.setAttribute('sandbox','allow-scripts');
+  
+  // В iframe вставляем HTML-код эксперимента (например, canvas и скрипт)
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(`<html><head><style>body { font-family: sans-serif; text-align: center; margin: 20px; }canvas { border: 1px solid black; margin-top: 10px; }</style></head><body><h3>${document.getElementById('nameLab').value}</h3><canvas id="labCanvas" width="640" height="460"></canvas><br><button type="submit" onclick="${functionNAME}()">Запустить лабораторную работу</button><script> ${lab.code} <\/script></body></html>`);
+  doc.close();
+
+  // Сообщение для читателя
+  const msg = document.createElement("div");
+  msg.style.marginTop = "12px";
+  msg.style.padding = "10px";
+  msg.style.border = "1px dashed #777";
+  msg.style.borderRadius = "8px";
+  msg.style.background = "#f9f9f9";
+  msg.innerHTML = `
+    ✅ Спасибо! Ваша работа успешно обработана.<br>
+    Она будет сохранена в <b>Базе Лабораторных Работ Читателей</b>.<br>
+    Позже она будет вписана в эту страницу Лабораторных работ.
+  `;
+  previewArea.appendChild(msg);
+        } catch(e){ alert('Ошибка публикации: '+e); }
+ };
+      labBlock.appendChild(pubBtn);
+    }
+    readerLabsDiv.appendChild(labBlock);
+  });
+}
+</script>
+<script>
+const labContainer = document.getElementById('labContainer');
+let tID = 1;
+function createExperiment(title, description, initFunction, note){
+  const block = document.createElement('div');
+  block.className = 'experiment-block';
+  const h2 = document.createElement('h2'); h2.textContent = title; block.appendChild(h2);
+  const p = document.createElement('p'); p.textContent = description; block.appendChild(p);
+  const canvas = document.createElement('canvas'); canvas.width=600; canvas.height=400;  canvas.setAttribute('id','AICanvas' + tID);canvas.setAttribute('onclick','startLab(this)'); block.appendChild(canvas);
+  const noteDiv = document.createElement('div'); noteDiv.className='note'; noteDiv.innerHTML=note; block.appendChild(noteDiv);
+  labContainer.appendChild(block);
+  initFunction(canvas);
+  tID = tID + 1;
+}
+
+function startLab(e){
+console.log(e.offsetTop);
+if(100 < e.offsetTop && e.offsetTop < 500){let canvas1 = document.getElementById('AICanvas1');initRaisins(canvas1);};
+if(700 < e.offsetTop && e.offsetTop < 1100){let canvas2 = document.getElementById('AICanvas2');initNetwork(canvas2);};
+if(1300 < e.offsetTop && e.offsetTop < 1800){let canvas3 = document.getElementById('AICanvas3');initShadow(canvas3);};
+if(2000 < e.offsetTop && e.offsetTop < 2500){let canvas4 = document.getElementById('AICanvas4');initTowels(canvas4);};
+if(2700 < e.offsetTop && e.offsetTop < 3300){let canvas5 = document.getElementById('AICanvas5');initFunction(canvas5);};
+};
+// ===== 1. Танцующие изюминки с свечением =====
+//  const canvas = document.getElementById('labCanvas');
+
+function initRaisins(canvas1){
+  const ctx1 = canvas1.getContext('2d'); 
+  const raisins=[];
+  for(let i=0;i<10;i++){
+    raisins.push({x:Math.random()*580, y:Math.random()*380, speed:Math.random()*1+0.5, dir:Math.random()>0.5?1:-1, glow:Math.random()*0.5+0.5});
+  }
+  function animate(){
+    ctx1.clearRect(0,0,600,400);
+    for(const r of raisins){
+      r.y -= r.speed*r.dir;
+      if(r.y<0) r.dir=1; if(r.y>395) r.dir=-1;
+      r.glow = 0.5 + 0.5*Math.sin(Date.now()/200 + r.x);
+      ctx1.beginPath();
+      ctx1.arc(r.x,r.y,7,0,2*Math.PI);
+      ctx1.fillStyle=`rgba(139,69,19,${r.glow})`; ctx1.fill();
+      ctx1.shadowBlur = 10*r.glow; ctx1.shadowColor = 'orange';
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+// ===== 2. Интерактивная нейросеть с подсветкой =====
+//  const canvas = document.getElementById('labCanvas');
+
+function initNetwork(canvas2){
+  const ctx2 = canvas2.getContext('2d');
+  const layers = [
+    { x: 100, neurons: 3 },
+    { x: 300, neurons: 4 },
+    { x: 500, neurons: 2 }
+  ]; 
+  const neuronRadius = 20; 
+  let connections = [];
+
+  function init(){
+    connections = [];
+    layers.forEach((layer, i) => {
+      layer.yPositions = []; 
+
+      if(layer.neurons <= 0){
+        console.warn(`Слой ${i} имеет 0 нейронов!`);
+        return;
+      }
+
+      for(let n = 0; n < layer.neurons; n++){
+        if(layer.neurons === 1) layer.yPositions.push(canvas2.height / 2);
+        else layer.yPositions.push(50 + n * (canvas2.height - 100) / (layer.neurons - 1));
+      }
+
+      // Создаём соединения только если следующий слой существует и имеет нейроны
+      if(i < layers.length - 1 && layers[i+1].neurons > 0){
+        const next = layers[i + 1];
+        next.yPositions = next.yPositions || [];
+
+        for(let n1 = 0; n1 < layer.neurons; n1++){
+          for(let n2 = 0; n2 < next.neurons; n2++){
+            const fromY = layer.yPositions[n1] !== undefined ? layer.yPositions[n1] : canvas2.height/2;
+            const toY = next.yPositions[n2] !== undefined ? next.yPositions[n2] : canvas2.height/2;
+
+            const weight = Math.random() < 0.2 ? Math.random()*0.3+0.1 : Math.random()*0.5+0.5;
+            connections.push({
+              from: { x: layer.x, y: fromY },
+              to: { x: next.x, y: toY },
+              weight: weight,
+              active: false,
+              broken: false
+            });
+          }
+        }
+      }
+    });
+  }
+
+  function draw(){
+    ctx2.clearRect(0,0,canvas2.width,canvas2.height);
+
+    connections.forEach(c => {
+      ctx2.beginPath(); 
+      ctx2.moveTo(c.from.x, c.from.y); 
+      ctx2.lineTo(c.to.x, c.to.y);
+      if(c.broken){
+        ctx2.strokeStyle='rgba(180,180,180,0.4)';
+        ctx2.lineWidth=1.5;
+      } else {
+        ctx2.strokeStyle = c.active ? `rgba(255,0,0,${c.weight})` : `rgba(0,0,0,${c.weight})`;
+        ctx2.lineWidth = c.active ? 3 : 1.5;
+      }
+      ctx2.shadowBlur = c.active ? 8 : 0;
+      ctx2.shadowColor = c.active ? 'red' : '';
+      ctx2.stroke();
+    });
+
+    layers.forEach(layer => layer.yPositions.forEach(y => {
+      ctx2.beginPath(); 
+      ctx2.arc(layer.x, y, neuronRadius, 0, 2*Math.PI); 
+      ctx2.fillStyle = '#004d99'; 
+      ctx2.fill(); 
+      ctx2.strokeStyle = '#00264d'; 
+      ctx2.stroke();
+    }));
+  }
+
+  canvas2.addEventListener('click', function(e){
+    const rect = canvas2.getBoundingClientRect(); 
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    connections.forEach(c => {
+      const dx = c.to.x - c.from.x, dy = c.to.y - c.from.y;
+      const length = Math.sqrt(dx*dx + dy*dy);
+      const t = ((x - c.from.x)*dx + (y - c.from.y)*dy) / (length*length);
+      if(t >= 0 && t <= 1){
+        const nx = c.from.x + t*dx, ny = c.from.y + t*dy;
+        const dist = Math.sqrt((x - nx)**2 + (y - ny)**2);
+        if(dist < 6){ 
+          c.broken = !c.broken; 
+          draw(); 
+        }
+      }
+    });
+  });
+
+  function runSignal(){ 
+    connections.forEach(c => c.active = false); 
+    let activeConnections = connections.filter(c => !c.broken && Math.random() < c.weight); 
+    let index = 0;
+    function animate(){ 
+      if(index > 0) activeConnections[index-1].active = false; 
+      if(index < activeConnections.length){ 
+        activeConnections[index].active = true; 
+        draw(); 
+        index++; 
+        requestAnimationFrame(animate); 
+      } else draw(); 
+    }
+    animate();
+  }
+
+  init(); 
+  draw();
+
+  if(btn.textContent != 'Подать сигнал'){
+  btn.textContent = 'Подать сигнал'; 
+  canvas2.parentElement.insertBefore(btn, canvas2.nextSibling); 
+  btn.onclick = runSignal;
+  }
+}
+
+// ===== 3. Тень от карандаша с мягким свечением =====
+//  const canvas = document.getElementById('labCanvas');
+
+function initShadow(canvas3){
+  const ctx3=canvas3.getContext('2d');
+  const slider=document.createElement('input'); slider.type='range'; slider.min=10; slider.max=80; slider.value=45; canvas3.parentElement.insertBefore(slider, canvas3.nextSibling);
+  const angleDisplay=document.createElement('span'); angleDisplay.textContent='45°'; canvas3.parentElement.insertBefore(angleDisplay, slider.nextSibling);
+  function draw(angle){
+    ctx3.clearRect(0,0,canvas3.width,canvas3.height); 
+    const centerX=300,centerY=350,height=100; 
+    const rad=angle*Math.PI/180; const shadowLength=height/Math.tan(rad);
+    ctx3.shadowBlur=8; ctx3.shadowColor='rgba(0,0,0,0.3)';
+    ctx3.beginPath(); ctx3.moveTo(centerX,centerY); ctx3.lineTo(centerX,centerY-height); ctx3.lineWidth=5; ctx3.strokeStyle='black'; ctx3.stroke();
+    ctx3.beginPath(); ctx3.moveTo(centerX,centerY); ctx3.lineTo(centerX+shadowLength,centerY); ctx3.lineWidth=4; ctx3.strokeStyle='rgba(0,0,0,0.5)'; ctx3.stroke();
+    ctx3.shadowBlur=0;
+  }
+  slider.addEventListener('input',()=>{ const angle=parseInt(slider.value); angleDisplay.textContent=angle+'°'; draw(angle); }); draw(45);
+}
+
+// ===== 4. Скорость впитывания полотенец с капельками =====
+//   const canvas = document.getElementById('labCanvas');
+
+function initTowels(canvas4){
+let animID = -1;
+  const ctx4=canvas4.getContext('2d'); let progress=0;
+  const speedMahro=Math.random()*0.7+0.8; const speedWaffle=Math.random()*0.5+0.5;
+  const drops = [];
+  for(let i=0;i<20;i++) drops.push({x:50+Math.random()*500, y:Math.random()*-400, speed:Math.random()*2+1, towel:Math.random()>0.5?'mahro':'waffle'});
+  
+  function animate(){
+    ctx4.clearRect(0,0,canvas4.width,canvas4.height);
+    drops.forEach(d=>{
+      d.y += d.speed;
+      if(d.y>canvas4.height-50 && d.towel==='mahro'){ progress+=0.02; d.y=-Math.random()*100; }
+      if(d.y>canvas4.height-100 && d.towel==='waffle'){ progress+=0.015; d.y=-Math.random()*100; }
+      ctx4.beginPath(); ctx4.arc(d.x,d.y,4,0,2*Math.PI);
+      ctx4.fillStyle=d.towel==='mahro'?'red':'blue'; ctx4.fill();
+    });
+    ctx4.fillStyle='red'; ctx4.fillRect(50,canvas4.height-50,progress*speedMahro*50,30); ctx4.fillStyle='black'; ctx4.fillText('Махровое',50,canvas4.height-60);
+    ctx4.fillStyle='blue'; ctx4.fillRect(50,canvas4.height-100,progress*speedWaffle*50,30); ctx4.fillStyle='black'; ctx4.fillText('Вафельное',50,canvas4.height-110);
+	var tecXMahro = progress*speedMahro*50;
+	var tecXWaffle = progress*speedWaffle*50;
+    if((500 - tecXMahro >= 0) && (500 - tecXWaffle >= 0)){
+	animID = requestAnimationFrame(animate);
+	}else{
+	cancelAnimationFrame(animID);
+	};
+  }
+  animate();
+}
+
+// ===== Создаем лабораторные работы =====
+createExperiment("Танцующие изюминки 🍇","Щелкни по белому прямоугольнику. Наблюдайте, как изюминки «танцуют» в газированной воде.", initRaisins, "✨ Пусть в вашей жизни будет как можно больше маленьких чудес!");
+createExperiment("Интерактивная нейросеть 🧠","Кликните по линии, чтобы сломать или починить синапс.", initNetwork, "✨ Учись наблюдать, исправлять ошибки и видеть последствия!");
+createExperiment("Тень от карандаша ✏️","Используйте слайдер, чтобы менять угол света и наблюдать длину тени.", initShadow, "🌱 Свет и тень — это как знания и ошибки: экспериментируйте и наблюдайте!");
+
+
+// ===== Кнопка добавления новой работы =====
+function addExperiment(){ alert("Функция для добавления новой лабораторной работы готова. Для добавления необходимо вызвать createExperiment с параметрами.");
+createExperiment("Скорость впитывания полотенец 💧","Сравните, какое полотенце впитывает воду быстрее: махровое или вафельное.", initTowels, "💧 Экспериментируйте, наблюдайте и фиксируйте результаты! Маленькие наблюдения приводят к большим открытиям.");
+ const buttonToHide = document.getElementById("newLabAI");
+  buttonToHide.style.display = "none";
+ }
+</script>
+</body>
+</html>
