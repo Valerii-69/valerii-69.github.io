@@ -18,6 +18,7 @@ button { margin:10px; padding:8px 16px; font-size:16px; }
 </style>
 </head>
 <body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
 <h1>Лаборатория с ИИ — Волшебная версия</h1>
 <div id="labContainer"></div>
 <button id="newLabAI" onclick="addExperiment()">Добавить новую лабораторную работу от ИИ</button>
@@ -27,13 +28,12 @@ button { margin:10px; padding:8px 16px; font-size:16px; }
 <div class="experiment-block">
 <h2>Предложи свою лабораторную работу</h2>
 <form id="readerLabForm">
-<input type="text" id="nameLab" name="title" placeholder="Вставь сюда -> Название работы: (Например - Танцующие изюминки 🍇)" required value=''><br>
-<input type="text" name="name" placeholder="Вставь сюда -> Ваше имя (по желанию):  (Например - Читатель)" value=''><br>
-<textarea name="description" placeholder="Вставь сюда -> Описание эксперимента:  (Например - Наблюдайте, как изюминки «танцуют» в газированной воде.)" required></textarea><br>
-<textarea name="note" placeholder="Вставь сюда -> Пожелания читателю: (Например - ✨ Пусть в вашей жизни будет как можно больше маленьких чудес!)"></textarea><br>
-<textarea name="code" placeholder="Вставь сюда -> Простейший код JS: (Например - // ===== 1. Танцующие изюминки со свечением =====
-function initRaisins(){
-const canvas = document.getElementById('labCanvas');
+<input type="text" id="nameLab" name="title" placeholder="Вставь сюда -> Название работы: Например - Танцующие изюминки 🍇" required value=''><br>
+<input type="text" name="name" placeholder="Вставь сюда -> Ваше имя (по желанию):  Например - Имя/Н.И.К." value=''><br>
+<textarea name="description" placeholder="Вставь сюда -> Описание эксперимента:  Например - Наблюдайте, как изюминки «танцуют» в газированной воде." required></textarea><br>
+<textarea name="note" placeholder="Вставь сюда -> Пожелания читателю: Например - ✨ Пусть в вашей жизни будет как можно больше маленьких чудес!"></textarea><br>
+<textarea name="code" placeholder="Вставь сюда -> Простейший код JS: Например(корректный синтаксис!!!) - // ===== 1. Танцующие изюминки со свечением =====
+(function(canvas){
   const ctx = canvas.getContext('2d'); 
   const raisins=[];
   for(let i=0;i<10;i++){
@@ -53,8 +53,8 @@ const canvas = document.getElementById('labCanvas');
     requestAnimationFrame(animate);
   }
   animate();
-}
-)" rows="50"></textarea><br>
+})(canvas);
+" rows="50"></textarea><br>
 <input type="text" id="verified" name="verified" placeholder="Верификация js" hidden value="false"><br>
 <button type="submit">Отправить на проверку</button>
 </form>
@@ -451,5 +451,6 @@ createExperiment("Скорость впитывания полотенец 💧"
   buttonToHide.style.display = "none";
  }
 </script>
+  <br><a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
 </body>
 </html>
