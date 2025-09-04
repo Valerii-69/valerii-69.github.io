@@ -72,7 +72,8 @@ let verif = document.getElementById('verified');
 const readerLabsDiv = document.getElementById('readerLabs');
 const btn = document.createElement('button'); 
 const btn1 = document.createElement('button');
-
+const btn2 = document.createElement('button');
+	
   let data = new FormData(form);
   let bool = (data.get('verified') === "true"); 
   // Локальное сохранение
@@ -380,10 +381,10 @@ function initNetwork(canvas2){
   init(); 
   draw();
 
-  if(btn.textContent != 'Подать сигнал'){
-  btn.textContent = 'Подать сигнал'; 
-  canvas2.parentElement.insertBefore(btn, canvas2.nextSibling); 
-  btn.onclick = runSignal;
+  if(btn2.textContent != 'Подать сигнал'){
+  btn2.textContent = 'Подать сигнал'; 
+  canvas2.parentElement.insertBefore(btn2, canvas2.nextSibling); 
+  btn2.onclick = runSignal;
   }
 }
 
@@ -454,4 +455,5 @@ createExperiment("Скорость впитывания полотенец 💧"
   <br><a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
 </body>
 </html>
+
 
