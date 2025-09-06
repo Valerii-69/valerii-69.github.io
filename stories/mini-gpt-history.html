@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>История GPT — интерактивная шкала</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--accent:#22d3ee;--card:#111827;}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
+  header{padding:20px 24px;border-bottom:1px solid #1f2937;background:#0b1224;position:sticky;top:0;z-index:3}
+  h1{margin:0;font-size:20px;letter-spacing:.3px}
+	a{color: hsl(200, 100%, 50%); /* Blue */ font-weight: bold;}
+  .bar{display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  input[type="search"]{background:#0b132a;border:1px solid #1f2a44;color:var(--fg);padding:8px 10px;border-radius:10px;width:260px}
+  .chip{border:1px solid #24324f;color:var(--muted);padding:6px 10px;border-radius:999px;cursor:pointer;user-select:none}
+  .chip.active{border-color:var(--accent);color:var(--fg)}
+  main{padding:24px}
+  .timeline{position:relative;margin:40px auto;max-width:1100px}
+  .line{height:4px;background:#1f2937;border-radius:4px;position:relative}
+  .tick{position:absolute;top:-8px;width:2px;height:20px;background:#334155}
+  .point{position:absolute;top:-6px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%);border:2px solid #0ea5b7;background:#0b132a;cursor:pointer;transition:transform .15s}
+  .point:hover{transform:translateX(-50%) scale(1.1)}
+  .point[data-type="tech"]{border-color:#60a5fa}
+  .point[data-type="human"]{border-color:#22d3ee}
+  .legend{display:flex;gap:12px;margin:12px 0;color:var(--muted)}
+  .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .legend .tech::before{background:#60a5fa}
+  .legend .human::before{background:#22d3ee}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:28px}
+  .card{background:var(--card);border:1px solid #1f2937;border-radius:14px;padding:14px}
+  .card h3{margin:0 0 6px 0;font-size:16px}
+  .card .year{color:var(--muted);font-size:12px}
+  .card .type{font-size:11px;color:#93c5fd;border:1px solid #1f2937;border-radius:999px;padding:2px 8px}
+  dialog{border:1px solid #1f2937;background:#0b132a;color:var(--fg);border-radius:12px;max-width:520px}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+<header>
+  <h1>История GPT — интерактивная шкала</h1>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Поиск: GPT-3, диалоги, обучение...">
+    <span id="chip-all" class="chip active">Все</span>
+    <span id="chip-tech" class="chip">Техника</span>
+    <span id="chip-human" class="chip">Влияние на людей</span>
+    <span class="muted">Подборка событий до ~2024 г.</span>
+  </div>
+</header>
+<main>
+  <section class="timeline">
+    <div id="line" class="line"></div>
+  </section>
+  <div class="legend">
+    <span class="tech">Техника</span>
+    <span class="human">Влияние на людей</span>
+  </div>
+  <section id="cards" class="cards"></section>
+</main>
+
+<dialog id="dlg">
+  <article style="padding:18px">
+    <h2 id="dlgTitle" style="margin:0 0 6px 0;font-size:18px"></h2>
+    <div class="muted" id="dlgMeta"></div>
+    <p id="dlgText" style="line-height:1.5"></p>
+    <form method="dialog" style="text-align:right;margin-top:10px">
+      <button style="background:#0ea5b7;border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer">Закрыть</button>
+    </form>
+  </article>
+</dialog>
+
+<script>
+const events = [
+  {year:2018, title:"GPT-1", type:"tech",
+   text:"Первая трансформер-языковая модель семейства GPT (около 117M параметров). Показала, что предобучение языковой модели и дообучение на задачах — мощная связка."},
+  {year:2019, title:"GPT-2", type:"tech",
+   text:"1.5B параметров, демонстрации связной генерации текста. Появились разговоры об ответственности публикации крупных моделей и контроле вывода."},
+  {year:2020, title:"GPT-3", type:"tech",
+   text:"175B параметров, few-shot/zero-shot решения многих задач без явного обучения. Появление SDK/АPI дало старт волне приложений."},
+  {year:2022, title:"InstructGPT", type:"tech",
+   text:"Дообучение по человеческой обратной связи (RLHF) — модель стала лучше слушать инструкции и избегать вредного контента."},
+  {year:2022, title:"ChatGPT", type:"human",
+   text:"Диалоговый интерфейс, массовое распространение. Миллионы людей получили доступ к разговорному ИИ — смена пользовательской парадигмы."},
+  {year:2023, title:"GPT-4", type:"tech",
+   text:"Сильный скачок в рассуждениях и устойчивости. Поддержка сложных задач, программирования, экзаменов. Появилась мультимодальность в продуктах."},
+  {year:2023, title:"Этика и образование", type:"human",
+   text:"Активные дискуссии о плагиате, проверках, оценивании. Появились методички по ответственному использованию ИИ в школах и вузах."},
+  {year:2024, title:"Мультимодальные интерфейсы", type:"human",
+   text:"Голос, изображение, видео в одном диалоге. ИИ всё чаще выступает как универсальный ассистент в творчестве и анализе данных."}
+];
+
+const line = document.getElementById('line');
+const cards = document.getElementById('cards');
+const dlg = document.getElementById('dlg');
+const dlgTitle = document.getElementById('dlgTitle');
+const dlgMeta = document.getElementById('dlgMeta');
+const dlgText = document.getElementById('dlgText');
+const q = document.getElementById('q');
+
+const chips = {
+  all: document.getElementById('chip-all'),
+  tech: document.getElementById('chip-tech'),
+  human: document.getElementById('chip-human'),
+};
+let filterType = 'all';
+let query = '';
+
+function render() {
+  // шкала
+  line.innerHTML = '';
+  const minY = Math.min(...events.map(e=>e.year));
+  const maxY = Math.max(...events.map(e=>e.year));
+  const span = maxY - minY || 1;
+
+  // осевые тики по годам
+  line.style.position='relative';
+  const ticks = [];
+  for (let y=minY; y<=maxY; y++) ticks.push(y);
+  line.style.height='4px';
+  line.style.margin='40px 0';
+
+  ticks.forEach(y=>{
+    const t = document.createElement('div');
+    t.className = 'tick';
+    t.style.left = ((y-minY)/span*100)+'%';
+    t.title = y;
+    line.appendChild(t);
+  });
+
+  // точки
+  events
+    .filter(e => filterType==='all' ? true : e.type===filterType)
+    .filter(e => (e.title+e.text).toLowerCase().includes(query))
+    .forEach(e=>{
+      const p = document.createElement('div');
+      p.className = 'point';
+      p.dataset.type = e.type;
+      p.style.left = ((e.year-minY)/span*100)+'%';
+      p.title = e.title + ' ('+e.year+')';
+      p.addEventListener('click', ()=>{
+        dlgTitle.textContent = e.title;
+        dlgMeta.textContent = `${e.year} • ${e.type==='tech'?'Техника':'Влияние на людей'}`;
+        dlgText.textContent = e.text;
+        dlg.showModal();
+      });
+      line.appendChild(p);
+    });
+
+  // карточки
+  cards.innerHTML = '';
+  events
+    .filter(e => filterType==='all' ? true : e.type===filterType)
+    .filter(e => (e.title+e.text).toLowerCase().includes(query))
+    .sort((a,b)=>a.year-b.year)
+    .forEach(e=>{
+      const c = document.createElement('div');
+      c.className = 'card';
+      c.innerHTML = `
+        <h3>${e.title}</h3>
+        <div class="year">${e.year}</div>
+        <div style="margin:8px 0">
+          <span class="type">${e.type==='tech'?'Техника':'Влияние'}</span>
+        </div>
+        <p>${e.text}</p>
+      `;
+      cards.appendChild(c);
+    });
+}
+
+q.addEventListener('input', ()=>{query=q.value.toLowerCase();render();});
+chips.all.onclick = ()=>{filterType='all'; setActive('all'); render();};
+chips.tech.onclick = ()=>{filterType='tech'; setActive('tech'); render();};
+chips.human.onclick = ()=>{filterType='human'; setActive('human'); render();};
+function setActive(which){
+  Object.values(chips).forEach(el=>el.classList.remove('active'));
+  chips[which].classList.add('active');
+}
+
+render();
+</script>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+</body>
+</html>

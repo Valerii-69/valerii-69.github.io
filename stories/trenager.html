@@ -32,7 +32,8 @@ select,input[type=number]{background:var(--glass);border:1px solid rgba(255,255,
 button{background:var(--accent);border:0;padding:8px 12px;border-radius:10px;color:white;cursor:pointer}
 button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
 button.info_help{background:var(--accent);border:0;padding:8px 12px;border-radius:10px;color:white;cursor:pointer}
-
+li{color: green; /* Changes the text color of all list items to blue */}
+a{color: hsl(200, 100%, 50%); /* Blue */ font-weight: bold;}
 .panel{display:grid;grid-template-columns:1fr 360px;gap:12px}
 .main{padding:12px}
 .prompt{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:12px;border-radius:10px;margin-bottom:12px}
@@ -123,6 +124,10 @@ footer{margin-top:12px;color:var(--muted);font-size:13px}
 		<div class="table">
 		<textarea id="train" name="traineng" wrap="off" onchange="setBASE()" placeholder="Скопируйте сюда, заранее подготовленный в текстовом редакторе, список вопросов, разделенных точкой с запятой, для треннинга ИИ..."></textarea>
 		</div>
+
+		      <br><li><a href="../stories/testirovanie_neural.html">"Кривые синапсы"</a></li>
+		      <br><li><a href="../stories/mini-neuron-breaker.html">"Ломка нейронов"</a></li>
+
 </div>
 
 <footer class="muted">Совет: используйте этот тренажёр в паре — вы задаёте задачу, я отвечаю; вы даёте обратную связь. Хотите, чтобы я добавил таймер звука или интеграцию с локальным голосовым вводом?</footer>

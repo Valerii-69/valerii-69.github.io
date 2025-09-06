@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Нейросеть с «кривыми синапсами» — интерактив</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#121a33; --ink:#e6ecff; --muted:#a8b3d6; --accent:#7aa2ff; --good:#2ecc71; --bad:#ff6b6b; --warn:#f0ad4e;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b1020,#0e1630);color:var(--ink);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji"}
+    header{padding:20px 24px;border-bottom:1px solid #1e2747;background:rgba(0,0,0,0.2);backdrop-filter: blur(6px);position:sticky;top:0;z-index:10}
+    h1{font-size:20px;margin:0}
+	a{color: hsl(200, 100%, 50%); /* Blue */ font-weight: bold;}
+    .wrap{display:grid;grid-template-columns: 360px 1fr;gap:16px;padding:16px}
+    .card{background:var(--panel);border:1px solid #1e2747;border-radius:16px;box-shadow: 0 8px 30px rgba(0,0,0,0.35)}
+    .card h2{font-size:16px;margin:0 0 8px 0;color:var(--accent)}
+    .card .body{padding:16px}
+    .controls label{display:block;margin:8px 0 4px 2px;color:var(--muted);font-size:13px}
+    input[type="range"]{width:100%}
+    select,button,input[type="range"]{width:100%;padding:10px;border-radius:10px;border:1px solid #2a355f;background:#0f1730;color:var(--ink)}
+    button{cursor:pointer;transition:.2s transform, .2s opacity}
+    button:hover{transform:translateY(-1px)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .netbox{display:grid;grid-template-columns: 1fr 1fr;gap:16px;padding:16px}
+    .viz{grid-column: 1 / span 2; background:#0b1128;border-radius:16px;border:1px solid #1e2747;display:flex;align-items:center;justify-content:center;min-height:280px}
+    svg{max-width:100%;height:auto}
+    .legend{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+    .dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+    .dot.gray{background:#8aa0d6}
+    .dot.good{background:var(--good)}
+    .dot.bad{background:var(--bad)}
+    .grid{display:grid;grid-template-columns: repeat(10, minmax(36px,1fr));gap:8px}
+    .cell{border-radius:10px;padding:8px 0;text-align:center;font-weight:600;border:1px solid #1e2747;background:#0f1730}
+    .cell.even{outline:2px solid rgba(122,162,255,.35)}
+    .cell.pred-even{background:rgba(46,204,113,.12)}
+    .cell.pred-odd{background:rgba(255,107,107,.12)}
+    .acc{font-size:14px;color:var(--muted)}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid #2a355f;background:#0f1730;color:var(--ink);font-size:12px;margin-left:8px}
+    .note{font-size:13px;color:var(--muted)}
+    .footer{padding:12px 16px;color:var(--muted);font-size:12px}
+    .link{color:var(--accent)}
+    .strike{stroke-dasharray:4 4;opacity:.35}
+    .noisy{stroke:var(--warn)!important}
+    .flipped{stroke:#c778ff!important}
+  </style>
+</head>
+<body>
+  <a href="../stories/trenager.html" class="back-link">&larr; Вернуться к тренажеру</a>
+  <header>
+    <h1>Нейросеть с «кривыми синапсами» — как порча связей ломает логику</h1>
+  </header>
+
+  <div class="wrap">
+    <section class="card">
+      <div class="body controls">
+        <h2>Управление «поломками»</h2>
+        <label for="layerSel">Какой слой портим?</label>
+        <select id="layerSel">
+          <option value="both">Оба слоя</option>
+          <option value="ih">Вход → Скрытый</option>
+          <option value="ho">Скрытый → Выход</option>
+        </select>
+
+        <label for="modeSel">Тип поломки</label>
+        <select id="modeSel">
+          <option value="zero">Обнулить связь (обрыв)</option>
+          <option value="noise">Добавить шум (дрожащая связь)</option>
+          <option value="flip">Инвертировать знак (перепутанные полярности)</option>
+        </select>
+
+        <label for="pct">Доля повреждений: <span id="pctVal">0%</span></label>
+        <input id="pct" type="range" min="0" max="100" step="1" value="0" />
+
+        <div class="row" style="margin-top:10px">
+          <button id="btnCorrupt">Испортить связи</button>
+          <button id="btnReset">Сбросить до нормы</button>
+        </div>
+
+        <p class="note" style="margin-top:10px">Задача: распознать <b>чётные</b> числа от 1 до 20. Истинная чётность отмечена <span class="badge">синей рамкой</span>. Цвет ячейки — предсказание сети.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="body netbox">
+        <div class="viz">
+          <svg id="netSVG" viewBox="0 0 600 300" aria-label="Схема сети"></svg>
+        </div>
+        <div>
+          <h2>Классификация чисел</h2>
+          <div id="grid" class="grid" aria-live="polite"></div>
+        </div>
+        <div>
+          <h2>Точность</h2>
+          <p class="acc">До повреждений: <b id="accClean">—</b></p>
+          <p class="acc">Текущая точность: <b id="accNow">—</b></p>
+          <div class="legend">
+            <span class="dot good"></span> — предсказано «чётное»
+            <span class="dot bad"></span> — предсказано «нечётное»
+            <span class="dot gray"></span> — связи (толще = сильнее)
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer">
+    💡 Трюк: чтобы сеть могла различать чётность, мы добавили скрытую «подсказку»-признак <code>cos(πx)</code>, который равен +1 для чётных и −1 для нечётных. Без него простая линейная модель бы не справилась.
+  </div>
+
+<script>
+// -------------------------
+// МАЛЕНЬКАЯ СЕТЬ ДЛЯ ЧЁТНОСТИ
+// Вход (2 признака) → Скрытый (4 ReLU) → Выход (1 сигмоид)
+// Признаки: x_norm = (x-10.5)/10, parity_feat = cos(pi*x)
+// -------------------------
+
+const X_MIN = 1, X_MAX = 20;
+const inputsDim = 2, hiddenDim = 4, outputDim = 1;
+
+// Инициализация «здоровых» весов — подобраны руками так, чтобы опираться на cos(pi*x)
+const healthy = {
+  Wih: [
+    [ 0.0,  3.0],  // h0 — «датчик чётности +»
+    [ 0.0, -3.0],  // h1 — «датчик чётности −»
+    [ 1.2,  0.0],  // h2 — «мягкая опора по величине x»
+    [-1.2,  0.0],  // h3 — «контрбаланс по x»
+  ],
+  bih: [0.5, 0.5, 0.0, 0.0],
+  Who: [[ 2.0, -2.0, 0.5, -0.5 ]],
+  bho: [0.0]
+};
+
+// Текущие веса (могут портиться)
+let Wih = clone2D(healthy.Wih);
+let bih = [...healthy.bih];
+let Who = clone2D(healthy.Who);
+let bho = [...healthy.bho];
+
+// Метки повреждений для визуализации
+let marksIH = healthy.Wih.map(r => r.map(_ => 'normal')); // 'normal' | 'zero' | 'noise' | 'flip'
+let marksHO = healthy.Who.map(r => r.map(_ => 'normal'));
+
+function clone2D(A){ return A.map(r => [...r]); }
+
+function features(x){
+  const x_norm = (x - 10.5)/10;
+  const parity = Math.cos(Math.PI * x); // +1 для чётных, -1 для нечётных
+  return [x_norm, parity];
+}
+
+function relu(v){ return Math.max(0, v); }
+function sigmoid(v){ return 1/(1+Math.exp(-v)); }
+
+function forward(x){
+  const f = features(x);
+  // input -> hidden
+  const h = new Array(hiddenDim).fill(0);
+  for(let i=0;i<hiddenDim;i++){
+    let s = bih[i];
+    for(let j=0;j<inputsDim;j++) s += Wih[i][j]*f[j];
+    h[i] = relu(s);
+  }
+  // hidden -> out
+  let s = bho[0];
+  for(let k=0;k<hiddenDim;k++) s += Who[0][k]*h[k];
+  const y = sigmoid(s);
+  return y; // вероятность «чётное»
+}
+
+function accuracy(){
+  let ok=0,total=0;
+  for(let x=X_MIN;x<=X_MAX;x++){
+    const y = forward(x);
+    const predEven = y>=0.5;
+    const truthEven = (x%2===0);
+    if(predEven===truthEven) ok++;
+    total++;
+  }
+  return ok/total;
+}
+
+// -------------------------
+// ПОВРЕЖДЕНИЯ СВЯЗЕЙ
+// -------------------------
+function corrupt({layer, mode, pct}){
+  const p = pct/100;
+  if(layer==='ih' || layer==='both'){
+    for(let i=0;i<hiddenDim;i++){
+      for(let j=0;j<inputsDim;j++){
+        if(Math.random()<p){
+          applyDamage(Wih, marksIH, i, j, mode);
+        }
+      }
+    }
+  }
+  if(layer==='ho' || layer==='both'){
+    for(let i=0;i<outputDim;i++){
+      for(let j=0;j<hiddenDim;j++){
+        if(Math.random()<p){
+          applyDamage(Who, marksHO, i, j, mode);
+        }
+      }
+    }
+  }
+}
+
+function applyDamage(W, M, i, j, mode){
+  if(mode==='zero'){
+    W[i][j] = 0;
+    M[i][j] = 'zero';
+  } else if(mode==='noise'){
+    const factor = 1 + (Math.random()*1.2 - 0.6); // шум ±60%
+    W[i][j] = W[i][j]*factor;
+    M[i][j] = 'noise';
+  } else if(mode==='flip'){
+    W[i][j] = -W[i][j];
+    M[i][j] = 'flip';
+  }
+}
+
+function resetWeights(){
+  Wih = clone2D(healthy.Wih);
+  bih = [...healthy.bih];
+  Who = clone2D(healthy.Who);
+  bho = [...healthy.bho];
+  marksIH = healthy.Wih.map(r => r.map(_ => 'normal'));
+  marksHO = healthy.Who.map(r => r.map(_ => 'normal'));
+}
+
+// -------------------------
+// UI: СЕТКА ЧИСЕЛ
+// -------------------------
+const gridEl = document.getElementById('grid');
+function renderGrid(){
+  gridEl.innerHTML = '';
+  for(let x=X_MIN;x<=X_MAX;x++){
+    const y = forward(x);
+    const predEven = y>=0.5;
+    const truthEven = (x%2===0);
+    const cell = document.createElement('div');
+    cell.className = 'cell ' + (truthEven? 'even ':'') + (predEven? 'pred-even':'pred-odd');
+    cell.title = `x=${x}\nP(чётное)=${y.toFixed(3)}`;
+    cell.textContent = x;
+    gridEl.appendChild(cell);
+  }
+}
+
+// -------------------------
+// ВИЗУАЛИЗАЦИЯ СЕТИ (SVG)
+// -------------------------
+const svg = document.getElementById('netSVG');
+const P = { w:600, h:300, padX:80, padY:40 };
+const cols = [80, 300, 520]; // x-координаты: вход, скрытый, выход
+const inpNodes = [ {x:cols[0], y: P.h*0.35}, {x:cols[0], y: P.h*0.65} ];
+const hidNodes = new Array(hiddenDim).fill(0).map((_,i)=>({x:cols[1], y: P.padY + i*( (P.h-2*P.padY)/(hiddenDim-1) ) }));
+const outNodes = [ {x:cols[2], y: P.h*0.5} ];
+
+function lineOpacity(w){ return Math.min(1, 0.15 + Math.min(1, Math.abs(w))/3); }
+function lineStroke(w){ return w>=0? '#8aa0d6' : '#6887ff'; }
+
+function renderSVG(){
+  svg.setAttribute('viewBox', `0 0 ${P.w} ${P.h}`);
+  svg.innerHTML = '';
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+  // связи input->hidden
+  for(let i=0;i<hiddenDim;i++){
+    for(let j=0;j<inputsDim;j++){
+      const w = Wih[i][j];
+      const mark = marksIH[i][j];
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1', inpNodes[j].x);
+      line.setAttribute('y1', inpNodes[j].y);
+      line.setAttribute('x2', hidNodes[i].x);
+      line.setAttribute('y2', hidNodes[i].y);
+      line.setAttribute('stroke', lineStroke(w));
+      line.setAttribute('stroke-width', (2+Math.min(6,Math.abs(w)*1.2)).toString());
+      line.setAttribute('opacity', lineOpacity(w).toString());
+      if(mark==='zero') line.setAttribute('class','strike');
+      if(mark==='noise') line.setAttribute('class','noisy');
+      if(mark==='flip') line.setAttribute('class','flipped');
+      g.appendChild(line);
+    }
+  }
+  // связи hidden->out
+  for(let j=0;j<hiddenDim;j++){
+    const w = Who[0][j];
+    const mark = marksHO[0][j];
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', hidNodes[j].x);
+    line.setAttribute('y1', hidNodes[j].y);
+    line.setAttribute('x2', outNodes[0].x);
+    line.setAttribute('y2', outNodes[0].y);
+    line.setAttribute('stroke', lineStroke(w));
+    line.setAttribute('stroke-width', (2+Math.min(6,Math.abs(w)*1.2)).toString());
+    line.setAttribute('opacity', lineOpacity(w).toString());
+    if(mark==='zero') line.setAttribute('class','strike');
+    if(mark==='noise') line.setAttribute('class','noisy');
+    if(mark==='flip') line.setAttribute('class','flipped');
+    g.appendChild(line);
+  }
+
+  // узлы
+  function drawNode(p, label){
+    const node = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    node.setAttribute('cx', p.x); node.setAttribute('cy', p.y); node.setAttribute('r', 14);
+    node.setAttribute('fill', '#0f1730'); node.setAttribute('stroke', '#2a355f'); node.setAttribute('stroke-width','2');
+    g.appendChild(node);
+    if(label){
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', p.x); t.setAttribute('y', p.y+4); t.setAttribute('fill', '#a8b3d6');
+      t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','11'); t.textContent = label; g.appendChild(t);
+    }
+  }
+
+  drawNode(inpNodes[0], 'x');
+  drawNode(inpNodes[1], 'cosπx');
+  hidNodes.forEach((p,i)=>drawNode(p, 'h'+i));
+  drawNode(outNodes[0], 'ŷ');
+
+  svg.appendChild(g);
+}
+
+// -------------------------
+// Точности
+// -------------------------
+const accCleanEl = document.getElementById('accClean');
+const accNowEl   = document.getElementById('accNow');
+let baselineAcc = null;
+
+function updateAll(){
+  if(baselineAcc===null){ baselineAcc = accuracy(); accCleanEl.textContent = (baselineAcc*100).toFixed(0)+"%"; }
+  renderGrid();
+  renderSVG();
+  const acc = accuracy();
+  accNowEl.textContent = (acc*100).toFixed(0)+"%";
+}
+
+// -------------------------
+// Контролы
+// -------------------------
+const layerSel = document.getElementById('layerSel');
+const modeSel  = document.getElementById('modeSel');
+const pctEl    = document.getElementById('pct');
+const pctVal   = document.getElementById('pctVal');
+
+pctEl.addEventListener('input', ()=>{ pctVal.textContent = pctEl.value+"%"; });
+
+document.getElementById('btnCorrupt').addEventListener('click', ()=>{
+  corrupt({ layer: layerSel.value, mode: modeSel.value, pct: +pctEl.value });
+  updateAll();
+});
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  resetWeights();
+  updateAll();
+});
+
+// Первый запуск
+updateAll();
+</script>
+</body>
+</html>
+
+<!-- NEW SECTION: Training vs Inference visualization -->
+
+<section>
+  <h2 style="color:var(--accent);padding:16px 24px 0 24px;margin:0">Демонстрация: Обучение ↔ Применение</h2>
+  <div style="padding:16px;">
+    <p class="note">Добавлен интерактивный модуль, который показывает различие между этапом <b>обучения</b> (weights update) и этапом <b>применения</b> (только forward pass). Модуль реализован в чистом HTML+JS и включает:</p>
+    <ul class="note">
+      <li>мини-сеть (вход → скрытый → выход) с визуализацией весов (толщина линий).</li>
+      <li>режим <b>Training</b>: запускается цикл из нескольких эпох; веса визуально изменяются — утолщаются или истончаются в зависимости от знака и величины градиента; отображается график ошибки по эпохам.</li>
+      <li>режим <b>Inference</b>: выключает обновление весов и демонстрирует, как ответ получается только прямым проходом; можно подать одиночный пример и увидеть активации по слоям.</li>
+      <li>управления: скорость обучения, число эпох, шум в данных, возможность зашумить связи (чтобы сравнить с демонстрацией «кривых синапсов»).</li>
+      <li>краткая инструкция и подсказки прямо в интерфейсе.</li>
+    </ul>
+    <p class="note">Технически: в модуле показана простая SGD-подстройка на игрушечной задаче (распознавание чётности + вспомогательная признаки). Градиенты рассчитываются вручную в JS — никаких внешних библиотек. Анимация реализована через requestAnimationFrame, график ошибки — встроенный canvas.</p>
+    <p class="note">Если хочешь, я могу вынести модуль в отдельный ES-модуль (файл `training_vs_inference.js`) с экспортом `mountTrainingDemo(container)` — тогда ты сможешь легко подключать демонстрацию на любой странице нашего сайта.</p>
+  </div>
+  <a href="../stories/trenager.html" class="back-link">&larr; Вернуться к тренажеру</a>
+</section>

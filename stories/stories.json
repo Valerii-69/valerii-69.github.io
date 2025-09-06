@@ -13,5 +13,7 @@
   { "title": "Листок на ветру", "link": "../stories/litAIstory12.html" },
   { "title": "Каменный мост", "link": "../stories/litAIstory13.html" },
   { "title": "Летящая стрела", "link": "../stories/litAIstory14.html" },
-  { "title": "Фантастика от ИИ", "link": "../stories/litAIstory15.html" }
+  { "title": "Фантастика от ИИ", "link": "../stories/litAIstory15.html" },
+  { "title": "Разговор с ИИ — Мини-книга1", "link": "../stories/talking_to_AI_01.html" },
+  { "title": "Разговор с ИИ — Мини-книга2", "link": "../stories/lab_book.html" }
   ]
