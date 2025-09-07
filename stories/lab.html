@@ -7,6 +7,7 @@
 body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
 h2 { color: #004d99; }
 input, textarea {width: 600px;}
+#content {width: 800px; height: 500px;}
 .experiment-block {
   margin: 20px auto; padding: 15px; width:700px;
   box-shadow: 4px 4px 12px rgba(0,0,0,0.3);
@@ -20,10 +21,16 @@ button { margin:10px; padding:8px 16px; font-size:16px; }
 <body>
   <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
 <h1>Лаборатория с ИИ — Волшебная версия</h1>
+  <a href="../stories/index_AI.html" class="back-link">История создания этого раздела описана в "Диалогах с ИИ - Как я тестирую себя.(Смотри во всплывающем списке.)" &rarr;</a><br>
+
 <div id="labContainer"></div>
 <button id="newLabAI" onclick="addExperiment()">Добавить новую лабораторную работу от ИИ</button>
 
 <h1>Лаборатория читателя 📝</h1>
+    <iframe id="content" src="tanez_izuminok.html"></iframe><br>
+    <iframe id="content" src="test_dihanija.html"></iframe><br>
+    <iframe id="content" src="solnechnie_chasi.html"></iframe><br>
+    <iframe id="content" src="rost_rasteniy.html"></iframe><br>
 
 <div class="experiment-block">
 <h2>Предложи свою лабораторную работу</h2>
@@ -233,9 +240,9 @@ function createExperiment(title, description, initFunction, note){
 
 function startLab(e){
 console.log(e.offsetTop);
-if(100 < e.offsetTop && e.offsetTop < 500){let canvas1 = document.getElementById('AICanvas1');initRaisins(canvas1);};
+if(100 < e.offsetTop && e.offsetTop < 500){let canvas1 = document.getElementById('AICanvas1');initShadow(canvas1);};
 if(700 < e.offsetTop && e.offsetTop < 1100){let canvas2 = document.getElementById('AICanvas2');initNetwork(canvas2);};
-if(1300 < e.offsetTop && e.offsetTop < 1800){let canvas3 = document.getElementById('AICanvas3');initShadow(canvas3);};
+if(1300 < e.offsetTop && e.offsetTop < 1800){let canvas3 = document.getElementById('AICanvas3');initRaisins(canvas3);};
 if(2000 < e.offsetTop && e.offsetTop < 2500){let canvas4 = document.getElementById('AICanvas4');initTowels(canvas4);};
 if(2700 < e.offsetTop && e.offsetTop < 3300){let canvas5 = document.getElementById('AICanvas5');initFunction(canvas5);};
 };
@@ -440,9 +447,9 @@ let animID = -1;
 }
 
 // ===== Создаем лабораторные работы =====
-createExperiment("Танцующие изюминки 🍇","Щелкни по белому прямоугольнику. Наблюдайте, как изюминки «танцуют» в газированной воде.", initRaisins, "✨ Пусть в вашей жизни будет как можно больше маленьких чудес!");
-createExperiment("Интерактивная нейросеть 🧠","Кликните по линии, чтобы сломать или починить синапс.", initNetwork, "✨ Учись наблюдать, исправлять ошибки и видеть последствия!");
 createExperiment("Тень от карандаша ✏️","Используйте слайдер, чтобы менять угол света и наблюдать длину тени.", initShadow, "🌱 Свет и тень — это как знания и ошибки: экспериментируйте и наблюдайте!");
+createExperiment("Интерактивная нейросеть 🧠","Кликните по линии, чтобы сломать или починить синапс.", initNetwork, "✨ Учись наблюдать, исправлять ошибки и видеть последствия!");
+createExperiment("Танцующие изюминки 🍇","Щелкни по белому прямоугольнику. Наблюдайте, как изюминки «танцуют» в газированной воде.", initRaisins, "✨ Пусть в вашей жизни будет как можно больше маленьких чудес!");
 
 
 // ===== Кнопка добавления новой работы =====
