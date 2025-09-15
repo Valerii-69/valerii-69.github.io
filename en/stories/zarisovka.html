@@ -108,7 +108,7 @@
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `<strong>${item.title}</strong><div class="content">${item.text}</div>`;
-      if(type == "paradoxes" && index === 8){card.innerHTML = `<strong>${item.title}</strong><iframe src="../stories/paradoxes_everyday_logic_en.html" width="600" height="820" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`};
+      if(type == "paradoxes" && index === 8){card.innerHTML = `<strong>${item.title}</strong><iframe src="../stories/paradoksy_obydennoy_logiki.html" width="600" height="820" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`};
       card.addEventListener("click", () => {
         const content = card.querySelector(".content");
         if(content != null){content.style.display = content.style.display === "block" ? "none" : "block";}
@@ -130,3 +130,4 @@
 
 </body>
 </html>
+
