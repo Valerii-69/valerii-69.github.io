@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, history, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Philosophy and Chance — Stories of Probability</title>
+<link rel="stylesheet" href="../style.css">
+
+</head>
+<body>
+<a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+<header>
+<h2>Entertaining Mathematics with AI</h2>
+</header>
+<h1>Philosophy and Chance — Stories of Probability</h1>
+
+<label for="storySelect">Select a story:</label>
+<select id="storySelect" onchange="showStory()">
+<option value="">-- Select --</option>
+<option value="1">The Birthday Paradox</option>
+<option value="2">The Coin Flip Story</option>
+<option value="3">The Probability of Winning the Lottery</option>
+<option value="4">The Liar Paradox</option>
+<option value="5">Bolle and Random Numbers</option>
+</select>
+
+<div class="story-text" id="storyText"></div>
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfAevXddtJDNp7t0u6FlASm9i5zXWQnq3bNIFscj5ZnxTC9YQ/viewform?embedded=true" width="640" height="907" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+
+<div id="responseMsg"></div>
+
+<script>
+const stories = {
+1: `The Birthday Paradox:\n\nIn a group of only 23 people, the probability that at least two of them will have the same birthday is over 50%. This is surprising, because 23 is a small number compared to 365!`,
+2: `The Coin Flip Story:\n\nIf you flip a coin many times in a row, it seems like the results should be distributed evenly. But after a series of heads, people often start to think that tails will come up soon - this is called the gambler's fallacy.`,
+3: `The Odds of Winning the Lottery:\n\nThe odds of winning a large jackpot can be as small as 1 in a million. Yet millions of people continue to play, hoping for their chance. What's interesting is that many don't realize how small those odds are.`,
+4: `The Liar Paradox:\n\nA person says, "Every statement I make is false." If it is true, then he is lying. If it is false, then he is telling the truth. This paradox concerns logic and the probability of the truth of statements.`,
+5: `Bolle and Random Numbers:\n\nThe physicist Bolle studied random numbers and found that they often follow certain distributions, which is surprising given the apparent randomness of events.`
+};
+
+function showStory() { 
+const select = document.getElementById('storySelect'); 
+const storyText = document.getElementById('storyText'); 
+const val = select.value; 
+if (val && stories[val]) { 
+storyText.textContent = stories[val]; 
+} else { 
+storyText.textContent = ''; 
+} 
+document.getElementById('responseMsg').textContent = ''; 
+} 
+
+function submitComment() { 
+const email = document.getElementById('emailInput').value.trim(); 
+const comment = document.getElementById('commentInput').value.trim(); 
+const storyId = document.getElementById('storySelect').value; 
+
+if (!storyId) {
+alert('Please select a story.');
+return;
+}
+if (!comment) {
+alert('Please enter a comment.');
+return;
+}
+if (!email || !validateEmail(email)) {
+alert('Please enter a valid email.');
+return;
+}
+
+// Send a comment (here is an example of fetch to Apps Script)
+fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+method: 'POST',
+body: JSON.stringify({
+storyId,
+comment,
+email
+}),
+headers: {
+'Content-Type': 'application/json'
+}
+})
+.then(response => response.json())
+.then(data => {
+if (data.status === 'ok') {
+document.getElementById('responseMsg').textContent = 'Thank you! Your comment has been sent.';
+document.getElementById('commentInput').value = '';
+document.getElementById('emailInput').value = '';
+} else {
+document.getElementById('responseMsg').textContent = 'Error sending.';
+}
+})
+.catch(() => {
+document.getElementById('responseMsg').textContent = 'Error sending.';
+});
+}
+
+function validateEmail(email) {
+const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+return re.test(email);
+}
+</script>
+<footer>
+© 2025 Entertaining Mathematics with AI
+</footer>
+<a href="../oglavlenie.html" class="back-link">&larr; Return to Contents</a>
+
+</body>
+</html>
