@@ -1,0 +1,1 @@
+Draw a circle and toss a coin into the center. Mark where it lands. Do 50 tosses and see if a random yet symmetric distribution emerges.

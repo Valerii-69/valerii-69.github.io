@@ -1,0 +1,1 @@
+Drop a ball from a small height and measure the fall time. Compare with the free-fall formula.

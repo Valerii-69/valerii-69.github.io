@@ -1,0 +1,1 @@
+We often think of randomness as chaos. Yet, when we observe Brownian motion, every jump of a molecule hides strict statistics. A particle of chance obeys the laws of probability, and this obedience gives birth to order out of chaos.

@@ -1,0 +1,1 @@
+Throw small balls in an arc. Notice how the trajectory forms a parabola.

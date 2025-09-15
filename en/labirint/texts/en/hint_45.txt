@@ -1,0 +1,1 @@
+Draw a circle and try to find a point that feels most "special." Why that one?

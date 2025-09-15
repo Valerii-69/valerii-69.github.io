@@ -1,0 +1,1 @@
+Flip a coin many times. Observe how the frequency of heads and tails approaches 50%.
