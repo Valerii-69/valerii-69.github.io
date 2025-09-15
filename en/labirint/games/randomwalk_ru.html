@@ -1,0 +1,2 @@
+Точка блуждает по плоскости, оставляя след траектории.
+<canvas id="walk" width="300" height="200"></canvas> <script> const canvas=document.getElementById("walk"); const ctx=canvas.getContext("2d"); let x=150,y=100; ctx.fillRect(x,y,1,1); function step(){ let dx=[-1,1,0,0][Math.floor(Math.random()*4)]; let dy=[0,0,-1,1][Math.floor(Math.random()*4)]; x=Math.max(0,Math.min(299,x+dx)); y=Math.max(0,Math.min(199,y+dy)); ctx.fillRect(x,y,1,1); requestAnimationFrame(step); } step(); </script> 

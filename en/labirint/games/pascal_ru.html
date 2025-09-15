@@ -1,0 +1,2 @@
+Треугольник Паскаля подсвечивается чётными и нечётными числами. 
+<canvas id="pascal" width="300" height="200"></canvas> <script> const c=document.getElementById("pascal"),ctx=c.getContext("2d"); function drawPascal(rows){ let tri=[[1]]; for(let i=1;i<rows;i++){ tri[i]=[1]; for(let j=1;j<i;j++) tri[i][j]=tri[i-1][j-1]+tri[i-1][j]; tri[i].push(1); } ctx.clearRect(0,0,300,200); tri.forEach((row,i)=>{ row.forEach((val,j)=>{ ctx.fillStyle=val%2?"black":"white"; ctx.fillRect(150-i*3+6*j,10+i*6,5,5); }); }); } drawPascal(30); </script> 

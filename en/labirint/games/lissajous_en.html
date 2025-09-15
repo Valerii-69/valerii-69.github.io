@@ -1,0 +1,2 @@
+Oscillations along two axes form fascinating figures. 
+<canvas id="liss" width="300" height="200"></canvas> <script> const canvas=document.getElementById("liss"); const ctx=canvas.getContext("2d"); let t=0; function step(){ ctx.clearRect(0,0,300,200); ctx.beginPath(); for(let i=0;i<1000;i++){ let x=150+100*Math.sin(3*(t+i*0.01)); let y=100+80*Math.sin(2*(t+i*0.01)); ctx.lineTo(x,y); } ctx.stroke(); t+=0.02; requestAnimationFrame(step); } step(); </script> 
