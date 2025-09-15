@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fantastic Stories | Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a><br>
+
+<div class="section">
+<h2>Story 1: The Dirigible That Flew Against the Wind</h2>
+<p>The sky over the old city was unusually quiet. Among the clouds, a giant silver shape slowly floated—a dirigible shaped like a vertical cylinder with side wings spinning like windmill blades. But the unusual thing was that the dirigible moved against the wind.</p>
+<p>Captain Elias smiled: “Magnus won’t fail.” His secret lay in the special design: the cylinder rotated slowly, generating lateral lift, and the wings directed the airflow so that it allowed the ship to move in the opposite direction.</p>
+
+<div class="canvas-container">
+<canvas id="dirigibleCanvas" width="600" height="250"></canvas>
+<label>Wing rotation speed:
+<input type="range" id="dirSpeed" min="0" max="0.1" step="0.001" value="0.02">
+<span class="value" id="dirSpeedVal">0.020</span>
+</label>
+<a href="../stories/dirigabl.html" class="back-link">Dirigible Model&rarr;</a><br>
+</div>
+
+<p><b>Message to the reader:</b> Try to imagine ideas like Elias did: what would you do if the laws of physics became your playground? Dream and model your fantastic possibilities on paper and in your mind.</p>
+</div>
+
+<div class="section">
+<h2>Story 2: The Upside-Down Boat</h2>
+<p>In the ocean of the future, a submarine of unusual type glided underwater. Its outer shell was made of porous concrete, the inner one of titanium reinforced with carbon fiber, and between them a dense resin could move, making the surface smooth or porous.</p>
+<p>Commander Ariel activated the “Smooth-Stealth” system. When the surface was smooth, the boat accelerated rapidly, sliding through water almost without resistance. When the resin contracted, the surface became porous—the boat lost speed but was nearly undetectable by radar.</p>
+
+<div class="canvas-container">
+<canvas id="submarineCanvas" width="600" height="200"></canvas>
+<label>Hull smoothness (α):
+<input type="range" id="subAlpha" min="0" max="1" step="0.01" value="1">
+<span class="value" id="subAlphaVal">1.00</span>
+</label>
+<a href="../stories/podlodka.html" class="back-link">Submarine Model&rarr;</a><br>
+</div>
+
+<p><b>Message to the reader:</b> Remember that mathematics hides even in the most fantastic ideas. Observe the world, find patterns, and try creating your own models: every real idea can become the basis for amazing fiction.</p>
+
+<br><a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+<script>
+// Dirigible
+const dirCanvas = document.getElementById('dirigibleCanvas');
+const ctxD = dirCanvas.getContext('2d');
+let angle = 0;
+let dirSpeed = parseFloat(document.getElementById('dirSpeed').value);
+document.getElementById('dirSpeed').addEventListener('input', function(){
+    dirSpeed = parseFloat(this.value);
+    document.getElementById('dirSpeedVal').textContent = dirSpeed.toFixed(3);
+});
+function drawDirigible() {
+    ctxD.clearRect(0,0,dirCanvas.width,dirCanvas.height);
+    const x = dirCanvas.width/2;
+    const y = dirCanvas.height/2;
+    const w = 200, h = 80;
+    ctxD.fillStyle = '#C0C0C0';
+    ctxD.beginPath();
+    ctxD.ellipse(x, y, w/2, h/2, 0, 0, Math.PI*2);
+    ctxD.fill();
+    ctxD.strokeStyle='#000'; ctxD.stroke();
+    ctxD.save();
+    ctxD.translate(x,y);
+    ctxD.rotate(angle);
+    ctxD.fillStyle='#1E90FF';
+    ctxD.fillRect(-w/2-10, -5, 40, 10);
+    ctxD.fillRect(w/2-30, -5, 40, 10);
+    ctxD.restore();
+    angle += dirSpeed;
+    requestAnimationFrame(drawDirigible);
+}
+drawDirigible();
+
+// Submarine
+const subCanvas = document.getElementById('submarineCanvas');
+const ctxS = subCanvas.getContext('2d');
+let alpha = parseFloat(document.getElementById('subAlpha').value);
+document.getElementById('subAlpha').addEventListener('input', function(){
+    alpha = parseFloat(this.value);
+    document.getElementById('subAlphaVal').textContent = alpha.toFixed(2);
+});
+function drawSubmarine() {
+    ctxS.clearRect(0,0,subCanvas.width,subCanvas.height);
+    const x = 50, y = 50, w = 500, h = 100;
+    const r = Math.round(85*(1-alpha) + 30*alpha);
+    const g = Math.round(85*(1-alpha) + 144*alpha);
+    const b = Math.round(85*(1-alpha) + 255*alpha);
+    ctxS.fillStyle = `rgb(${r},${g},${b})`;
+    ctxS.beginPath();
+    ctxS.ellipse(x+w/2, y+h/2, w/2, h/2, 0, 0, Math.PI*2);
+    ctxS.fill();
+    ctxS.strokeStyle="#000"; ctxS.lineWidth=2; ctxS.stroke();
+    requestAnimationFrame(drawSubmarine);
+}
+drawSubmarine();
+</script>
+
+</body>
+</html>

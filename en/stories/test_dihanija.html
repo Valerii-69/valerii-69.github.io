@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Breath-Holding Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 700px; margin: auto; }
+    input, button { padding: 8px; margin: 5px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    canvas { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🫁 Breath-Holding Time Test</h2>
+    <p>Enter your name and your result (in seconds) to compare with others.</p>
+
+    <input id="name" type="text" placeholder="Your name">
+    <input id="time" type="number" placeholder="Time (sec)">
+    <button onclick="addResult()">Add Result</button>
+
+    <h3>Participants Results</h3>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Time (sec)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <canvas id="resultsChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    let results = JSON.parse(localStorage.getItem("breathTest")) || [];
+
+    function addResult() {
+      const name = document.getElementById("name").value.trim();
+      const time = parseInt(document.getElementById("time").value);
+
+      if (!name || isNaN(time)) {
+        alert("Please enter a name and a valid time!");
+        return;
+      }
+
+      results.push({ name, time });
+      localStorage.setItem("breathTest", JSON.stringify(results));
+      updateTable();
+      updateChart();
+      document.getElementById("name").value = "";
+      document.getElementById("time").value = "";
+    }
+
+    function updateTable() {
+      const tbody = document.querySelector("#resultsTable tbody");
+      tbody.innerHTML = "";
+      results.forEach(r => {
+        const row = `<tr><td>${r.name}</td><td>${r.time}</td></tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function updateChart() {
+      const ctx = document.getElementById("resultsChart").getContext("2d");
+      if (window.chart) window.chart.destroy();
+      window.chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: results.map(r => r.name),
+          datasets: [{
+            label: "Breath-holding time (sec)",
+            data: results.map(r => r.time),
+            backgroundColor: "rgba(54, 162, 235, 0.6)"
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    updateTable();
+    updateChart();
+  </script>
+</body>
+</html>

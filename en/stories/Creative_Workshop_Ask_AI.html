@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A personal exploration of math and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="math, AI, history, modeling, kids, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Creative Workshop and Ask the AI ​​- Entertaining Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+
+</head>
+<body>
+<a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+<h1>Creative Workshop: Create a Story with AI</h1>
+<section>
+<label for="ideaInput">Enter your idea or topic for a story:</label>
+<textarea id="ideaInput" placeholder="For example: a mathematician's adventure in space"></textarea>
+<button id="generateStoryBtn">Generate a story</button>
+<button id="saveStoryBtn">Save a story</button>
+<div id="storyResult"></div>
+</section>
+
+<h1>Ask the AI</h1>
+<section>
+<label for="chatInput">Enter a question for the AI:</label>
+<input type="text" id="chatInput" placeholder="Ask a question..." autocomplete="off" />
+<button id="sendChatBtn">Send</button>
+<div id="chatMessages"></div>
+</section>
+
+<script>
+// Section 2.5 — Creative Workshop with Saving
+const ideaInput = document.getElementById('ideaInput');
+const generateStoryBtn = document.getElementById('generateStoryBtn');
+const saveStoryBtn = document.getElementById('saveStoryBtn');
+const storyResult = document.getElementById('storyResult');
+
+function generateStory(idea) {
+return `
+One day, inspired by the idea of ​​"${idea}", our hero went on an unusual adventure, where numbers and formulas came to life, and mathematical riddles turned into exciting challenges.
+
+At every step he discovered new secrets and realized that mathematics is the language of the Universe, which helps to solve its mysteries.
+
+Let this story inspire you to explore the world with passion and creativity!`;
+}
+
+generateStoryBtn.addEventListener('click', () => {
+const idea = ideaInput.value.trim();
+if (!idea) {
+alert('Please enter an idea for a story.');
+return;
+}
+const story = generateStory(idea);
+storyResult.textContent = story;
+});
+
+saveStoryBtn.addEventListener('click', () => {
+const storyText = storyResult.textContent.trim();
+if (!storyText) {
+alert('You must first create a story to save it.');
+return;
+}
+localStorage.setItem('savedStory', storyText);
+alert('The story has been saved to the browser's local storage!Limitations:There is a data limit, which is usually around 5-10 megabytes. Accessing the data:localStorage data is accessed through JavaScript, as well as through the browser's developer tools.How to view and edit localStorage in Google Chrome:1. Open the developer tools:Press F12 or Ctrl+Shift+I (Cmd+Shift+I on macOS) to open the developer tools.2. Go to the "Application" section:In the top bar of the developer tools, find and select the tab "Application". 3. Find localStorage: In the left menu, find the "Storage" section and expand it to see "Local Storage". 4. Select a site: Select the desired site from the list to view its localStorage. 5. View and edit: The right side of the window will display the data stored in localStorage for this site. You can view, edit, and delete the data. How to clear localStorage: 1. Open Developer Tools: Press F12 to open Developer Tools. 2. Go to the "Application" section: From the top bar of the Developer Tools, select the "Application" tab. 3. Find localStorage: In the left menu, find the "Storage" section and expand it to see "Local Storage". 4. Clear the data: To clear data for a specific site: Right-click on the site and select "Clear". To clear all storage data: Under "Storage", find "Clear storage" and click the "Clear site data" button. site).5. Reload the page:After clearing the data, it is recommended to reload the page where you want to clear localStorage. ');
+});
+
+// Autoload saved history on page load
+window.addEventListener('load', () => {
+const saved = localStorage.getItem('savedStory');
+if (saved) {
+storyResult.textContent = saved;
+}
+});
+
+// Section 2.6 — Ask the AI ​​(emulation)
+const chatInput = document.getElementById('chatInput');
+const sendChatBtn = document.getElementById('sendChatBtn');
+const chatMessages = document.getElementById('chatMessages');
+
+function appendMessage(sender, text) {
+const div = document.createElement('div');
+div.innerHTML = `<span class="ch"at-${sender}">${sender === 'user' ? 'You' : 'AI'}:</span> <span>${text}</span>`;
+chatMessages.appendChild(div);
+chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function generateAIResponse(question) {
+// A very simple emulation of an answer
+const lower = question.toLowerCase();
+if (lower.includes('math')) return 'Math is the language of the universe, the study of numbers and shapes.';
+if (lower.includes('why')) return 'Because that's the way the world works, and we're trying to understand it.';
+if (lower.includes('what')) return 'This is a fundamental question that needs to be defined precisely.';
+if (lower.includes('who')) return 'That's an interesting question! Try searching in the encyclopedia.';
+return 'Thank you for the question! Unfortunately, I'm still learning and don't know the exact answer.';
+}
+
+sendChatBtn.addEventListener('click', () => {
+const question = chatInput.value.trim();
+if (!question) {
+alert('Please enter a question.');
+return;
+}
+appendMessage('user', question);
+chatInput.value = '';
+// Simulate a response delay
+setTimeout(() => {
+const answer = generateAIResponse(question);
+appendMessage('ai', answer);
+}, 800);
+});
+
+// Send by Enter
+chatInput.addEventListener('keydown', (e) => {
+if (e.key === 'Enter') {
+sendChatBtn.click();
+}
+});
+</script>
+<a href="../oglavlenie.html" class="back-link">&larr; Return to contents</a>
+</body>
+</html>

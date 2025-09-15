@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Soothing Power of the Landscape</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+
+<h2>🧮 Model of Emotional Impact of Landscape</h2>
+
+<label>Color saturation (0–1): <input type="number" id="color" step="0.1" min="0" max="1" value="0.6"></label>
+<label>Relief contrast (0–1): <input type="number" id="relief" step="0.1" min="0" max="1" value="0.4"></label>
+<label>Observation height (meters): <input type="number" id="height" step="10" min="0" max="500" value="100"></label>
+
+<button onclick="calculate()">Calculate</button>
+
+<div class="result" id="output"></div>
+
+<script>
+function calculate() {
+  const C = parseFloat(document.getElementById("color").value);
+  const R = parseFloat(document.getElementById("relief").value);
+  const H = parseFloat(document.getElementById("height").value);
+
+  const H_norm = Math.exp(-Math.pow((H - 120) / 80, 2));
+  const E = (0.6 * C + 0.4 * R) * H_norm;
+
+  document.getElementById("output").textContent =
+    "📊 Emotional impact: " + E.toFixed(3) +
+    (E > 0.5 ? " — soothing" : " — stimulating or neutral");
+}
+</script>
+
+</body>
+</html>

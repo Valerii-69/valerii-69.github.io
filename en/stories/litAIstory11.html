@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Glass Sphere — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 11: Glass Sphere</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+A transparent glass sphere rested on the shelf, reflecting light and filled with colors around it. It remembered the day it was released to move freely — rolling, playing with shadow and light, creating little wonders.  
+The sphere was fragile, yet every movement carried freedom and the joy of discovery.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can we describe the motion of a glass sphere along an inclined plane considering friction and rotation?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/sharik_steklo_model.png" alt="Glass Sphere" width="100%"/>
+
+<h2>Glass Sphere: Force Model (click canvas to refresh)</h2>
+<canvas id="ball" width="600" height="200" style="background:#eef9ff"></canvas>
+
+<script>
+const canvas = document.getElementById('ball');
+const ctx = canvas.getContext('2d');
+
+const g = 9.81;
+const alpha = (Math.PI / 40);
+const m = 1;
+const r = 20;
+const I = (2/5) * m * r * r;
+const a = g * Math.sin(alpha) / (1 + I / (m * r * r));
+
+let x = 0;
+let vx = 0;
+const dt = 0.01;
+
+function drawScene(xPos) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(0, 40);
+  ctx.lineTo(canvas.width, canvas.height - canvas.width * Math.tan(alpha));
+  ctx.stroke();
+
+  const y = (r + xPos * 2.358 * Math.tan(alpha));
+  ctx.fillStyle = '#3399ff';
+  ctx.beginPath();
+  ctx.arc(xPos, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function step() {
+  vx += a * dt;
+  x += vx * dt * 50;
+
+  if (x < canvas.width - r) {
+    drawScene(x);
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+  x = 20;
+  vx = 0;
+  drawScene(x);
+  step();
+}, false);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May your movements be smooth and confident, and may every new slope be an opportunity to roll toward new peaks and discoveries.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

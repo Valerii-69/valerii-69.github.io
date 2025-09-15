@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, kids, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Philosophy and Chance — A Wish to the Reader</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+<header>
+  <h2>Fun Math with AI</h2>
+</header>
+
+  <h1>A Wish to the Reader</h1>
+
+  <div class="philo-wish">
+    <p><em>
+      May chance lead you to the place where you become who you were always meant to be.  
+      May every turn become an opportunity, and every moment — a lesson and a discovery.
+    </em></p>
+  </div>
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeWIKohbPCnx6BC505qcNgyJXd8qD07SDmASpV3A_8C8AT_vg/viewform?embedded=true" width="840" height="795" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+
+  <div class="tree" id="tree"></div>
+
+  <script>
+    const form = document.getElementById('wishForm');
+    const tree = document.getElementById('tree');
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const wishText = document.getElementById('wish').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if (!wishText || !email) return;
+
+      const leaf = document.createElement('div');
+      leaf.className = 'leaf';
+      leaf.textContent = '🌿 ' + wishText;
+      tree.appendChild(leaf);
+
+      fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section: 'Philosophy and Chance — A Wish to the Reader',
+          email: email,
+          wish: wishText
+        })
+      });
+
+      form.reset();
+    });
+  </script>
+<footer>
+  © 2025 Fun Math with AI
+</footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+</body>
+</html>

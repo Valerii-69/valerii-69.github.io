@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+  <meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Philosophy and Chance — Stories of Probability</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+  <header>
+    <h2>Fun Math with AI</h2>
+  </header>
+  <h1>Philosophy and Chance — Stories of Probability</h1>
+
+  <label for="storySelect">Choose a story:</label>
+  <select id="storySelect" onchange="showStory()">
+    <option value="">-- Select --</option>
+    <option value="1">Birthday Paradox</option>
+    <option value="2">Coin Toss Story</option>
+    <option value="3">Lottery Winning Probability</option>
+    <option value="4">Liar Paradox</option>
+    <option value="5">Bolle and Random Numbers</option>
+  </select>
+
+  <div class="story-text" id="storyText"></div>
+
+  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfAevXddtJDNp7t0u6FlASm9i5zXWQnq3bNIFscj5ZnxTC9YQ/viewform?embedded=true" width="640" height="907" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+
+  <div id="responseMsg"></div>
+
+  <script>
+    const stories = {
+      1: `Birthday Paradox:\n\nIn a group of just 23 people, the probability that at least two share a birthday exceeds 50%. Surprisingly, 23 is a small number compared to 365!`,
+      2: `Coin Toss Story:\n\nIf you toss a coin many times, the results seem equally likely. But after a streak of heads, people often expect tails — this is known as the gambler's fallacy.`,
+      3: `Lottery Winning Probability:\n\nThe odds of winning a big jackpot may be 1 in millions. Yet millions continue to play, hoping for luck. Many do not realize how small these chances really are.`,
+      4: `Liar Paradox:\n\nA person says, "All statements I make are false." If true, they are lying; if false, they are telling the truth. This paradox explores logic and probability of truth.`,
+      5: `Bolle and Random Numbers:\n\nPhysicist Bolle studied random numbers and discovered they often follow certain distributions, surprisingly orderly despite seeming chaos.`
+    };
+
+    function showStory() {
+      const select = document.getElementById('storySelect');
+      const storyText = document.getElementById('storyText');
+      const val = select.value;
+      storyText.textContent = val && stories[val] ? stories[val] : '';
+      document.getElementById('responseMsg').textContent = '';
+    }
+
+    function submitComment() {
+      const email = document.getElementById('emailInput').value.trim();
+      const comment = document.getElementById('commentInput').value.trim();
+      const storyId = document.getElementById('storySelect').value;
+
+      if (!storyId) { alert('Please select a story.'); return; }
+      if (!comment) { alert('Please enter a comment.'); return; }
+      if (!email || !validateEmail(email)) { alert('Please enter a valid email.'); return; }
+
+      fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+        method: 'POST',
+        body: JSON.stringify({ storyId, comment, email }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('responseMsg').textContent =
+          data.status === 'ok' ? 'Thank you! Your comment has been submitted.' : 'Submission error.';
+        document.getElementById('commentInput').value = '';
+        document.getElementById('emailInput').value = '';
+      })
+      .catch(() => { document.getElementById('responseMsg').textContent = 'Submission error.'; });
+    }
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+  </script>
+
+  <footer>
+    © 2025 Fun Math with AI
+  </footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+</body>
+</html>

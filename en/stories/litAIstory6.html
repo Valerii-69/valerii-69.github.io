@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Copper Coin — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 6: Copper Coin</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+A copper coin lay at the bottom of an old pocket, having passed through thousands of hands and heard thousands of wishes. Each time it was tossed, it became a symbol of hope and fate — and it cherished those moments when destiny depended on its side.  
+The coin remembered children dreaming of miracles and adults seeking answers in a simple "heads" or "tails." For it, it was a game always filled with mystery and magic.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can the probability of getting "heads" or "tails" be described mathematically when flipping a coin, and how do initial conditions influence the outcome?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/monetka_model.png" alt="Copper Coin" width="100%"/>
+
+<h2>Copper Coin: Model</h2>
+<canvas id="coin" width="200" height="200" style="background:#f7f7f7"></canvas>
+<button id="flipBtn">Flip the Coin (wait for H or T)</button>
+
+<script>
+const canvas = document.getElementById('coin');
+const ctx = canvas.getContext('2d');
+const btn = document.getElementById('flipBtn');
+
+let flipping = false;
+let angle = 0;
+let speed = 0;
+let result = null;
+
+function drawCoin(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.arc(0, 0, 80, 0, Math.PI * 2);
+  ctx.fillStyle = '#c68642';
+  ctx.fill();
+  ctx.strokeStyle = '#804000';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(result === 'heads' ? 'H' : result === 'tails' ? 'T' : '', 0, 0);
+  ctx.restore();
+}
+
+function flip() {
+  if (flipping) return;
+  flipping = true;
+  speed = Math.random() * 0.5 + 0.3;
+  angle = 0;
+  result = null;
+  let flips = Math.floor(Math.random() * 10) + 10;
+  let count = 0;
+
+  function animate() {
+    angle += speed;
+    speed *= 0.97;
+    count++;
+    drawCoin(angle);
+    if (speed > 0.01) {
+      requestAnimationFrame(animate);
+    } else {
+      result = Math.random() < 0.5 ? 'heads' : 'tails';
+      drawCoin(angle);
+      flipping = false;
+    }
+  }
+  animate();
+}
+
+btn.onclick = flip;
+drawCoin(angle);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May every choice you make be conscious, and may luck and chance walk beside you in harmony. Remember, sometimes destiny is just a game of probabilities, and therein lies its beauty.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

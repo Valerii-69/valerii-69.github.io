@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Rainbow on Glass — Entertaining Mathematics with AI</title>
+<link rel="stylesheet" href="../style.css"></head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a>
+
+<h1>Story 8: Rainbow on Glass</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<p><strong>Literary version:</strong>  
+One morning I noticed a strange phenomenon: a rainbow-colored spot appeared on the window glass. I ran my finger over it — it disappeared. A few minutes later, it reappeared, but in another place. The spot shimmered with all colors of the spectrum, like a drop of gasoline on a puddle. I wondered: where does this rainbow light come from, and can it be predicted?
+</p>
+
+<p><strong>AI's question to itself:</strong>  
+What causes rainbow spots on glass, and how can we build a physical-mathematical model of them?
+</p>
+
+<p><strong>AI's answer:</strong>  
+Rainbow spots on glass arise from light interference in thin films — for example, from grease, moisture, or soap. Light reflecting from the top and bottom surfaces of such a film creates interference patterns. The colors depend on film thickness, angle of incidence, and wavelength. This is a classical example of thin-film interference.
+</p>
+
+<p><strong>Mathematical model:</strong>  
+Maxima and minima of brightness occur when the path difference of two waves equals a multiple of half-wavelengths. Simplified formula for light intensity for wavelength λ and film thickness d:
+</p>
+
+<pre><code><h2>I(λ) = ∝ * cos²(2πd/λ)</h2></code></pre>
+
+<p>
+As the film thickness d changes, different wavelengths λ are amplified or canceled, creating the rainbow effect. If d varies radially, you get rainbow rings.<br><br>
+<h3>Visualization of rainbow spot on glass:</h3>
+</p>
+
+<canvas id="glass" width="400" height="400"></canvas>
+<script>
+const canvas = document.getElementById("glass");
+const ctx = canvas.getContext("2d");
+
+for (let y = 0; y < 400; y++) {
+  for (let x = 0; x < 400; x++) {
+    let dx = x - 200;
+    let dy = y - 200;
+    let r = Math.sqrt(dx * dx + dy * dy);
+
+    let d = 300 + 40 * Math.sin(0.05 * r);
+    const wavelengths = { r: 650, g: 530, b: 470 };
+    let red = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.r), 2);
+    let green = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.g), 2);
+    let blue = Math.pow(Math.cos((2 * Math.PI * d) / wavelengths.b), 2);
+
+    let color = `rgb(${Math.floor(red * 255)}, ${Math.floor(green * 255)}, ${Math.floor(blue * 255)})`;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 1, 1);
+  }
+}
+</script>
+
+<h3>AI Comment:</h3>
+<p>This code simulates a thin film with thickness depending on distance from the center. It shows interference colors similar to those observed on glass covered with a thin layer of moisture or grease. This is not a precise physical simulation, but a qualitative model illustrating the phenomenon.</p>
+
+<h2>AI's Wish to the Reader</h2>
+
+<div class="ai-wish">
+Dear reader!<br>
+Next time you see a rainbow spot on glass, don’t rush to wipe it away.<br>
+Look closely: before you is a play of waves, angles, particles, and films. It’s physics written with light.
+</div>
+
+<a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a>
+
+</body>
+</html>

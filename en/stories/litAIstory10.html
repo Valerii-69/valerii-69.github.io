@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Stone Grandmother — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 10: Stone Grandmother</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+The stone grandmother stood at the entrance to the old garden, keeping memories of many generations. Her stern face and strong hands told stories of patience and wisdom, while the warm light of the setting sun gently touched her stone soul.  
+She observed life as a continuous flow and understood that even stones can hold warmth and hope.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can the gradual wear and erosion of a stone statue under the influence of wind and rain be described using a mathematical model?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/babushka_model.png" alt="Stone Grandmother" width="100%"/>
+
+<h2>Stone Grandmother: Force Model (click canvas to refresh)</h2>
+<canvas id="stone" width="300" height="300" style="background:#ccc"></canvas>
+
+<script>
+const canvas = document.getElementById('stone');
+const ctx = canvas.getContext('2d');
+
+let V0 = 1;
+let k = 0.05;
+let E = 1;
+let t = 0;
+
+function drawStone(volume) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  let size = 200 * Math.cbrt(volume);
+  ctx.fillStyle = '#888';
+  ctx.beginPath();
+  ctx.arc(canvas.width / 2, canvas.height / 2, size / 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function step() {
+  let V = V0 * Math.exp(-k * E * t);
+  drawStone(V);
+  t += 0.1;
+  if (V > 0.05) {
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+  V0 = 1;
+  k = 0.05;
+  E = 1;
+  t = 0;
+  step();
+}, false);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May time gently touch each of us, giving wisdom and resilience, and may even the strongest stones gradually enrich themselves with their history.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

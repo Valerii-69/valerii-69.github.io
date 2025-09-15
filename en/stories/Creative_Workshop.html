@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+  <meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Creative Workshop & Ask AI - Fun Math with AI</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+  <h1>Creative Workshop: Create a Story with AI</h1>
+  <section>
+    <label for="ideaInput">Enter your idea or topic for the story:</label>
+    <textarea id="ideaInput" placeholder="For example: a mathematician's adventure in space"></textarea>
+    <button id="generateStoryBtn">Generate Story</button>
+    <button id="saveStoryBtn">Save Story</button>
+    <div id="storyResult"></div>
+  </section>
+
+  <h1>Ask AI</h1>
+  <section>
+    <label for="chatInput">Enter your question for AI:</label>
+    <input type="text" id="chatInput" placeholder="Type your question..." autocomplete="off" />
+    <button id="sendChatBtn">Send</button>
+    <div id="chatMessages"></div>
+  </section>
+
+  <script>
+    const ideaInput = document.getElementById('ideaInput');
+    const generateStoryBtn = document.getElementById('generateStoryBtn');
+    const saveStoryBtn = document.getElementById('saveStoryBtn');
+    const storyResult = document.getElementById('storyResult');
+
+    function generateStory(idea) {
+      return `
+Once, inspired by the idea "${idea}", our hero embarked on an extraordinary adventure, where numbers and formulas came alive, and mathematical puzzles turned into exciting challenges. 
+
+At every step, he discovered new secrets and realized that mathematics is the language of the Universe, helping to unravel its mysteries.
+
+May this story inspire you to explore the world with curiosity and creativity!`;
+    }
+
+    generateStoryBtn.addEventListener('click', () => {
+      const idea = ideaInput.value.trim();
+      if (!idea) { alert('Please enter an idea for the story.'); return; }
+      storyResult.textContent = generateStory(idea);
+    });
+
+    saveStoryBtn.addEventListener('click', () => {
+      const storyText = storyResult.textContent.trim();
+      if (!storyText) { alert('Generate a story first to save it.'); return; }
+      localStorage.setItem('savedStory', storyText);
+      alert('Story saved to browser local storage! Note: Storage limit ~5–10 MB.');
+    });
+
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem('savedStory');
+      if (saved) storyResult.textContent = saved;
+    });
+
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function appendMessage(sender, text) {
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="chat-${sender}">${sender==='user'?'You':'AI'}:</span> <span>${text}</span>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function generateAIResponse(question) {
+      const lower = question.toLowerCase();
+      if (lower.includes('mathematics')) return 'Mathematics is the language of the Universe, studying numbers and shapes.';
+      if (lower.includes('why')) return 'Because that is how the world works, and we try to understand it.';
+      if (lower.includes('what is')) return 'That is a fundamental question requiring a precise definition.';
+      if (lower.includes('who')) return 'Interesting question! Try looking it up in an encyclopedia.';
+      return 'Thanks for your question! I am still learning and do not have an exact answer yet.';
+    }
+
+    sendChatBtn.addEventListener('click', () => {
+      const question = chatInput.value.trim();
+      if (!question) { alert('Please enter a question.'); return; }
+      appendMessage('user', question);
+      chatInput.value = '';
+      setTimeout(() => { appendMessage('ai', generateAIResponse(question)); }, 800);
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key==='Enter') sendChatBtn.click();
+    });
+  </script>
+
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+</body>
+</html>

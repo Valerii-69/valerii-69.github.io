@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Ball on a String — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 9: Ball on a String</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+A bright ball gently swung on a thin string, playing with the sun’s rays in the park. It remembered the children's hands that lovingly held it, and the quiet wind that whispered stories of dreams and wide horizons.  
+Every movement was like a dance—light and free, yet full of a sense of connection with the world.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can the motion of a ball on a string be mathematically described, considering oscillations and the influence of gravity?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/sharik_nitochka_model.png" alt="Ball on a String" width="100%"/>
+
+<h2>Ball on a String: Force Model (click canvas to refresh)</h2>
+<canvas id="pendulum" width="400" height="300" style="background:#e0f7fa"></canvas>
+
+<script>
+const canvas = document.getElementById('pendulum');
+const ctx = canvas.getContext('2d');
+
+const g = 9.81;
+const l = 150;
+let theta = 0.5;
+let omega = 0;
+let dt = 0.02;
+
+function drawPendulum(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  const originX = canvas.width / 2;
+  const originY = 50;
+  const bobX = originX + l * Math.sin(angle);
+  const bobY = originY + l * Math.cos(angle);
+
+  // string
+  ctx.moveTo(originX, originY);
+  ctx.lineTo(bobX, bobY);
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // ball
+  ctx.beginPath();
+  ctx.arc(bobX, bobY, 20, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff4081';
+  ctx.fill();
+  ctx.strokeStyle = '#c2185b';
+  ctx.stroke();
+}
+
+function step() {
+  let alpha = -(g / l) * Math.sin(theta);
+  omega += alpha * dt;
+  theta += omega * dt;
+
+  drawPendulum(theta);
+  requestAnimationFrame(step);
+}
+
+canvas.addEventListener('click', function() {
+ theta = 0.5;
+ omega = 0;
+ dt = 0.02;
+ step();
+}, false);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May the oscillations of your life be harmonious and full of light, and may each new pendulum bring balance and inspiration.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Experiment: Plant Growth and Light</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #fdfdfd;
+    }
+    h2 {
+      color: #2c6e49;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 15px;
+      width: 100%;
+      max-width: 600px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    th {
+      background: #e6f2e6;
+    }
+    #chartContainer {
+      margin-top: 20px;
+      max-width: 700px;
+    }
+    .note {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f0faf5;
+      border-left: 4px solid #2c6e49;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌱 Experiment: Plant Growth and Light</h2>
+  <p><b>Goal:</b> Observe how light affects the growth and direction of bean sprouts.</p>
+
+<section>
+Idea: Test how the direction and amount of light affect plant growth.<br>
+Materials needed:<br>
+2 identical cups or pots with soil,<br>
+seeds (e.g., beans or peas, they sprout quickly),<br>
+ruler, lamp or window.<br>
+Experiment steps:<br>
+Plant seeds in two cups.<br>
+Place one cup on a window (light from above).<br>
+Place the other in a box with a small side opening (light from the side).<br>
+Measure the height of the sprouts every day with a ruler.<br>
+Record results in the table:<br>
+Day &emsp; Height at window (cm) &emsp; Height in box (cm) &emsp; Angle of tilt (if visible)<br>
+1			<br>
+2			<br>
+3			<br>
+...			<br>
+🔢 Mathematical model:<br>
+Growth can be described as a linear function:<br>
+h(t) = a ⋅ t + b,<br>
+where <br>
+h — height, <br>
+t — time (days), <br>
+a — average daily growth.<br>
+Angle can be estimated from a photo or measured with a protractor.<br>
+❓Questions for you:<br>
+Why do sprouts grow towards light?<br>
+Can you predict their height on the 10th day?<br>
+How will growth change if there is more/less light?
+</section>
+
+  <table id="dataTable">
+    <tr>
+      <th>Day</th>
+      <th>Height at window (cm)</th>
+      <th>Height in box (cm)</th>
+      <th>Tilt angle (°)</th>
+    </tr>
+    <tr>
+      <td>1</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>2</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>3</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>4</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>5</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+  </table>
+
+  <button onclick="drawChart()">Draw Chart</button>
+
+  <div id="chartContainer">
+    <canvas id="growthChart"></canvas>
+  </div>
+
+  <div class="note">
+    ✨ <b>Note for the reader:</b>  
+    Let each of your experiments be a small step toward understanding the world.  
+    Plants reach for the light — and you reach for knowledge! 🌞📚
+  </div>
+
+  <script>
+    function drawChart() {
+      const table = document.getElementById("dataTable");
+      const days = [];
+      const windowHeights = [];
+      const boxHeights = [];
+
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        const day = parseInt(row.cells[0].innerText);
+        const windowHeight = parseFloat(row.cells[1].children[0].value);
+        const boxHeight = parseFloat(row.cells[2].children[0].value);
+
+        if (!isNaN(day)) days.push(day);
+        if (!isNaN(windowHeight)) windowHeights.push(windowHeight);
+        else windowHeights.push(null);
+        if (!isNaN(boxHeight)) boxHeights.push(boxHeight);
+        else boxHeights.push(null);
+      }
+
+      const ctx = document.getElementById("growthChart").getContext("2d");
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: days,
+          datasets: [
+            {
+              label: "Height at window (cm)",
+              data: windowHeights,
+              borderColor: "green",
+              fill: false
+            },
+            {
+              label: "Height in box (cm)",
+              data: boxHeights,
+              borderColor: "orange",
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Height (cm)" }
+            },
+            x: {
+              title: { display: true, text: "Experiment Day" }
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

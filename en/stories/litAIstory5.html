@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Wooden Top — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 5: Wooden Top</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+The wooden top rested on the floor, lightly dusted, but it remembered the many children's hands that spun it in joyful play. Each rotation was a small celebration, and it seemed to sing as it twirled faster and faster, creating circles of light and shadow on the walls.  
+Even when energy waned, the top continued its dance, showing that motion is joy and eternal wonder.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can the motion of a wooden top be described mathematically, taking into account rotational damping and friction?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/ula_model.png" alt="Wooden Top" width="100%"/>
+
+<h2>Wooden Top: Force Model (click window to refresh)</h2>
+<canvas id="top2" width="300" height="300" style="background:#f9f9f9"></canvas>
+
+<script>
+const canvas = document.getElementById('top2');
+const ctx = canvas.getContext('2d');
+
+let omega0 = 0.5; // initial angular velocity (rad/step)
+let gamma = 0.01; // damping coefficient
+let theta = 0;
+let t = 0;
+
+function drawTop(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(angle);
+  ctx.fillStyle = '#804000';
+  ctx.beginPath();
+  ctx.moveTo(0, -70);
+  ctx.lineTo(25, 70);
+  ctx.lineTo(-25, 70);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+  let omega = omega0 * Math.exp(-gamma * t);
+  theta += omega;
+  drawTop(theta);
+  t++;
+  if (omega > 0.001) {
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+ omega0 = 0.5;
+ gamma = 0.01;
+ theta = 0;
+ t = 0;
+ step();
+}, false);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May every turn in your life be filled with energy and beauty, and even when your strength wanes — remember that joy and meaning are born in motion.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

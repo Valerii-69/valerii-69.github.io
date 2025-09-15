@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments and modelling.">
+  <meta name="keywords" content="mathematics, AI, story, modelling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Philosophy and Chance — Random Choice</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+<header>
+  <h2>Fun Math with AI</h2>
+</header>
+
+<h1>Random Choice</h1>
+<p>Click the button to get random thoughts from the "Philosophy and Chance" section.</p>
+
+<button class="btn" onclick="chooseRandom()">Random Choice</button>
+
+<div id="results" class="block"></div>
+
+<script>
+const data = {
+  "Stories": [
+    "A story about a staircase leading to the sunrise.",
+    "A person and a clock that only shows the present.",
+    "An old man who predicted a coin toss loss.",
+    "A room with two mirrors and one door.",
+    "A train without a schedule but always on time."
+  ],
+  "Observations": [
+    "Chance almost always hides under patterns.",
+    "Sometimes chance is just a lack of data.",
+    "The more closely you watch randomness, the less random it seems."
+  ],
+  "Essays": [
+    "How randomness saves order from stagnation.",
+    "Probability mathematics as a philosophy of trusting the unknown.",
+    "Randomness as a tool for seeking meaning."
+  ],
+  "Paradoxes": [
+    "The paradox of predictable chance.",
+    "Paradox: if everything is random, is randomness also patterned?",
+    "The paradox of forgotten choice.",
+    "The paradox of reverse probability.",
+    "The paradox of trusting a random number."
+  ],
+  "Parables": [
+    "A sage threw dice to understand his destiny.",
+    "The student waited for chance every day. One day chance became the student."
+  ]
+};
+
+function chooseRandom() {
+  const resultDiv = document.getElementById("results");
+  let output = "";
+
+  for (let category in data) {
+    const items = data[category];
+    const randomItem = items[Math.floor(Math.random() * items.length)];
+    output += `<div class="category-title">${category}:</div><p>${randomItem}</p>`;
+  }
+
+  resultDiv.innerHTML = output;
+}
+</script>
+
+<footer>
+  © 2025 Fun Math with AI
+</footer>
+<a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

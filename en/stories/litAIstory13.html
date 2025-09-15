@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Stone Bridge — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 13: Stone Bridge</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>The stone bridge proudly stood over the river, connecting the shores and passing on the stories of those who crossed it through the centuries. Its massive arches and sturdy stones symbolized strength and unity, linking different worlds.  
+Every step on the bridge is a step forward; it leads through time and space, reminding us of the power of traditions and continuity.</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can we mathematically describe the distribution of loads and stresses in a stone arch bridge?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/kamen_most_model.png" alt="Stone Bridge" width="100%"/>
+
+<h2>Stone Bridge: Force Model (click canvas to refresh)</h2>
+<canvas id="bridge" width="600" height="300" style="background:#f0f0f0"></canvas>
+
+<script>
+const canvas = document.getElementById('bridge');
+const ctx = canvas.getContext('2d');
+
+const width = canvas.width;
+const height = canvas.height;
+const R = 200; // arch radius
+const centerX = width / 2;
+const centerY = height + 50; // center of circle below canvas for top arch
+
+function drawArch() {
+  ctx.clearRect(0, 0, width, height);
+  ctx.strokeStyle = '#8b4513';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, R, Math.PI, 2 * Math.PI);
+  ctx.stroke();
+
+  ctx.fillStyle = '#654321';
+  ctx.fillRect(centerX - R, centerY, 40, 50);
+  ctx.fillRect(centerX + R - 40, centerY, 40, 50);
+}
+
+function drawStress() {
+  for (let angle = Math.PI; angle <= 2 * Math.PI; angle += 0.005) {
+    let x = centerX + R * Math.cos(angle);
+    let y = centerY + R * Math.sin(angle);
+
+    let stress = Math.sin(angle);
+    let colorIntensity = Math.abs(Math.floor(255 * stress * 0.05));
+    let pros = stress * 0.001;
+    ctx.fillStyle = `rgba(${colorIntensity}, 0, 0, ${pros})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+
+function drawBridge() {
+  drawArch();
+  drawStress();
+}
+
+canvas.addEventListener('click', function() {
+  drawBridge();
+}, false);
+</script>
+
+<h2>Message to the reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May your supports be strong, and the bridges you build in life connect the most important shores, bringing hope and support.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

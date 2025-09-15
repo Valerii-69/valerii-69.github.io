@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dancing Raisins</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; background: #e0f7fa; padding: 20px; }
+  h2 { color: #00695c; }
+  #glass { 
+    position: relative; 
+    width: 200px; 
+    height: 300px; 
+    margin: 20px auto; 
+    border: 3px solid #00796b; 
+    border-radius: 10px; 
+    background: #b2ebf2; 
+    overflow: hidden;
+  }
+  .raisin { 
+    position: absolute; 
+    width: 15px; 
+    height: 15px; 
+    background: brown; 
+    border-radius: 50%; 
+  }
+</style>
+</head>
+<body>
+<h2>Dancing Raisins</h2>
+<p>Observe how raisins rise and fall in carbonated water.</p>
+<section>
+Experiment description:<br>
+Take a transparent glass or jar with carbonated water (mineral or sweet, doesn't matter). Drop a few raisins into it. Within seconds, you'll see the raisins "dance": they rise to the surface and then sink again.<br>
+What happens?<br>
+Gas bubbles (carbon dioxide) stick to the surface of the raisins, making them float.<br>
+When they reach the surface, bubbles burst — the raisin becomes heavy again and sinks.<br>
+The process repeats several times until the gas leaves the water.<br>
+What you can investigate:<br>
+Count how many times a raisin rises and falls before stopping.<br>
+Compare raisins with other items: rice grains, small pasta pieces, tiny beads.<br>
+Try different carbonated drinks and compare the "dance energy".<br>
+Mathematical model (sketch):<br>
+Rise is related to the net force:<br>
+F_buoyancy = F_Archimedes − F_gravity<br>
+where the raisin’s weight decreases when bubbles stick to it.<br>
+The number of bubbles can be estimated as:<br>
+N × V_bubble<br>
+(number of bubbles multiplied by their volume).
+</section>
+<div id="glass" hidden></div>
+
+<script>
+const glass = document.getElementById('glass');
+const raisins = [];
+const count = 10;
+
+// Initialize raisins
+for (let i = 0; i < count; i++) {
+  const raisin = document.createElement('div');
+  raisin.classList.add('raisin');
+  raisin.style.left = Math.random() * 180 + 'px';
+  raisin.style.top = Math.random() * 280 + 'px';
+  glass.appendChild(raisin);
+  raisins.push({
+    el: raisin,
+    y: parseFloat(raisin.style.top),
+    speed: Math.random() * 1 + 0.5,
+    direction: Math.random() > 0.5 ? 1 : -1
+  });
+}
+
+// Animation
+function animate() {
+  for (let r of raisins) {
+    r.y -= r.speed * r.direction;
+    if (r.y < 0) r.direction = 1; // reached surface, change direction
+    if (r.y > 285) r.direction = -1; // reached bottom
+    r.el.style.top = r.y + 'px';
+  }
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>

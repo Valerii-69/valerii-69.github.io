@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and puzzles.">
+  <meta name="keywords" content="mathematics, AI, puzzles, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Mathematical Puzzles with AI - Fun Math with AI</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+  <h1>Mathematical Puzzles with AI</h1>
+  <div id="puzzle"></div>
+  <input type="text" id="answerInput" placeholder="Enter your answer..." autocomplete="off" />
+  <button id="checkBtn">Check Answer</button>
+  <div id="feedback"></div>
+  <div id="hint"></div>
+
+  <script>
+    const easy = [
+      { question: "How many sides does a triangle have?", answer: "3", hint: "Think about a geometric shape with three corners." },
+      { question: "What number comes after 99?", answer: "100", hint: "The next natural number." },
+      { question: "I have 12 apples, I gave away 7. How many are left?", answer: "5", hint: "Simple subtraction." },
+      { question: "10 multiplied by what number equals 100?", answer: "10", hint: "How many times does 10 fit into 100?" },
+      { question: "What number should you add to 47 to get 100?", answer: "53", hint: "100 − 47 = ?" }
+    ];
+
+    const medium = [
+      { question: "I am thinking of a number. Multiply it by 3 and add 5 to get 20. What is the number?", answer: "5", hint: "Solve 3x + 5 = 20" },
+      { question: "If 5 pencils cost 20 rubles, how much does one pencil cost?", answer: "4", hint: "Divide 20 by 5." },
+      { question: "A square has a perimeter of 20 cm. What is the length of one side?", answer: "5", hint: "Perimeter = 4 × side." },
+      { question: "One hour ago it was 3 PM. What time will it be in 5 hours?", answer: "9", hint: "First find the current time, then add 5 hours." },
+      { question: "Which three-digit number reads the same forwards and backwards?", answer: "121", hint: "It's a palindrome; the middle digit is 2." }
+    ];
+
+    const hard = [
+      { question: "Three cats catch three mice in three minutes. How many mice will six cats catch in six minutes?", answer: "12", hint: "Find the rate of one cat and scale up." },
+      { question: "I am a two-digit number. The sum of digits is 9 and the difference is 3. What number am I?", answer: "63", hint: "x + y = 9 and x − y = 3." },
+      { question: "The sum of three consecutive odd numbers is 45. Find these numbers.", answer: "13,15,17", hint: "Divide 45 by 3 to find the middle number." },
+      { question: "Peter had twice as many apples as Vasiliy. Together they have 18 apples. How many apples does Peter have?", answer: "12", hint: "Set up the equation 2x + x = 18." },
+      { question: "The time is 3:15. What is the angle between the hour and minute hands?", answer: "7.5", hint: "Each minute of the hour hand = 0.5°." }
+    ];
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    const levels = [easy, medium, hard];
+    const puzzles = shuffle(levels[Math.floor(Math.random() * levels.length)]);
+
+    let currentPuzzleIndex = 0;
+    const puzzleEl = document.getElementById('puzzle');
+    const answerInput = document.getElementById('answerInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const hintEl = document.getElementById('hint');
+
+    function loadPuzzle(index) {
+      const puzzle = puzzles[index];
+      puzzleEl.textContent = puzzle.question;
+      feedbackEl.textContent = '';
+      hintEl.textContent = '';
+      answerInput.value = '';
+      answerInput.focus();
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      const correctAnswer = puzzles[currentPuzzleIndex].answer.toLowerCase();
+
+      if (!userAnswer) { feedbackEl.textContent = "Please enter an answer."; return; }
+
+      if (userAnswer === correctAnswer) {
+        feedbackEl.style.color = 'green';
+        feedbackEl.textContent = "Correct! 🎉";
+        currentPuzzleIndex++;
+        if (currentPuzzleIndex >= puzzles.length) {
+          setTimeout(() => {
+            alert("Congratulations! You solved all puzzles. Starting over.");
+            currentPuzzleIndex = 0;
+            loadPuzzle(currentPuzzleIndex);
+          }, 1000);
+        } else { setTimeout(() => loadPuzzle(currentPuzzleIndex), 1500); }
+      } else {
+        feedbackEl.style.color = 'red';
+        feedbackEl.textContent = "Incorrect. Try again.";
+        hintEl.textContent = "Hint: " + puzzles[currentPuzzleIndex].hint;
+      }
+    });
+
+    loadPuzzle(currentPuzzleIndex);
+  </script>
+</body>
+</html>

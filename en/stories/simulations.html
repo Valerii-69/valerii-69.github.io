@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and simulations.">
+  <meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Philosophy and Chance — Randomness Simulations</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+<header>
+  <h2>Fun Math with AI</h2>
+</header>
+
+<h1>Randomness Simulations</h1>
+<p>Explore randomness through interactive experiments and paradoxes.</p>
+
+<!-- 1. Monty Hall Paradox -->
+<div class="section" id="monty">
+  <h2>1. Monty Hall Paradox</h2>
+  <p>Pick one of three doors. One hides a prize. The host opens an empty door and asks if you want to switch. Will you change your choice?</p>
+  <button onclick="runMontyHall()">Play</button>
+  <p id="monty-result"></p>
+</div>
+
+<!-- 2. Random Walk -->
+<div class="section" id="random-walk">
+  <h2>2. Random Walk</h2>
+  <p>Imagine a particle taking steps left or right randomly. What path will it take after 100 steps?</p>
+  <button onclick="randomWalk()">Start Simulation</button><br />
+  <canvas id="walkCanvas" width="600" height="200"></canvas>
+</div>
+
+<!-- 3. Animated Random Number -->
+<div class="section" id="random-number">
+  <h2>3. Animated Random Number</h2>
+  <p>Click the button to pick a random number from 1 to 100 with animation.</p>
+  <button onclick="animateRandom()">Pick Number</button>
+  <h3 id="random-output">...</h3>
+</div>
+
+<script>
+  // 1. Monty Hall
+  function runMontyHall() {
+    const prizeDoor = Math.floor(Math.random() * 3);
+    const userChoice = Math.floor(Math.random() * 3);
+    let remainingDoors = [0, 1, 2].filter(d => d !== userChoice && d !== prizeDoor);
+    const openedDoor = remainingDoors[Math.floor(Math.random() * remainingDoors.length)];
+    const switchDoor = [0, 1, 2].find(d => d !== userChoice && d !== openedDoor);
+    const switchedWin = switchDoor === prizeDoor;
+    document.getElementById('monty-result').textContent =
+      `You chose door ${userChoice + 1}. The host opened door ${openedDoor + 1}. 
+      If you had switched to door ${switchDoor + 1}, you would have ${switchedWin ? 'won' : 'lost'}.`;
+  }
+
+  // 2. Random Walk
+  function randomWalk() {
+    const canvas = document.getElementById('walkCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    for (let i = 0; i < 100; i++) {
+      x += Math.random() < 0.5 ? -5 : 5;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  // 3. Animated Random Number
+  function animateRandom() {
+    let counter = 0;
+    const maxFrames = 20;
+    const interval = setInterval(() => {
+      document.getElementById("random-output").textContent = Math.floor(Math.random() * 100) + 1;
+      counter++;
+      if (counter >= maxFrames) clearInterval(interval);
+    }, 100);
+  }
+</script>
+
+<footer>
+  © 2025 Fun Math with AI
+</footer>
+<a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

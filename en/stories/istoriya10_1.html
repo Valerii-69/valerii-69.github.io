@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weight Perception in Water</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h2>Perceived Weight of a Body in Water</h2>
+
+  <label>Body mass (kg): <input type="number" id="mass" value="70"></label><br>
+  <label>Body volume (liters): <input type="number" id="volume" value="70"></label><br>
+  <label>Fluid density (kg/m³): <input type="number" id="density" value="1000"></label><br>
+  <button onclick="calculate()">Calculate</button>
+
+  <p id="result"></p>
+
+  <script>
+    function calculate() {
+      const m = parseFloat(document.getElementById('mass').value);
+      const V_liters = parseFloat(document.getElementById('volume').value);
+      const rho = parseFloat(document.getElementById('density').value);
+
+      const V = V_liters / 1000; // m³
+      const g = 9.81;
+
+      const F_t = m * g;
+      const F_a = rho * g * V;
+      const F_o = F_t - F_a;
+
+      const percent = ((F_o / F_t) * 100).toFixed(1);
+
+      document.getElementById('result').innerHTML =
+        `Weight in air: ${F_t.toFixed(2)} N<br>` +
+        `Buoyant force: ${F_a.toFixed(2)} N<br>` +
+        `Perceived weight in water: ${F_o.toFixed(2)} N (${percent}% of weight in air)<br>` +
+        `<strong>${percent < 10 ? "Feeling of weightlessness!" : "Weight is felt significantly."}</strong>`;
+    }
+  </script>
+</body>
+</html>

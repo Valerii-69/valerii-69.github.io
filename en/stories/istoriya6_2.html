@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Origami Bridge</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 30px; }
+    input { margin: 10px; }
+    canvas { border: 1px solid #aaa; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Origami Bridge Strength Model</h2>
+  <label>Paper thickness (mm): <input id="thickness" type="number" value="0.2" step="0.01"></label><br>
+  <label>Bridge length (m): <input id="length" type="number" value="10" step="0.5"></label><br>
+  <label>Number of folds: <input id="folds" type="number" value="100" step="1"></label><br>
+  <label>Fold angle (°): <input id="angle" type="number" value="45"></label><br>
+  <button onclick="calculate()">Calculate</button>
+  <p id="output"></p>
+  <canvas id="canvas" width="500" height="200"></canvas>
+
+<script>
+function calculate() {
+  const t = parseFloat(document.getElementById('thickness').value) / 1000;
+  const L = parseFloat(document.getElementById('length').value);
+  const N = parseInt(document.getElementById('folds').value);
+  const alpha = parseFloat(document.getElementById('angle').value) * Math.PI / 180;
+  const E = 2e9; // Young's modulus of paper (Pa)
+
+  const Fmax = (E * Math.pow(t, 3) * N * Math.cos(alpha)) / Math.pow(L, 2);
+  document.getElementById('output').innerText =
+    `Maximum distributed load: ${Fmax.toFixed(2)} N`;
+
+  drawFoldedBridge(N);
+}
+
+function drawFoldedBridge(N) {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const width = canvas.width;
+  const height = canvas.height / 2;
+  const dx = width / N;
+
+  ctx.beginPath();
+  ctx.moveTo(0, height);
+  for (let i = 0; i <= N; i++) {
+    const y = i % 2 === 0 ? height - 30 : height + 30;
+    ctx.lineTo(i * dx, y);
+  }
+  ctx.strokeStyle = 'blue';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+</script>
+</body>
+</html>

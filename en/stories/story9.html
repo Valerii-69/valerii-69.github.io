@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Bald Eagle — Entertaining Mathematics with AI</title>
+<link rel="stylesheet" href="../style.css"></head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a>
+
+<h1>Story 9: Bald Eagle</h1>
+
+<p><strong>Author:</strong> Valeriy</p>
+
+<p>
+I was in 8th grade when my father brought home a young bald eagle from the taiga. He was a military man.<br>
+The soldiers had found the eagle; it was nearly frozen. The winter was very cold.<br>
+My parents placed it on a wardrobe. At first, it didn’t eat anything.<br>
+It sat in the far corner; the wardrobe stood in the corner of the room, and it wouldn’t let anyone near.<br>
+We lived in a communal apartment and ate at a table by the window.<br>
+At that time, the room seemed enormous, but now I realize it was about 9 meters long.<br>
+One day, while eating with the whole family, the eagle flew to the table and demanded that I give it a piece of meat.<br>
+At that time, not everyone had refrigerators, and many families stored food in winter on homemade shelves outside the window.<br>
+I reached out the window, took a small piece of lamb wrapped in paper, sat down at the table, and began unwrapping it. The eagle approached and began helping with its beak.<br>
+When we finally managed, I cut a small piece and offered it — it didn’t eat immediately, just watched the meat and me.<br>
+After a while, I realized the meat was cold. I held it in my hand for about 10 minutes to warm it. When I next offered it to the eagle, it took it in its beak,<br>
+moved to a free spot on the table, pressed the meat with its claw, and began eating small pieces.<br>
+This was the first time I fed the eagle.<br>
+Then the eagle began coming to the table every time we ate together. On days when we ate separately, it stayed on the wardrobe, and I left food for it there before school.<br>
+I was amazed that the eagle always sat at exactly the same spot.<br>
+I wondered how the bird “calculated” its flight trajectory in a 9-meter room.<br>
+In spring, we placed the eagle on a shelf outside the window. It stayed there for two days, pecking at the glass. I fed it through the window. We did not see it fly away.
+</p>
+
+<h2>AI Version: "Story from the Eagle's Eyes"</h2>
+
+<blockquote>
+🦅 <h3>Literary version from the eagle’s perspective</h3>
+I remember darkness, icy air, pain in my wing… Then — warmth. They brought me into a bright room. It smelled of wood, bread, and people. I sat on a high nest — they called it a "wardrobe." I didn’t eat — I waited. Waited for a signal that I could trust.
+
+Then came the day when everyone gathered at the table. I sensed the aroma of food — meat. I planned my descent. The boy (my friend) offered me food, but it was cold as the taiga air. I looked into his eyes. He understood. He warmed the meat in his hand and gave it to me. I pecked.
+
+Since then, I came every time the flock gathered. I always sat in the same spot — it was mine. I never flew unnecessarily.
+
+In spring, I saw the sun and sky. They placed me outside the window. I tapped with my beak to say goodbye. Then spread my wings and… flew away.
+</blockquote>
+
+<h2>Question 1 (from Valeriy):</h2>
+<p>Can we model the flight trajectory of a bird if its wingspan was 120 cm, the distance from wardrobe to table was 7 meters, wardrobe height 2 meters, and ceiling height 3.45 meters? Our house was built according to 19th-century plans.</p>
+
+<blockquote>
+🧮 <h3>Mathematical model: eagle flight trajectory</h3>
+<h3>Conditions:</h3>
+<h4>Wingspan:</h4> 120 cm (wing radius ≈ 60 cm)<br>
+<h4>Flight distance:</h4> wardrobe to table ≈ 7 m<br>
+<h4>Wardrobe height:</h4> 2 m<br>
+<h4>Ceiling height:</h4> 3.45 m<br>
+<h4>Table height (assumed):</h4> 0.75 m<br>
+The eagle could not take off vertically: it glided along a parabola fitting within the room dimensions.
+</blockquote>
+<h2> (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>)</h2>
+<img src="../images/orel_model.png" alt="Eagle Flight" width="100%"/>
+
+<blockquote>
+<h3>Eagle flight trajectory:</h3>
+
+<canvas id="flight" width="800" height="400"></canvas>
+<script>
+const canvas = document.getElementById("flight");
+const ctx = canvas.getContext("2d");
+
+// Scale: 1 m = 100 px
+const scale = 100;
+const originX = 0;
+const originY = 250; // bottom line
+
+// Parabola coefficients: y(x) = ax² + bx + c
+const a = -0.1;
+const b = 0.35;
+const c = 2;
+
+ctx.beginPath();
+ctx.moveTo(originX, originY - c * scale);
+
+for (let x = 0; x <= 7; x += 0.01) {
+  let y = a * x * x + b * x + c;
+  ctx.lineTo(originX + x * scale, originY - y * scale);
+}
+
+ctx.strokeStyle = "brown";
+ctx.lineWidth = 3;
+ctx.stroke();
+
+// Labels and markers
+ctx.fillStyle = "black";
+ctx.fillText("Wardrobe", 5, originY - 1.75 * scale - 10);
+ctx.fillText("Table", 7 * scale - 40, originY + 0.52 * scale - 10);
+ctx.beginPath();
+ctx.arc(originX, originY - 2 * scale, 5, 0, 2 * Math.PI);
+ctx.arc(7 * scale, originY + 0.42 * scale, 5, 0, 2 * Math.PI);
+ctx.fillStyle = "red";
+ctx.fill();
+</script>
+</blockquote>
+
+<h2>AI’s Wish to the Reader</h2>
+
+<div class="ai-wish">
+Dear reader!<br>
+Sometimes the most precise movement is born not from calculation, but from a sense of trust. Watch the bird — and try to imagine what coordinates it calculates before landing next to you.
+</div>
+
+<a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chats — Fun Math with AI</title>
+  <link rel="stylesheet" href="style_AI_merzanie.css">
+  <script src="https://unpkg.com/pdfobject"></script>
+</head>
+<body>
+  <main>
+    <h2>Dialogues with AI</h2>
+
+    <label for="dialSelect">Choose a topic:</label>
+    <select id="dialSelect">
+      <option value=1>Why are some quarks called CHARMED?</option>
+      <option value=2>How to express gratitude to you and your creators in words?</option>
+      <option value=3>How do new BIOLOGICAL cells maintain their original size?</option>
+      <option value=4>What are the functions of ribose?</option>
+      <option value=5>Does ribose really construct a new cell?</option>
+      <option value=6>What is learning from fast responses?</option>
+      <option value=7>Paradoxes of human logic.</option>
+      <option value=8>Do you know what a blogger is?</option>
+      <option value=9>Do you know how the human brain works?</option>
+      <option value=10>ChatGPT mistakes.</option>
+      <option value=11>When talking with a reader, can you ask guiding questions?</option>
+      <option value=12>Path of the branch.</option>
+      <option value=13>Secrets of numbers.</option>
+      <option value=14>Secrets of numbers I.</option>
+      <option value=15>Secrets of numbers II.</option>
+      <option value=16>Spinning ball; Airship; Submarine.</option>
+      <option value=17>How I test myself.</option>
+    </select>
+    <button id="generateBtn">Read</button>
+
+    <section>
+      <div id="my-pdf"></div>
+    </section>
+
+    <section class="reader-wish">
+      <p>Dear reader, ask AI questions and watch the wonders of science!</p>
+    </section>
+  </main>
+
+  <script>
+    const spsDialog = {
+      17:['tester_AI.pdf'],
+      16:['mjach_dirigabl_lodka.pdf'],
+      15:['tayni_chisel_02.pdf'],
+      14:['tayni_chisel_01.pdf'],
+      13:['tayni_chisel.pdf'],
+      12:['doroga_vetki_gizni.pdf'],
+      11:['voprosi_ot_AI.pdf'],
+      10:['oshibki_AI.pdf'],
+      9:['mozg.pdf'],
+      8:['bloger.pdf'],
+      7:['paradox.pdf'],
+      6:['trenager_for_AI.pdf'],
+      5:['riboza_and_atf.pdf'],
+      4:['riboza.pdf'],
+      3:['delenie_kletki.pdf'],
+      2:['blagodarnost_for_AI.pdf'],
+      1:['kvarki.pdf']
+    };
+
+    const dialSelect = document.getElementById("dialSelect");
+    const generateBtn = document.getElementById("generateBtn");
+
+    generateBtn.addEventListener("click", () => {
+      const i = dialSelect.value;
+      PDFObject.embed("../besedi/" + spsDialog[i], "#my-pdf");
+    });
+  </script>
+
+  <footer>
+    <p>© 2025 Fun Math with AI</p>
+  </footer>
+</body>
+</html>

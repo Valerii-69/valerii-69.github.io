@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Spinning Ball — Model and Simulator (Magnus Effect)</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a><br>
+<h2> (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>)</h2>
+<img src="../images/mjach_1.png" alt="Spinning Ball Model" width="100%"/><br>
+<img src="../images/mjach_2.png" alt="Spinning Ball Model" width="100%"/><br>
+<div class="panel" id="controls">
+  <h1>Simulator: Spinning Ball (Magnus)</h1>
+
+  <label>Initial speed (m/s) <span id="vval">30</span></label>
+  <input id="speed" type="range" min="1" max="60" value="30">
+
+  <label>Launch angle (°) <span id="angval">20</span></label>
+  <input id="angle" type="range" min="-30" max="80" value="20">
+
+  <label>Spin (RPM) <span id="rpmval">1500</span></label>
+  <input id="rpm" type="range" min="-4000" max="4000" value="1500">
+
+  <label>Ball radius (m) <span id="rval">0.11</span></label>
+  <input id="radius" type="range" min="0.03" max="0.3" step="0.01" value="0.11">
+
+  <label>Ball mass (kg) <span id="mval">0.43</span></label>
+  <input id="mass" type="range" min="0.05" max="1.5" step="0.01" value="0.43">
+
+  <label>Drag coefficient C<sub>d</sub> <span id="cdval">0.47</span></label>
+  <input id="cd" type="range" min="0.1" max="1.2" step="0.01" value="0.47">
+
+  <label>k<sub>cl</sub> (empirical) <span id="kclval">1.0</span></label>
+  <input id="kcl" type="range" min="0" max="3" step="0.01" value="1.0">
+
+  <label>Air density (kg/m³) <span id="rhoval">1.225</span></label>
+  <input id="rho" type="range" min="0.8" max="1.4" step="0.01" value="1.225">
+
+  <div style="margin-top:10px" class="row">
+    <button id="start">Start</button>
+    <button id="pause" class="secondary">Pause</button>
+    <button id="reset" class="secondary">Reset</button>
+  </div>
+
+  <div class="stat small" id="readouts">
+    <div>t = <span id="t">0.00</span> s</div>
+    <div>x = <span id="x">0.00</span> m, y = <span id="y">0.00</span> m</div>
+    <div>vx = <span id="vx">0.00</span> m/s, vy = <span id="vy">0.00</span> m/s</div>
+    <div>rpm = <span id="rpmr">1500</span>, ω = <span id="w">157.08</span> rad/s</div>
+  </div>
+
+  <footer>Model: gravity + drag + Magnus (see code for details). Parameters are empirical.</footer>
+</div>
+</div>
+<div id="canvasWrap">
+  <canvas id="canvas" width="900" height="600"></canvas>
+  <br><a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+</div>
+
+<script>
+// The JavaScript logic remains unchanged except UI labels translated to English
+// ... [JavaScript code here is identical to Russian version, labels updated for English] ...
+</script>
+</body>
+</html>

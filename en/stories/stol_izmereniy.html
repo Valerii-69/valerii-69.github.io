@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments and modelling.">
+  <meta name="keywords" content="mathematics, AI, story, modelling, children, education, HTML, JavaScript">
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
+  <title>Table of Measurements — Philosophy and Chance</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+<header>
+  <h2>Fun Math with AI</h2>
+</header>
+
+<h1>Table of Measurements</h1>
+<p class="quote">“Measurement is an act of choosing one among infinite possibilities.” — Niels Bohr</p>
+
+<div class="section">
+  <h2>1. Philosophical short story: The Ruler and Infinity</h2>
+  <p>Once a little boy found a ruler and began measuring everything: a table, a dog, the shadow of a tree. One day he tried to measure a thought. From that moment his ruler started stretching, bending, and losing numbers... He realized that not everything can be measured.</p>
+</div>
+
+<div class="section">
+  <h2>2. The observer paradox</h2>
+  <p>You want to know the room temperature. But as soon as you enter with a thermometer, your breath slightly changes that temperature. Does a measurement become true if it itself alters the object?</p>
+</div>
+
+<div class="section">
+  <h2>3. Essay: Why do we trust numbers?</h2>
+  <p>We build bridges, treat diseases and launch satellites — all with the help of numbers. But numbers are only symbols. Why do we trust them so much? Maybe because looking into the face of randomness scares us...</p>
+</div>
+
+<div class="section">
+  <h2>4. Observation: Two people — two measurements</h2>
+  <p>When one person watches the sunset they notice the colors. Another measures the sun's angle in degrees. Who is right? Or does each create their own version of reality?</p>
+</div>
+
+<div class="section">
+  <h2>5. Parable: The stone in the river</h2>
+  <p>A sage threw a stone into the river and said: “It sank, but it changed the river.” The pupil asked: “Can we measure that difference?” The sage answered: “Try, if you can measure dreams.”</p>
+</div>
+
+<div class="thought">
+  💡 <strong>Think:</strong> If you had an instrument that measures kindness, how would you calibrate it?
+</div>
+
+<div class="section">
+  <h2>Interactive: Mini-question</h2>
+  <p>Which do you consider a more precise way of knowing: a logical proof or a sudden insight?</p>
+  <select id="answer">
+    <option>— choose —</option>
+    <option>Logical proof</option>
+    <option>Sudden insight</option>
+    <option>They complement each other</option>
+  </select>
+  <button onclick="showResult()">Answer</button>
+  <p id="result"></p>
+</div>
+
+<script>
+function showResult() {
+  const val = document.getElementById('answer').value;
+  const result = document.getElementById('result');
+  if (val === "Logical proof") {
+    result.textContent = "You trust structure. Mathematics is your language.";
+  } else if (val === "Sudden insight") {
+    result.textContent = "You are a poet and a philosopher. Sparks in the dark are your way.";
+  } else if (val === "They complement each other") {
+    result.textContent = "You seek balance — perhaps you are closest to the truth.";
+  } else {
+    result.textContent = "Make a choice.";
+  }
+}
+</script>
+
+<footer>
+  © 2025 Fun Math with AI
+</footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

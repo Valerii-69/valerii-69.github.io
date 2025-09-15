@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Flying Arrow — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 14: Flying Arrow</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>The arrow soared into the sky, piercing the air and aiming for its target. It symbolized aspiration and precision, reflecting the forces that push us forward despite resistance and obstacles.  
+Every moment of its flight is a struggle with wind and gravity, a victory over time and distance.</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can we describe the trajectory of an arrow considering air resistance and initial velocity?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/strela_model.png" alt="Flying Arrow" width="100%"/>
+
+<h2>Flying Arrow: Force Model (click canvas to refresh)</h2>
+<canvas id="arrow" width="600" height="300" style="background:#eef3f7"></canvas><br>
+
+<label for="wind_mass">Mass (kg): <span id="wind_mass_val">0.05</span></label>
+<input type="range" id="wind_mass" min="0" max="0.1" value="0.05" step="0.001">
+
+<script>
+const canvas = document.getElementById('arrow');
+const ctx = canvas.getContext('2d');
+const windmassSlider = document.getElementById('wind_mass');
+const windmassVal = document.getElementById('wind_mass_val');
+
+let m = 0.05; 
+const g = 9.81;
+const cd = 0.000011;
+let dtx = 0.01;
+let dty = 0.003;
+let stepx = 0.05;
+
+let x = 0;
+let y = canvas.height - 20;
+let vx = 1000 * Math.cos(Math.PI / 4);
+let vy = -1000 * Math.sin(Math.PI / 4);
+let v = Math.sqrt(vx*vx + vy*vy);
+let Fdx = -cd * v * vx;
+let Fdy = -cd * v * vy;
+let ax = Fdx / m;
+let ay = (Fdy + m * g) / m;
+
+function updateLabels() {
+    windmassVal.textContent = windmassSlider.value;
+}
+windmassSlider.oninput = updateLabels;
+updateLabels();
+
+function drawArrow(x, y, angle, stepx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.closePath();
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.moveTo(60, 0);
+    ctx.lineTo(-10, 10);
+    ctx.lineTo(10, 20);
+    ctx.rotate(angle);
+    ctx.fill();
+    ctx.restore();
+}
+
+function step() {
+    vx += ax * dtx;
+    vy += ay * dty;
+    x += vx * dtx;
+    y += vy * dty;
+
+    let angle = Math.atan2(vy, vx);
+
+    if (x < canvas.width + 60) {
+        stepx += stepx;
+        drawArrow(x, y, angle, stepx);
+        requestAnimationFrame(step);
+    }
+}
+
+canvas.addEventListener('click', function() {
+    x = 0;
+    y = canvas.height - 20;
+    m = parseFloat(windmassSlider.value);
+    vx = 1000 * Math.cos(Math.PI / 4);
+    vy = -1000 * Math.sin(Math.PI / 4);
+    v = Math.sqrt(vx*vx + vy*vy);
+    Fdx = -cd * v * vx;
+    Fdy = -cd * v * vy;
+    ax = Fdx / m;
+    ay = (Fdy + m * g) / m;
+    stepx = 0.005;
+    step();
+}, false);
+</script>
+
+<h2>Message to the reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May your supports be strong, and the bridges you build in life connect the most important shores, bringing hope and support.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

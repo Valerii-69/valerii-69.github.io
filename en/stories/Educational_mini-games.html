@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+  <meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Educational Mini-Games: Calculations - Fun Math with AI</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+<h1>Educational mini-game: Calculations</h1>
+<div id="question"></div>
+<input type="number" id="answerInput" placeholder="Enter answer" autocomplete="off" />
+<br />
+<button id="checkBtn">Check</button>
+<div id="feedback"></div>
+<div id="score">Correct answers: 0 out of 0</div>
+<br>
+<h1>Educational mini-game: Guess a number from 1 to 100</h1>
+<!-- Guess input field-->
+<input type="number" id="guessInput" placeholder="Enter number" />
+<button onclick="checkGuess()">Check</button>
+<!-- Message space-->
+<div class="message" id="message"></div>
+<button id="newGameBtn" onclick="startGame" style="display:none;">Start over</button>
+<br>
+<h1>Educational mini-game: Calculator-challenge</h1>
+<div class="problem" id="problem"></div>
+<!-- Answer field -->
+<input type="number" id="answerInput1" placeholder="Your answer" />
+<button onclick="checkAnswer()">Check</button>
+<div class="message1" id="message1"></div>
+<button id="newProblemBtn" onclick="generateProblem()" style="display:none; ">New example</button>
+<br>
+
+<h1>Educational mini-game: Mathematical crossword</h1>
+<b>Fill in the blanks by solving equations without prompts.</b>
+<table>
+<tr><td class="size-text">2 + 3 =</td><td><input type="number" id="cell1"></td><td id="cell1" hidden>5</td></tr>
+<tr><td class="size-text">7 - 4 =</td><td><input type="number" id="cell2"></td><td id="cell2" hidden>3</td></tr>
+<tr><td class="size-text">5 × 2 =</td><td><input type="number" id="cell3"></td><td id="cell3" hidden>10</td></tr>
+<tr><td class="size-text">3 + 3 =</td><td><input type="number" id="cell4"></td><td id="cell4" hidden>6</td></tr>
+<tr><td class="size-text">12 / 4 =</td><td><input type="number" id="cell5"></td><td id="cell5" hidden>3</td></tr>
+<tr><td class="size-text">5 × 3 =</td><td><input type="number" id="cell6"></td><td id="cell6" hidden>15</td></tr>
+<tr><td class="size-text">12 + 3 =</td><td><input type="number" id="cell7"></td><td id="cell7" hidden>15</td></tr>
+<tr><td class="size-text">9 - 4 =</td><td><input type="number" id="cell8"></td><td id="cell8" hidden>5</td></tr>
+<tr><td class="size-text">3 × 6 =</td><td><input type="number" id="cell9"></td><td id="cell9" hidden>18</td></tr>
+<tr><td class="size-text">21 - 3 =</td><td><input type="number" id="cell10"></td><td id="cell10" hidden>18</td></tr>
+<tr><td class="size-text">7 + 4 =</td><td><input type="number" id="cell11"></td><td id="cell11" hidden>11</td></tr>
+<tr><td class="size-text">15 / 5 =</td><td><input type="number" id="cell12"></td><td id="cell12" hidden>3</td></tr>
+</table>
+<button onclick="checkCrossword()">Check answers (click twice)</button>
+<div class="message2" id="result"></div>
+
+<br>
+<h1>Educational mini-game: Binary riddles</h1>
+<div class="problem1" id="problem1"></div>
+<input type="text" id="binaryInput" placeholder="Your answer: like 10110..." />
+<button onclick="checkBinary()">Check</button>
+<div class="message2" id="result1"></div>
+<button id="newNumberBtn" onclick="generateNumber()" style="display:none;">New task</button>
+<br>
+<h1>Educational mini-game: Guess the square of a number</h1>
+<h4>Enter the square of the number <span id="number"></span>:</h4>
+<input type="number" id="answer" />
+<button onclick="checkAnswer1()">Check</button>
+<div class="message3" id="result2"></div>
+<br>
+<h1>Educational mini-game: Solve an equation of the form<br> ах + b = c</h1>
+<h4>Find x if <span id="equation"> </span></h4>
+<input type="number" id="answer1" />
+<button onclick="checkAnswer2()">Check</button>
+<div class="message4" id="result3"></div>
+<button id="newNumberBtn1" onclick="generateNumber1()" style="display:none;">New task</button>
+<h1>Educational mini-game: Quick calculations<br> in 60 seconds</h1>
+<div id="problems6"></div>
+<button id="start6">Start the game</button>
+<div id="timer6"></div>
+<button id="check6" style="display:none;">Check answers</button>
+<div class="message" id="feedback6"></div>
+<h1>Educational mini-game: Find the GCD<br> (Greatest Common Divisor) of two numbers</h1>
+<p>Find the GCD of the numbers <span id="num13v"></span> and <span id="num23v"></span> : </p>
+<input type="number" id="answer3v" />
+<button onclick="setPrime3v()">Set numbers</button>
+<button onclick="checkAnswer3v()">Check</button>
+<p id="result3v"></p>
+<h1>Educational mini-game: Determine if a number is prime</h1>
+<p>Number: <span id="number4v"></span></p>
+<button onclick="setPrime4v()">Set number</button>
+<button onclick="isPrime4v()">Check</button>
+<p id="result4v"></p>
+<h1>Educational mini-game: Calculate the area of ​​a circle</h1>
+<p>Radius of a circle: <span id="radius5v"></span></p>
+<input type="number" id="answer5v" placeholder="Enter area" />
+<button onclick="setPrime5v()">Set radius</button>
+<button onclick="checkAnswer5v()">Check</button>
+<p id="result5v"></p>
+<h1>Educational mini-game: Find the roots of a quadratic equation:<br> ax2 + bx + c = 0</h1>
+<p>Equation: <span id="equation6v"></span></p>
+<p>Enter the roots (x1 and x2) separated by commas:</p>
+<input type="text" id="answer6v" placeholder="for example: 2, -3" />
+<button onclick="setPrime6v()">New example</button>
+<button onclick="checkAnswer6v()">Check</button>
+<p id="result6v"></p>
+<h1>Educational mini-game: Calculate the area of ​​a triangle<br> given the sides a, b, c</h1>
+<p>Sides of a triangle: <span id="sides7v"></span></p>
+<input type="number" id="answer7v" placeholder="Enter the area" />
+<button onclick="setPrime7v()">New example</button>
+<button onclick="checkAnswer7v()">Check</button>
+<p id="result7v"></p>
+<h1>Educational mini-game: Add or subtract fractions</h1>
+<p>Perform the operation: <span id="frac18v"></span><span id="op8v"></span><span id="frac28v"></span> = ? </p>
+<p>Enter the result as an irreducible fraction (numerator / denominator): </p>
+<input type="text" id="answer8v" placeholder="ex. 3/4" />
+<button onclick="setPrime8v()">New example</button>
+<button onclick="checkAnswer8v()">Check</button>
+<p id="result8v"></p>
+<h1>Educational mini-game: Convert degrees to radians</h1>
+<p>Angle in degrees: <span id="degrees9v"></span></p>
+<input type="number" id="answer9v" step="0.001" placeholder="Enter radians" />
+<button onclick="setPrime9v()">New example</button>
+<button onclick="checkAnswer9v()">Check</button>
+<p id="result9v"></p>
+<h1>Educational mini-game: Calculate the sum of the first<br> n terms of an arithmetic progression</h1>
+<p>a1 = <span id="a110v"></span>, d = <span id="d10v"></span>, n = <span id="n10v"></span></p>
+<input type="number" id="answer10v" placeholder="Enter the sum" />
+<button onclick="setPrime10v()">New example</button>
+<button onclick="checkAnswer10v()">Check</button>
+<p id="result10v"></p>
+  <!-- More mini-games follow the same pattern -->
+<br>
+  <iframe src="../stories/emulat_futbol_mjach.html" width="720" height="580" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+  <iframe src="../stories/vozdushniy_shar.html" width="720" height="640" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+  <iframe src="../stories/grebnoy_vint.html" width="720" height="860" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+  <iframe src="../stories/tanker_volna.html" width="720" height="640" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+
+  <script src="../mini-games.js"></script>
+
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+</body>
+</html>

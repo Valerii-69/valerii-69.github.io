@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Quick Response Trainer</title>
+<meta name="description" content="Practice fast and useful AI responses with the quick response trainer.">
+<link rel="icon" href="https://valerii-69.github.io/favicon.ico">
+<meta name="author" content="Valerii Botsvin">
+<meta name="keywords" content="trainer, quick responses, practice, AI, learning">
+<style>
+/* Стили оставлены без изменений, можно использовать те же, что в оригинале */
+:root{--bg:#0f1720;--card:#0b1220;--accent:#7c3aed;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03)}
+*{box-sizing:border-box;font-family:Inter, Roboto, Arial, sans-serif}
+body{margin:0;background:linear-gradient(180deg,#c9bcd9 0%, #21364d 70%);color:#e6eef6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:1240px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.5)}.controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+label{font-size:13px;color:var(--muted)}
+select,input[type=number]{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:inherit}
+button{background:var(--accent);border:0;padding:8px 12px;border-radius:10px;color:white;cursor:pointer}
+button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+button.info_help{background:var(--accent);border:0;padding:8px 12px;border-radius:10px;color:white;cursor:pointer}
+li{color: green; /* Changes the text color of all list items to blue */}
+a{color: hsl(200, 100%, 50%); /* Blue */ font-weight: bold;}
+.panel{display:grid;grid-template-columns:1fr 360px;gap:12px}
+.main{padding:12px}
+.prompt{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:12px;border-radius:10px;margin-bottom:12px}
+.prompt p{margin:0;font-size:16px}
+
+.timer{font-weight:700;font-size:28px}
+#train{width:100%;min-height:420px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+#answer{width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.actions{display:flex;gap:8px;margin-top:8px}
+
+.side{padding:12px}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:var(--glass);padding:8px;border-radius:8px;min-width:120px}
+.history{margin-top:12px;max-height:360px;overflow:auto}
+.hist-item{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px}
+.muted{color:var(--muted);font-size:13px}
+.table{}
+footer{margin-top:12px;color:var(--muted);font-size:13px}
+
+@media (max-width:880px){.panel{grid-template-columns:1fr} .side{order:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+<header>
+  <div class="card">
+    <h1>Quick Response Trainer — Entertaining Mathematics with AI</h1>
+    <div class="muted">Practice: respond quickly and usefully. You are the coach, I am the student.</div>
+  </div>
+</header>
+<div class="card panel">
+<main class="main">
+<div class="controls">
+  <label>Time per answer: <input id="timeLimit" type="number" min="5" max="180" value="20" style="width:84px;margin-left:8px"> sec.</label>
+  <label style="margin-left:8px">Mode:
+    <select id="mode">
+      <option value="manual">Manual question input</option>
+      <option value="random">Random questions</option>
+    </select>
+  </label>
+  <button id="startBtn">Start Round</button>
+  <button id="stopBtn" class="ghost">Stop</button>
+</div>
+
+<div class="prompt" id="promptBox">
+  <p id="promptText">Press "Start Round" to get a task.</p>
+</div>
+
+<div style="display:flex;gap:12px;align-items:flex-start;">
+  <div style="flex:1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="muted">Time left: <span class="timer" id="timer">—</span></div>
+      <div class="muted">Round: <span id="roundNum">0</span></div>
+    </div>
+    <textarea id="answer" placeholder="Enter your answer here..."></textarea>
+    <div class="actions">
+      <button id="submitBtn">Submit</button>
+      <button id="skipBtn" class="ghost">Skip</button>
+      <button id="exampleBtn" class="ghost">Show Example</button>
+    </div>
+    <div class="muted" style="margin-top:8px">Tip: press <b>Submit</b>, then the coach evaluates the answer as <i>Good</i> or <i>Needs Improvement</i>.</div>
+  </div>
+
+  <aside class="side">
+    <div class="stats">
+      <div class="stat">Good<br><strong id="goodCount">0</strong></div>
+      <div class="stat">Needs Improvement<br><strong id="badCount">0</strong></div>
+      <div class="stat">Accuracy, %<br><strong id="accuracy">—</strong></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label class="muted">Round History</label>
+      <div class="history" id="history"></div>
+    </div>
+
+    <div style="margin-top:10px;display:flex;gap:6px">
+      <button id="exportBtn" class="ghost">Export JSON</button>
+      <button id="clearBtn" class="ghost">Clear</button>
+      <button id="helpBtn" class="info_help">Instructions</button>
+    </div>
+  </aside>
+</div>
+</main>
+
+<div class="table">
+<textarea id="train" name="traineng" wrap="off" onchange="setBASE()" placeholder="Paste your pre-prepared list of questions here, separated by semicolons, for AI training..."></textarea>
+</div>
+
+<br><li><a href="../stories/testirovanie_neural.html">"Curved Synapses"</a></li>
+<br><li><a href="../stories/mini-neuron-breaker.html">"Neuron Breaker"</a></li>
+
+<footer class="muted">Tip: use this trainer in pairs — you ask the question, I answer; you give feedback.</footer>
+</div>
+
+<script>
+// --- Скрипт оставлен без изменений, только тексты подсказок переведены ---
+    // --- Базовая логика тренажёра быстрых ответов ---
+
+
+
+    // Набор примерных подсказок (можно расширить из внешнего JSON или формы на сайте)
+    const SAMPLE_PROMPTS = [];
+
+    // Элементы интерфейса
+    const timeLimitInput = document.getElementById('timeLimit');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const promptText = document.getElementById('promptText');
+    const promptBox = document.getElementById('promptBox');
+    const modeSelect = document.getElementById('mode');
+    const timerEl = document.getElementById('timer');
+    const answerEl = document.getElementById('answer');
+    const trainengEl = document.getElementById('train');
+    const submitBtn = document.getElementById('submitBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const exampleBtn = document.getElementById('exampleBtn');
+    const historyEl = document.getElementById('history');
+    const roundNumEl = document.getElementById('roundNum');
+    const goodCountEl = document.getElementById('goodCount');
+    const badCountEl = document.getElementById('badCount');
+    const accuracyEl = document.getElementById('accuracy');
+    const exportBtn = document.getElementById('exportBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const helpBtn = document.getElementById('helpBtn');
+
+    let round = 0;
+    let timer = null;
+    let remaining = 0;
+    let currentPrompt = '';
+
+    // История раундов: массив объектов
+    const sessions = [];
+
+	function setBASE(){
+//		const inputElements = document.querySelectorAll('.myInputs');
+		let valuesArray = [];
+		let textareaContent = trainengEl.value;
+			valuesArray = textareaContent.split(';');
+			for(let i = 0; i < valuesArray.length; ++i){
+					if(i < (valuesArray.length - 1)){SAMPLE_PROMPTS.push(valuesArray[i] + ',')
+					}else{
+					SAMPLE_PROMPTS.push(valuesArray[i])
+					};
+				};	  
+	}
+
+
+    function formatTime(s){
+      if (s <= 0) return '0';
+      return String(Math.floor(s));
+    }
+
+    function startRound(){
+      // Устанавливаем подсказку
+      const mode = modeSelect.value;
+      if (mode === 'random'){
+        currentPrompt = SAMPLE_PROMPTS[Math.floor(Math.random()*SAMPLE_PROMPTS.length)];
+      } else {
+        // в ручном режиме берем содержимое textarea как вопрос, если оно непустое
+        const manual = prompt('Введите текст задания (коротко):', 'Объясни...');
+        if (!manual) return;
+        currentPrompt = manual;
+      }
+
+      round++;
+      roundNumEl.textContent = round;
+      promptText.textContent = currentPrompt;
+      answerEl.value = '';
+
+      // Таймер
+      remaining = Number(timeLimitInput.value) || 20;
+      timerEl.textContent = formatTime(remaining);
+      if (timer) clearInterval(timer);
+      timer = setInterval(()=>{
+        remaining -= 1;
+        timerEl.textContent = formatTime(remaining);
+        if (remaining <= 0){
+          clearInterval(timer);
+          timer = null;
+          onTimeUp();
+        }
+      }, 1000);
+
+      // Подготовка UI
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      answerEl.focus();
+    }
+
+    function stopRound(){
+      if (timer) clearInterval(timer);
+      timer = null;
+      timerEl.textContent = '—';
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+
+    function onTimeUp(){
+      // Автоматическая отправка при истечении времени
+      const text = answerEl.value.trim();
+      saveRound(text, true);
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      // Предложить тренеру оценить
+      askForFeedback(round);
+    }
+
+    function saveRound(text, autoSubmitted=false){
+      const entry = {
+        round, prompt: currentPrompt, answer: text, timeLimit: Number(timeLimitInput.value), autoSubmitted, ts: new Date().toISOString(), feedback: null
+      };
+      sessions.push(entry);
+      renderHistory();
+    }
+
+    function renderHistory(){
+      historyEl.innerHTML = '';
+      sessions.slice().reverse().forEach((s, idx)=>{
+        const div = document.createElement('div');
+        div.className = 'hist-item';
+        div.innerHTML = `<div style="display:flex;justify-content:space-between"><div class="muted">Раунд ${s.round} • ${new Date(s.ts).toLocaleString()}</div><div class="muted">${s.autoSubmitted? 'авто' : 'ручн.'}</div></div><div style="margin-top:6px"><strong>Задание:</strong> ${escapeHtml(s.prompt)}</div><div style="margin-top:6px"><strong>Ответ:</strong> ${escapeHtml(s.answer||'<пусто>')}</div><div style="margin-top:8px">${s.feedback ? '<b>Оценка:</b> '+escapeHtml(s.feedback) : renderFeedbackButtons(s.round)}</div>`;
+        historyEl.appendChild(div);
+      });
+      updateStats();
+    }
+
+    function renderFeedbackButtons(r){
+      // Кнопки для тренера: Хорошо / Нужно доработать
+      return `<button onclick="window._trainerFeedback(${r},true)" class="ghost">Хорошо</button> <button onclick="window._trainerFeedback(${r},false)" class="ghost">Нужно доработать</button>`;
+    }
+
+    // Экспорт и очистка
+    exportBtn.addEventListener('click', ()=>{
+      const data = JSON.stringify(sessions, null, 2);
+      const blob = new Blob([data], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'trainer_sessions.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    clearBtn.addEventListener('click', ()=>{
+      if (!confirm('Очистить историю раундов?')) return;
+      sessions.length = 0; renderHistory();
+    });
+
+    helpBtn.addEventListener('click', ()=>{
+		window.open('../info_help/trenagerAI.pdf');
+    });
+
+
+    // Привязки кнопок
+    startBtn.addEventListener('click', startRound);
+    stopBtn.addEventListener('click', stopRound);
+    stopBtn.disabled = true;
+
+    submitBtn.addEventListener('click', ()=>{
+      if (!currentPrompt){ alert('Сначала начните раунд.'); return; }
+      const text = answerEl.value.trim();
+      saveRound(text, false);
+      stopRound();
+      // Предложить тренеру оценить ответ
+      askForFeedback(round);
+    });
+
+    skipBtn.addEventListener('click', ()=>{
+      saveRound('', false);
+      stopRound();
+      askForFeedback(round);
+    });
+
+    exampleBtn.addEventListener('click', ()=>{
+      // Показываем примерный короткий ответ для текущей подсказки
+      if (!currentPrompt){ alert('Начните раунд, чтобы увидеть пример.'); return; }
+      const ex = generateExample(currentPrompt);
+      alert('Пример короткого ответа:\n\n'+ex);
+    });
+
+    // Обработчик оценки от тренера (доступен глобально для кнопок в истории)
+    window._trainerFeedback = function(roundNumber, good){
+      // Находим запись в sessions по номеру раунда и ставим feedback
+      const s = sessions.find(x => x.round === roundNumber);
+      if (!s) return alert('Запись не найдена');
+      s.feedback = good ? 'Хорошо' : 'Нужно доработать';
+      renderHistory();
+    }
+
+    function askForFeedback(r){
+      // Показываем модальное окно — но для простоты используем confirm/option
+      setTimeout(()=>{
+        const txt = 'Оцените ответ раунда '+r+" — Хорошо? (OK) или Нужно доработать (Отмена)";
+        const ok = confirm(txt);
+        window._trainerFeedback(r, ok);
+      }, 200);
+    }
+
+    function updateStats(){
+      const total = sessions.length;
+      const good = sessions.filter(s=>s.feedback==='Хорошо').length;
+      const bad = sessions.filter(s=>s.feedback==='Нужно доработать').length;
+      goodCountEl.textContent = good;
+      badCountEl.textContent = bad;
+      accuracyEl.textContent = total ? Math.round((good/total)*100) + '%' : '—';
+    }
+
+    function escapeHtml(s){
+      if (!s) return '';
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+
+
+
+function generateExample(prompt){
+  if (prompt.toLowerCase().includes('derivative')) return 'The derivative of a function shows how fast the function changes with a small change in the argument.';
+  if (prompt.toLowerCase().includes('integral')) return 'The integral is the sum of small areas under the curve; it gives area or accumulated value.';
+  if (prompt.toLowerCase().includes('fraction')) return 'Divide 1/2 by 1/4 by flipping the second fraction and multiplying: (1/2)*(4/1) = 2.';
+  if (prompt.toLowerCase().includes('prime')) return 'A prime number is divisible only by 1 and itself.';
+  if (prompt.toLowerCase().includes('two-digit')) return 'Use column multiplication for two-digit numbers.';
+  return 'A short, clear answer that gives the essence and example (1-2 sentences).';
+}
+    // Простая функция поиска записи по номеру раунда — полезно при оценке из внешних кнопок
+    // (оставляем на глобальном объекте для расширения)
+    window._getSessions = ()=>sessions;
+
+    // --- Конец скрипта ---
+</script>
+</body>
+</html>

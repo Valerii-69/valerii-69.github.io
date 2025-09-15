@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Paper Airplane — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 4: Paper Airplane</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+Folded in haste but with care, the paper airplane dreamed of flight. It remembered the applause of the school classroom when it once soared through the air, bringing joy and delight.  
+The wind gently touched its thin wings, and each motion was full of hope — to reach far, overcome gravity, and touch the sky, even if only for a moment.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can the flight of a paper airplane be described mathematically, considering angle of attack, air resistance, and lift?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/samoletik_model.png" alt="Paper Airplane" width="100%"/>
+
+<h2>Paper Airplane: Force Model (click window to refresh)</h2>
+<canvas id="plane" width="600" height="300" style="background:#d0f0f0"></canvas><br>
+<label for="wind_mass">Mass, (kg): <span id="wind_mass_val">0.005</span></label>
+<input type="range" id="wind_mass" min="0" max="0.01" value="0.005" step="0.0001">
+
+<script>
+const canvas = document.getElementById('plane');
+const ctx = canvas.getContext('2d');
+const windmassSlider = document.getElementById('wind_mass');
+const windmassVal = document.getElementById('wind_mass_val');
+
+const dtx = 0.005;
+const dty = 0.0058;
+const g = 9.81;
+const rho = 1.225;
+const S = 0.02;
+let m = 0.004;
+const CL = 0.8;
+const CD = 0.1;
+
+let x = 250;
+let y = 100;
+let vx = 2;
+let vy = 5;
+let theta = Math.atan2(vy, vx);
+
+function updateLabels() {
+  windmassVal.textContent = windmassSlider.value;
+}
+windmassSlider.oninput = updateLabels;
+updateLabels();
+
+function drawPlane(x, y, angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(x, canvas.height - y);
+  ctx.rotate(angle);
+  ctx.fillStyle = '#b5651d';
+  ctx.beginPath();
+  ctx.moveTo(0, -10);
+  ctx.lineTo(30, 0);
+  ctx.lineTo(0, 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+  let V = Math.sqrt(vx*vx + vy*vy);
+  let L = 0.5 * rho * V * V * S * CL;
+  let D = 0.5 * rho * V * V * S * CD;
+
+  let ax = (-D * (vx/V) + L * (vy/V)) / m;
+  let ay = (-m * g - D * (vy/V) - L * (vx/V)) / m;
+
+  vx += ax * dtx;
+  vy += ay * dty;
+
+  x += vx * dtx * 360;
+  y += vy * dty * 30;
+
+  theta = Math.atan2(vy, vx);
+
+  if (y > 0 && x < canvas.width) {
+    drawPlane(x, y, theta);
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+ x = 250;
+ y = 100;
+ vx = 2;
+ vy = 6;
+ theta = Math.atan2(vy, vx);
+ m = parseFloat(windmassSlider.value);
+ step();
+}, false);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May your dreams soar high like a paper airplane, even when the path is challenging. Every flight is an opportunity to learn to fly better, and even falls are part of a grand adventure.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>

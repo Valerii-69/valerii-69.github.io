@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Submarine: Speed, RCS and Appearance</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a><br>
+<div>
+<h2> (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>)</h2>
+<img src="../images/podlodka_1.png" alt="Submarine Model" width="100%"/><br>
+<img src="../images/podlodka_2.png" alt="Submarine Model" width="100%"/><br>
+<h2>Submarine: speed, detectability and appearance</h2>
+
+<div class="controls">
+<label>Smoothness (α): 
+<input type="range" id="alpha" min="0" max="1" step="0.01" value="0.05" oninput="updateParams()">
+<span id="alphaVal">0.05</span>
+</label>
+<label>Propulsion force (F_prop, N): 
+<input type="range" id="Fprop" min="0" max="10000" step="100" value="5000" oninput="updateParams()">
+<span id="FpropVal">5000</span>
+</label>
+</div>
+
+<div class="values">
+<span><b>Water resistance (N):</b> <span id="FdragVal">0</span></span><br>
+<span><b>Boat speed (m/s):</b> <span id="vVal">0</span></span><br>
+<span><b>Radar cross-section (RCS, m²):</b> <span id="RCSVal">0</span></span><br>
+<button id="start">Start</button>
+</div>
+
+<canvas id="speedChart" width="600" height="250"></canvas>
+<canvas id="rcsChart" width="600" height="250"></canvas>
+<canvas id="visualCanvas" width="600" height="200"></canvas>
+<br><a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Physical parameters
+let rho = 1000;  // water density kg/m³
+let S = 50;      // hull area m²
+let m = 50000;   // submarine mass kg
+let C_f = 0.002; // smooth surface drag
+let C_p = 0.008; // porous surface drag
+let RCS_min = 1;
+let RCS_max = 50;
+
+let alpha = 0.05;
+let F_prop = 5000;
+let v = 0;
+let el = id => document.getElementById(id);
+let startBtn = el('start');
+
+// Speed chart
+let ctxSpeed = document.getElementById('speedChart').getContext('2d');
+let speedChart = new Chart(ctxSpeed, {
+  type: 'line',
+  data: { labels: [0], datasets: [{label:'Speed (m/s)', data:[0], borderColor:'blue', fill:false}] },
+  options: { scales: { x: { title:{text:'Time (s)', display:true} }, y:{title:{text:'Speed (m/s)', display:true}, beginAtZero:true} } }
+});
+
+// RCS chart
+let ctxRCS = document.getElementById('rcsChart').getContext('2d');
+let rcsChart = new Chart(ctxRCS, {
+  type: 'line',
+  data: { labels: [0], datasets: [{label:'RCS (m²)', data:[RCS_max], borderColor:'red', fill:false}] },
+  options: { scales: { x: { title:{text:'Time (s)', display:true} }, y:{title:{text:'RCS (m²)', display:true}, beginAtZero:true} } }
+});
+
+// Visual canvas
+const visualCanvas = document.getElementById('visualCanvas');
+const ctxVis = visualCanvas.getContext('2d');
+
+function updateParams() {
+  alpha = parseFloat(el('alpha').value);
+  F_prop = parseFloat(el('Fprop').value);
+  el('alphaVal').textContent = alpha.toFixed(2);
+  el('FpropVal').textContent = F_prop;
+}
+
+let t = 0, animationFrameId;
+function simulateStep() {
+  const C_eff = C_p*(1-alpha) + C_f*alpha;
+  const F_drag = 0.5 * rho * v*v * S * C_eff;
+  const a = (F_prop - F_drag)/m;
+  v += a;
+  t += 0.1;
+
+  const RCS = RCS_min*(1-alpha) + RCS_max*alpha;
+
+  el('FdragVal').textContent = F_drag.toFixed(2);
+
+  speedChart.data.labels.push(t.toFixed(1));
+  speedChart.data.datasets[0].data.push(v.toFixed(2));
+
+  rcsChart.data.labels.push(t.toFixed(1));
+  rcsChart.data.datasets[0].data.push(RCS.toFixed(2));
+
+  speedChart.update();
+  rcsChart.update();
+  drawVisual(alpha);
+
+  if(speedChart.data.labels.length < 200){
+    animationFrameId = requestAnimationFrame(simulateStep);
+  } else {
+    pauseAnimation();
+    alert('Simulation finished.');
+  }
+}
+
+function pauseAnimation() {
+  if(animationFrameId){ cancelAnimationFrame(animationFrameId); animationFrameId=null; }
+}
+
+function drawVisual(alpha){
+  ctxVis.clearRect(0,0,visualCanvas.width,visualCanvas.height);
+  const w=500,h=100,x=50,y=50;
+  const r = Math.round(85*(1-alpha)+30*alpha);
+  const g = Math.round(85*(1-alpha)+144*alpha);
+  const b = Math.round(85*(1-alpha)+255*alpha);
+  ctxVis.fillStyle = `rgb(${r},${g},${b})`;
+
+  ctxVis.beginPath();
+  ctxVis.ellipse(x+w/2, y+h/2, w/2, h/2, 0, 0, Math.PI*2);
+  ctxVis.fill();
+
+  ctxVis.strokeStyle = "#000000";
+  ctxVis.lineWidth = 2;
+  ctxVis.stroke();
+}
+
+startBtn.addEventListener('click', ()=>{
+  t=0; v=0;
+  speedChart.data.labels=[]; speedChart.data.datasets[0].data=[];
+  rcsChart.data.labels=[]; rcsChart.data.datasets[0].data=[];
+  updateParams();
+  speedChart.update(); rcsChart.update();
+  drawVisual(alpha);
+  simulateStep();
+});
+</script>
+</body>
+</html>

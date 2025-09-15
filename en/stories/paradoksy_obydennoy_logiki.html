@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Everyday Logic Paradoxes — Mini Collection</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#98a8b8;--glass:rgba(255,255,255,0.04)}
+    *{box-sizing:border-box}
+    body{font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;background:linear-gradient(180deg,#071021 0%, #071728 60%);color:#e6eef6;margin:0;padding:40px;}
+    .container{max-width:900px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042a38}
+    h1{font-size:20px;margin:0}
+    p.lead{color:var(--muted);margin-top:6px}
+    .controls{display:flex;gap:10px;margin:18px 0}
+    button{background:var(--glass);border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px 12px;border-radius:10px;cursor:pointer}
+    button.primary{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#042a38;border:none;font-weight:600}
+    .card{background:rgba(255,255,255,0.02);border-radius:14px;padding:20px;box-shadow:0 6px 24px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+    .paradox{margin:18px 0;padding:14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.02)}
+    .dialog{font-family: Georgia, 'Times New Roman', serif;margin:0 0 8px 0}
+    blockquote{margin:8px 0 0 0;padding-left:12px;border-left:3px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .philos{margin-top:10px;color:var(--muted);font-size:14px}
+    .hidden{opacity:0;transform:translateY(8px)}
+    .fade-in{animation:fadeIn .6s ease forwards}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    @media print{body{background:white;color:black} .card{box-shadow:none;border:none}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">EL</div>
+      <div>
+        <h1>Everyday Logic Paradoxes — Mini Collection</h1>
+        <p class="lead">Short scenes and notes about how simple questions turn into psychological games.</p>
+      </div>
+    </header>
+
+    <div class="controls">
+      <button id="playBtn" class="primary">Show Sequentially</button>
+      <button id="showAllBtn">Show All at Once</button>
+      <button id="downloadBtn">Download HTML</button>
+      <button id="copyBtn">Copy Text</button>
+    </div>
+
+    <div class="card" id="card">
+      <div class="meta">
+        <div>Author: Valeriy + AI (site version)</div>
+        <div id="date"></div>
+      </div>
+
+      <section id="intro" class="hidden">
+        <h2>Introduction</h2>
+        <p>In everyday speech, we often seek not just information, but confirmation of our worldview. Then a simple question ceases to be simple. A clock becomes an interrogation, a road — a test of intent, a glass of water — an exam of thirst. These little conversational traps are funny and slightly sad because they reflect our habit of defending ourselves even from harmless facts.</p>
+      </section>
+
+      <div id="paradoxes">
+        <article class="paradox hidden">
+          <p class="dialog"><strong>1. Time and motives</strong><br>
+          — <em>What time is it?</em><br>
+          — <em>Why do you ask?</em></p>
+          <blockquote>Irony: as if time itself should know why it's being asked.</blockquote>
+          <p class="philos">Philosophy: sometimes people protect information that belongs to everyone. It's about trust, not hours.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>2. Place and intentions</strong><br>
+          — <em>Where is the library?</em><br>
+          — <em>What do you want there?</em></p>
+          <blockquote>Irony: the path to knowledge goes through curiosity bureaucracy.</blockquote>
+          <p class="philos">Philosophy: in our world, routes are increasingly guarded not by walls but by people who demand explanations.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>3. Thirst and doubt</strong><br>
+          — <em>May I have a glass of water?</em><br>
+          — <em>Do you want to drink?</em></p>
+          <blockquote>Irony: a request for water as a riddle without an obvious answer.</blockquote>
+          <p class="philos">Philosophy: even the simplest needs sometimes require proof — we learn to justify thirst.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>4. Belonging and suspicion</strong><br>
+          — <em>Is this your bicycle?</em><br>
+          — <em>Why do you ask?</em></p>
+          <blockquote>Irony: an innocent question instantly becomes an interrogation.</blockquote>
+          <p class="philos">Philosophy: property becomes more than a thing; it is a reason for psychological games of “who owes whom an explanation.”</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>5. Weather and suspicion</strong><br>
+          — <em>Will it rain?</em><br>
+          — <em>Are you planning to go out?</em></p>
+          <blockquote>Irony: weather forecasts are issued only with a package of your plans.</blockquote>
+          <p class="philos">Philosophy: we often link another person's question with our own ideas about what is “normal” to know.</p>
+        </article>
+      </div>
+
+      <section id="conclusion" class="hidden">
+        <h3>Conclusion</h3>
+        <p>Everyday logic paradoxes are funny because they arise from simple situations and end in psychological labyrinths. But they are valuable: each contains a small lesson about how we perceive others’ questions. Sometimes it is enough to simply answer — giving a fact without questioning "why".</p>
+      </section>
+
+      <footer>
+        <div>Click "Show Sequentially" to scroll through like a mini-lecture, or "Show All at Once" for printing and quick copying.</div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+    const items = Array.from(document.querySelectorAll('.hidden'));
+    const playBtn = document.getElementById('playBtn');
+    const showAllBtn = document.getElementById('showAllBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function playSequentially() {
+      items.forEach(i=>{i.classList.remove('fade-in'); i.style.opacity=0});
+      let delay = 0;
+      items.forEach(el => {setTimeout(()=>{el.classList.add('fade-in');}, delay); delay += 700;});
+    }
+
+    function showAll() { items.forEach(el=> el.classList.add('fade-in')); }
+
+    playBtn.addEventListener('click', playSequentially);
+    showAllBtn.addEventListener('click', showAll);
+
+    downloadBtn.addEventListener('click', ()=>{
+      const html = '<!doctype html>' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'everyday_logic_paradoxes.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      const textParts = Array.from(document.querySelectorAll('.card *')).map(el => el.innerText).join('\n\n');
+      try{ await navigator.clipboard.writeText(textParts); copyBtn.textContent='Copied!'; setTimeout(()=> copyBtn.textContent='Copy Text',1500);}catch(e){alert('Cannot copy automatically. Please select text and press Ctrl+C.');}
+    });
+
+    window.addEventListener('load', ()=>{document.getElementById('intro').classList.add('fade-in');});
+  </script>
+</body>
+</html>

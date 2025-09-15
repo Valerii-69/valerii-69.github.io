@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lab Template — JS Code Check</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+h1 { color: #004d99; }
+textarea { width: 100%; height: 200px; font-family: monospace; font-size: 14px; margin-bottom:10px; }
+button { padding: 6px 12px; font-size:14px; margin:5px 0; }
+#canvasPreview { border:1px solid #ccc; background:#fff; display:block; margin-top:10px; }
+#errors { color:red; font-weight:bold; margin-top:10px; }
+</style>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a><br>
+<h1>Lab Work — JS Code Check</h1>
+
+<p>Instructions for the reader:</p>
+<ul>
+<li>Use only the provided <code>canvas</code>, do not access <code>document.getElementById</code>.</li>
+<li>Your code must be a function taking <code>canvas</code> as argument:</li>
+<pre>(function(canvas){ /* your code */ })(canvas);</pre>
+<li>All variables must be local, animations via <code>requestAnimationFrame</code> or <code>setInterval</code>.</li>
+</ul>
+
+<p>Example working code:</p>
+<pre>
+(function(canvas){
+  const ctx = canvas.getContext('2d');
+  let x = 0;
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='red';
+    ctx.fillRect(x,50,50,30);
+    x = (x + 2) % canvas.width;
+    requestAnimationFrame(animate);
+  }
+  animate();
+})(canvas);
+</pre>
+
+<p>Paste your JS code here:</p>
+<textarea id="userCode">// paste your code here</textarea>
+<button id="checkCode">Check Code</button>
+<div id="errors"></div>
+
+<p>Preview of your code:</p>
+<canvas id="canvasPreview" width="600" height="200"></canvas>
+
+<script>
+const codeArea = document.getElementById('userCode');
+const errorsDiv = document.getElementById('errors');
+const canvas = document.getElementById('canvasPreview');
+
+function validateLabCode(code){
+  let errors = [];
+
+  if(!/\(canvas\)/.test(code)){
+    errors.push("Code must accept canvas as argument");
+  }
+
+  if(/document\.getElementById/.test(code)){
+    errors.push("Do not use document.getElementById; use the provided canvas");
+  }
+
+  try {
+    new Function('canvas', code);
+  } catch(e){
+    errors.push("Syntax error: " + e.message);
+  }
+
+  return errors;
+}
+
+document.getElementById('checkCode').onclick = () => {
+  const code = codeArea.value;
+  const errors = validateLabCode(code);
+  errorsDiv.innerHTML = errors.length ? errors.join('<br>') : 'Code is correct!';
+
+  if(errors.length === 0){
+    try {
+      const func = new Function('canvas', code);
+      func(canvas);
+    } catch(e){
+      errorsDiv.innerHTML = 'Runtime error: ' + e.message;
+    }
+  }
+};
+</script>
+<br><a href="../oglavlenie.html" class="back-link">&larr; Back to contents</a>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Soccer Ball Flight</title>
+<style> 
+body { font-family: Arial; margin: 20px; } 
+canvas { border: 1px solid #ccc; } 
+input[type="range"] {
+  width: 300px; /* Fixed width */
+}
+</style>
+</head>
+<body>
+<h1>Soccer Ball Flight Model</h1>
+<p>Adjust the kick power, angle, and wind to see the trajectory.</p>
+
+<label for="power">Kick power (kg): <span id="power_val">30</span></label>
+<input type="range" id="power" min="0" max="80" value="30" step="0.0001"><br>
+
+<label for="angle">Kick angle (deg): <span id="angle_val">45</span></label>
+<input type="range" id="angle" min="0" max="90" value="45" step="0.0001"><br>
+
+<label for="wind">Wind (m/s): <span id="wind_val">0</span></label>
+<input type="range" id="wind" min="-5" max="5" value="0" step="0.0001"><br>
+
+<canvas id="ball" width="600" height="300"></canvas><br>
+<button id="newGameBtn" onclick="startGame()">START</button>
+<p><b>Tip:</b> Try to score under different conditions.</p>
+
+<script>
+const cbm = document.getElementById('ball');
+const ctxm = cbm.getContext('2d');
+const powerSlider = document.getElementById('power');
+const angleSlider = document.getElementById('angle');
+const windSlider = document.getElementById('wind');
+
+const windpowerVal = document.getElementById('power_val');
+const windangleVal = document.getElementById('angle_val');
+const windVal = document.getElementById('wind_val');
+
+let launched = false, x=50, y=250, vx=0, vy=0;
+
+function updateLabels() {
+    windpowerVal.textContent = powerSlider.value;
+    windangleVal.textContent = angleSlider.value;
+    windVal.textContent = windSlider.value >= 0 ? windSlider.value + " tailwind" : windSlider.value + " headwind";
+}
+powerSlider.oninput = angleSlider.oninput = windSlider.oninput = updateLabels;
+updateLabels();
+
+function resetBall(){ x=50; y=250; launched=false; }
+function launch(){
+    const power = parseFloat(powerSlider.value);
+    const angle = parseFloat(angleSlider.value) * Math.PI/180;
+    const wind = parseFloat(windSlider.value);
+    vx = power * Math.cos(angle) + wind;
+    vy = -power * Math.sin(angle);
+    launched = true;
+}
+
+cbm.addEventListener('click', launch);
+
+function drawBall(){
+    ctxm.clearRect(0,0,cbm.width,cbm.height);
+    if(launched){
+        vy += 0.3;
+        x += vx*0.1;
+        y += vy*0.1;
+        if(y>250){ y=250; launched=false; }
+    }
+    ctxm.fillStyle='black';
+    ctxm.beginPath();
+    ctxm.arc(x,y,10,0,Math.PI*2);
+    ctxm.fill();
+    requestAnimationFrame(drawBall);
+}
+
+function startGame(){
+    launched=false; x=50; y=250; vx=0; vy=0;
+    drawBall();
+}
+</script>
+</body>
+</html>

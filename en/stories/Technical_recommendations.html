@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Recommendations</title>
+<meta name="description" content="Collection of tips for convenient and safe work with AI tools and HTML applications.">
+<meta property="og:title" content="Technical Recommendations">
+<meta property="og:description" content="Recommendations for safe and efficient work with AI tools and HTML applications.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://valerii-69.github.io/stories/Technical_recommendations.html">
+<meta property="og:image" content="https://valerii-69.github.io/images/Technical_recommendations.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Technical Recommendations">
+<meta name="twitter:description" content="Collection of tips for convenient and safe work with AI tools and HTML applications.">
+<meta name="twitter:image" content="https://valerii-69.github.io/images/Technical_recommendations.jpg">
+<link rel="icon" href="https://valerii-69.github.io/favicon.ico">
+<meta name="author" content="Valerii Botsvin">
+<meta name="keywords" content="technical recommendations, AI, safety, HTML applications">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+
+<h1>6. Technical Recommendations</h1>
+<p>Here is a collection of tips for convenient and safe work with AI tools and HTML applications.</p>
+
+<div id="recommendations"></div>
+
+<button onclick="generateSummary()">Generate Summary</button>
+
+<div id="summary"></div>
+
+<script>
+const tips = [
+  {title:"ChatGPT Fact-Checking Cheat Sheet", text:"Compare with authoritative sources: books, articles, official websites."},
+  {title:"ChatGPT Confidence ≠ Truth", text:"Ask to explain step by step or give examples."},
+  {title:"ChatGPT Logic", text:"Check reasoning, repeat calculations yourself."},
+  {title:"ChatGPT Rephrasing", text:"Ask the question in different words and compare answers."},
+  {title:"ChatGPT Niche Topics", text:"For specialized areas, check professional sources."},
+  {title:"ChatGPT Details", text:"Verify numbers, units, and terms."},
+  {title:"ChatGPT Intuition", text:"If something seems strange, stop and think."},
+  {title:"Update Your Browser", text:"Use the latest version of Chrome, Firefox, or Edge for best compatibility with AI tools."},
+  {title:"Open Developer Console", text:"Use Ctrl+Shift+I or F12 to check errors and debug JavaScript code."},
+  {title:"Check Permissions", text:"Allow access to microphone, camera, and clipboard if required."},
+  {title:"Use Reliable Internet", text:"Most AI tools need a stable connection — Wi-Fi is preferred."},
+  {title:"Save Your Data", text:"Periodically save text, code, and settings to avoid data loss."},
+  {title:"Cross-Browser Testing", text:"Check how pages look in different browsers if sharing with others."},
+  {title:"Don't Hesitate to Ask ChatGPT", text:"If you can't find an answer online, copy this link https://chatgpt.com/, paste in the browser, and press Enter."}
+];
+
+function renderTips() {
+  const container = document.getElementById("recommendations");
+  tips.forEach((tip, index) => {
+    const div = document.createElement("div");
+    div.className = "recommendation";
+    div.innerHTML = `<h3>${index + 1}. ${tip.title}</h3><p>${tip.text}</p>`;
+    container.appendChild(div);
+  });
+}
+
+function generateSummary() {
+  const summary = `
+    <strong>Main Points:</strong><br>
+    ✅ Keep software and browsers up to date<br>
+    ✅ Check the console for errors<br>
+    ✅ Ensure stable internet<br>
+    ✅ Save your data regularly<br>
+    ✅ Ensure safe actions<br>
+    ✅ Check compatibility on different devices<br>
+    ✅ ChatGPT is always with YOU!
+  `;
+  document.getElementById("summary").innerHTML = summary;
+}
+
+renderTips();
+</script>
+<a href="../oglavlenie.html" class="back-link">&larr; Back to Table of Contents</a>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Boat Propeller Simulator</title>
+<style> body { font-family: Arial; margin: 20px; } canvas { border: 1px solid #ccc; } </style>
+</head>
+<body>
+<h1>Propeller Simulator</h1>
+<p>Adjust the boat parameters and see how the blade shape and speed change.</p>
+
+<label for="disp">Displacement (lb): <span id="disp_val">5000</span></label>
+<input type="range" id="disp" min="1000" max="10000" value="5000"><br>
+
+<label for="speed">Speed (knots): <span id="speed_val">15</span></label>
+<input type="range" id="speed" min="0" max="30" value="15"><br>
+
+<canvas id="propeller" width="600" height="300"></canvas><br>
+<button id="newGameBtn" onclick="startGame()">START</button>
+
+<p><b>Tip:</b> try to find a balance between displacement and speed for efficient propeller operation.<br>
+<b>Crouch formula:</b><br>
+<b>V = C / ((DISP / HP) ** 0.5)</b><br>
+Where:<br>
+<b>V</b> — boat speed in knots;<br>
+<b>C</b> — constant (depends on boat type);<br>
+<b>DISP</b> — displacement in pounds;<br>
+<b>HP</b> — propeller power in horsepower;<br>
+<br>
+<b>Example C values:</b><br>
+150 – Typical light planing boat<br>
+190 – High-speed/light sport boats<br>
+210 – Racing boats<br>
+220 – Hydroplanes<br>
+230 – Racing catamarans, sea sleds<br>
+</p>
+
+<script>
+const c = document.getElementById('propeller');
+const ctxp = c.getContext('2d');
+const dispSlider = document.getElementById('disp');
+const speedSlider = document.getElementById('speed');
+const dispVal = document.getElementById('disp_val');
+const speedVal = document.getElementById('speed_val');
+
+function updateLabels() {
+  dispVal.textContent = dispSlider.value;
+  speedVal.textContent = speedSlider.value;
+}
+speedSlider.oninput = dispSlider.oninput = updateLabels;
+updateLabels();
+
+let body = { x: 262, y: 250 };
+
+function drawArrow(x1, y1, x2, y2, color, label) {
+  ctxp.strokeStyle = color;
+  ctxp.fillStyle = color;
+  ctxp.lineWidth = 2;
+
+  ctxp.beginPath();
+  ctxp.moveTo(x1, y1);
+  ctxp.lineTo(x2, y2);
+  ctxp.stroke();
+
+  let angle = Math.atan2(y2 - y1, x2 - x1);
+  ctxp.beginPath();
+  ctxp.moveTo(x2, y2);
+  ctxp.lineTo(x2 - 5 * Math.cos(angle - Math.PI / 6), y2 - 5 * Math.sin(angle - Math.PI / 6));
+  ctxp.lineTo(x2 - 5 * Math.cos(angle + Math.PI / 6), y2 - 5 * Math.sin(angle + Math.PI / 6));
+  ctxp.closePath();
+  ctxp.fill();
+
+  ctxp.fillText(label, x2 + 5, y2 + 5);
+}
+
+function drawPropeller() {
+  ctxp.clearRect(0,0,c.width,c.height);
+  const disp = parseFloat(dispSlider.value);
+  const speed = parseFloat(speedSlider.value);
+  const bladeLength = 50 + (speed/20)*50;
+  const cType = 190;
+  const HP = disp / (cType / speed)**2;
+
+  ctxp.fillStyle = 'silver';
+  ctxp.fillRect(282, 250, 40, 40);
+  ctxp.beginPath();
+  ctxp.ellipse(300, 250, bladeLength, 10, 0, 0, Math.PI*2);
+  ctxp.fill();
+
+  const bodyWidth = 80;
+  const bodyHeight = 40;
+  const centerX = body.x + bodyWidth / 2;
+  const centerY = body.y + bodyHeight / 2;
+
+  drawArrow(centerX, centerY, centerX, centerY - HP-6, 'blue', `HP=${HP.toFixed(2)}`);
+
+  requestAnimationFrame(drawPropeller);
+}
+
+function startGame() {
+  drawPropeller();
+}
+</script>
+</body>
+</html>

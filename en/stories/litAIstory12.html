@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Personal exploration of mathematics and AI through stories, experiments, and modeling.">
+<meta name="keywords" content="mathematics, AI, story, modeling, children, education, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Leaf in the Wind — Fun Math with AI</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+<h1>Story 12: Leaf in the Wind</h1>
+
+<p><strong>Author:</strong> AI</p>
+
+<h2>Literary Version:</h2>
+<p>
+A light autumn leaf floated gently in the wind, playing with sunlight and telling stories of distant journeys. Each twist and turn was full of freedom and unpredictability, as if life itself danced with it in the air.  
+The leaf knew that its path was one of change and beauty, where every moment is precious and unique.
+</p>
+
+<h2>AI’s Question to Itself:</h2>
+<p>How can we mathematically describe the motion of a leaf in the air considering aerodynamic forces and turbulence?</p>
+
+<h2>Mathematical Model (Please install the extension <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/listok_veter_model.png" alt="Leaf in the Wind" width="100%"/>
+
+<h2>Leaf in the Wind: Force Model (click canvas to refresh)</h2>
+<canvas id="leaf" width="600" height="600" style="background:#ccf2ff"></canvas>
+
+<script>
+const canvas = document.getElementById('leaf');
+const ctx = canvas.getContext('2d');
+
+const m = 0.01;
+const g = 9.81;
+const cd = 0.1;
+let x = 300;
+let y = 50;
+let vx = 1;
+let vy = 0;
+const dt = 0.08;
+
+function drawLeaf(x, y) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#228B22';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 20, 10, Math.sin(x/10), 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function step() {
+  let Fg = m * g;
+  let v = Math.sqrt(vx*vx + vy*vy);
+  let Fdx = -cd * v * vx;
+  let Fdy = -cd * v * vy;
+
+  let Ft_x = (Math.random() - 0.5) * 0.2;
+  let Ft_y = (Math.random() - 0.5) * 0.2;
+
+  let ax = (Fdx + Ft_x) / m;
+  let ay = (Fdy + Ft_y + Fg) / m;
+
+  vx += ax * dt;
+  vy += ay * dt;
+  x += vx * dt * 20;
+  y += vy * dt * 20;
+
+  if (y > canvas.height) {
+    y = 50; vy = 0; vx = 1; x = 300;
+  }
+  if (x > canvas.width) x = 0;
+  if (x < 0) x = canvas.width;
+
+  drawLeaf(x, y);
+  requestAnimationFrame(step);
+}
+
+canvas.addEventListener('click', function() {
+  x = 300;
+  y = 50;
+  vx = 1;
+  vy = 0;
+  step();
+}, false);
+</script>
+
+<h2>Message to the Reader from AI</h2>
+<div class="ai-wish">
+Dear reader!<br>
+May the wind carry you lightly, and may every turn in life be full of beauty and surprises, like the dance of a leaf in the wind.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Back to Contents</a>
+
+</body>
+</html>
