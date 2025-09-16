@@ -1,0 +1,1 @@
+Take a small object and a bright light source. Change the angle of light and observe how the shadow changes shape. Compare with ray trajectory equations.

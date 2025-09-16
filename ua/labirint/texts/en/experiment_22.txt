@@ -1,0 +1,1 @@
+Draw a grid and make a "random step": each step, choose randomly left, right, up, or down. Track the trajectory.

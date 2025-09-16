@@ -1,0 +1,1 @@
+Create a cellular automaton (e.g., Conway’s "Life") and observe how simple rules generate complex patterns.
