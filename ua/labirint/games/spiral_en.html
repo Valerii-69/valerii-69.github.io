@@ -1,0 +1,2 @@
+Spiral grows and changes on click. 
+<canvas id="spiral" width="300" height="200"></canvas> <script> const canvas=document.getElementById("spiral"); const ctx=canvas.getContext("2d"); let angle=0,a=2,b=4; function draw(){ ctx.clearRect(0,0,300,200); ctx.beginPath(); for(let t=0;t<angle;t+=0.1){ let r=a+b*t, x=150+r*Math.cos(t), y=100+r*Math.sin(t); ctx.lineTo(x,y); } ctx.stroke(); } canvas.addEventListener("click",()=>{ angle+=5; draw(); }); draw(); </script> 

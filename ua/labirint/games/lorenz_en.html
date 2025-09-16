@@ -1,0 +1,2 @@
+Chaotic Lorenz system. The trajectory is drawn gradually. 
+<canvas id="lorenz" width="400" height="300"></canvas> <script> const canvas=document.getElementById('lorenz'); const ctx=canvas.getContext('2d'); let x=0.1,y=0,z=0; let dt=0.01; const sigma=10,rho=28,beta=8/3; function step(){ let dx=sigma*(y-x), dy=x*(rho-z)-y, dz=x*y-beta*z; x+=dx*dt; y+=dy*dt; z+=dz*dt; } function draw(){ step(); let px=200+x*5, py=150+z*5; ctx.fillRect(px,py,1,1); requestAnimationFrame(draw); } draw(); </script> 
