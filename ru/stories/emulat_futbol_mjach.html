@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Полет футбольного мяча</title>
+<style> 
+body { font-family: Arial; margin: 20px; } 
+canvas { border: 1px solid #ccc; } 
+input[type="range"] {
+  width: 300px; /* Sets a fixed width in pixels */
+}
+</style>
+</head>
+<body>
+<h1>Модель полета футбольного мяча</h1>
+<p>Настройте силу удара, угол и ветер, чтобы увидеть траекторию.</p>
+<label for="power">Сила удара, (кг): <span id="power_val">30</span></label>
+<input type="range" id="power" min="0" max="80" value="30" step="0.0001"><br>
+<label for="angle">Угол удара, (град): <span id="angle_val">45</span></label>
+<input type="range" id="angle" min="0" max="90" value="45" step="0.0001"><br>
+<label for="wind">Ветер, (м/с): <span id="wind_val">0</span></label>
+<input type="range" id="wind" min="-5" max="5" value="0" step="0.0001"><br>
+<canvas id="ball" width="600" height="300"></canvas><br>
+<button id="newGameBtn" onclick="startGame()">СТАРТ</button>
+<p><b>Пожелание:</b> попробуйте забить мяч в ворота при разных условиях.<b>hit the ball</b></p>
+<script>
+const cbm = document.getElementById('ball');
+const ctxm = cbm.getContext('2d');
+  const powerSlider = document.getElementById('power');
+  const angleSlider = document.getElementById('angle');
+  const windSlider = document.getElementById('wind');
+
+const windpowerVal = document.getElementById('power_val');
+const windangleVal = document.getElementById('angle_val');
+const windVal = document.getElementById('wind_val');
+
+let launched = false, x=50, y=250, vx=0, vy=0;
+
+  // Обновляем подписи ползунков
+  function updateLabels() {
+    windpowerVal.textContent = powerSlider.value;
+    windangleVal.textContent = angleSlider.value;
+    if(windSlider.value>=0){windVal.textContent = windSlider.value + " попутный"}else{windVal.textContent = windSlider.value + " встречный"};
+  }
+  windSlider.oninput = angleSlider.oninput = powerSlider.oninput = updateLabels;
+  updateLabels();
+
+function resetBall(){ x=50; y=250; launched=false; }
+function launch(){
+  const power = parseFloat(document.getElementById('power').value);
+  const angle = parseFloat(document.getElementById('angle').value) * Math.PI/180;
+  const wind = parseFloat(document.getElementById('wind').value);
+  vx = power * Math.cos(angle) + wind;
+  vy = -power * Math.sin(angle);
+  launched = true;
+}
+
+
+cbm.addEventListener('click', launch);
+function drawBall(){
+  ctxm.clearRect(0,0,cbm.width,cbm.height);
+  if(launched){
+    vy += 0.3;
+    x += vx*0.1;
+    y += vy*0.1;
+    if(y>250){ y=250; launched=false; }
+  }
+  ctxm.fillStyle='black';
+  ctxm.beginPath();
+  ctxm.arc(x,y,10,0,Math.PI*2);
+  ctxm.fill();
+  requestAnimationFrame(drawBall);
+}
+
+function startGame(){
+launched = false, x=50, y=250, vx=0, vy=0;
+	drawBall();
+}
+/*canvas.addEventListener('click', function() {
+launched = false, x=50, y=250, vx=0, vy=0;
+	drawBall();
+}, false);*/
+
+//drawBall();
+</script>
+</body>
+</html>

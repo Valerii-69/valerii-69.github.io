@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Гребной винт и катер</title>
+<style> body { font-family: Arial; margin: 20px; } canvas { border: 1px solid #ccc; } </style>
+</head>
+<body>
+<h1>Эмулятор работы гребного винта</h1>
+<p>Настройте параметры катера и посмотрите, как изменяется форма лопастей и скорость движения.</p>
+<label for="disp">Водоизмещение, (фунт): <span id="disp_val">5000</span></label>
+<input type="range" id="disp" min="1000" max="10000" value="5000"><br>
+<label for="speed">Скорость, (узлы): <span id="speed_val">15</span></label>
+<input type="range" id="speed" min="0" max="30" value="15"><br>
+<canvas id="propeller" width="600" height="300"></canvas><br>
+<button id="newGameBtn" onclick="startGame()">СТАРТ</button>
+<p><b>Пожелание:</b> попробуйте найти баланс между водоизмещением и скоростью для эффективной работы винта.<br>
+<b>Формула Крауча</b><br>
+<b>V = C/((DISP/HP)**0.5)</b><br>
+Где<br>
+<b>V</b> — скорость лодки в узлах;<br>
+<b>C</b> — константа (зависит от типа лодки);<br>
+<b>DISP</b> — водоизмещение (смещение) в фунтах;<br>
+<b>HP</b> — мощность гребного винта в лошадиных силах;<br>
+<br>
+<b>Значения некоторых констант C</b><br>
+150 – Типовой легкий глиссирующий катер<br>
+190 – Скоростные катера, легкие спортивные катера<br>
+210 – Гоночные лодки<br>
+220 – Гидропланы<br>
+230 – Гоночные катамараны, морские сани<br>
+</p>
+<script>
+const c = document.getElementById('propeller');
+const ctxp = c.getContext('2d');
+const dispSlider = document.getElementById('disp');
+const speedSlider = document.getElementById('speed');
+
+const winddispVal = document.getElementById('disp_val');
+const speedVal = document.getElementById('speed_val');
+
+  // Обновляем подписи ползунков
+  function updateLabels() {
+    winddispVal.textContent = dispSlider.value;
+    speedVal.textContent = speedSlider.value;
+  }
+  speedSlider.oninput = dispSlider.oninput = updateLabels;
+  updateLabels();
+
+    // Параметры тела
+    let body = {
+      x: 262,
+      y: 250
+    };
+
+    function drawArrow(x1, y1, x2, y2, color, label) {
+      ctxp.strokeStyle = color;
+      ctxp.fillStyle = color;
+      ctxp.lineWidth = 2;
+
+      // Линия
+      ctxp.beginPath();
+      ctxp.moveTo(x1, y1);
+      ctxp.lineTo(x2, y2);
+      ctxp.stroke();
+
+      // Стрелка
+      let angle = Math.atan2(y2 - y1, x2 - x1);
+      ctxp.beginPath();
+      ctxp.moveTo(x2, y2);
+      ctxp.lineTo(x2 - 5 * Math.cos(angle - Math.PI / 6), y2 - 5 * Math.sin(angle - Math.PI / 6));
+      ctxp.lineTo(x2 - 5 * Math.cos(angle + Math.PI / 6), y2 - 5 * Math.sin(angle + Math.PI / 6));
+      ctxp.closePath();
+      ctxp.fill();
+
+      // Надпись
+      ctxp.fillText(label, x2 + 5, y2 + 5);
+    }
+
+
+function drawPropeller() {
+  ctxp.clearRect(0,0,c.width,c.height);
+  const disp = parseFloat(document.getElementById('disp').value);
+  const speed = parseFloat(document.getElementById('speed').value);
+  const bladeLength = 50 + (speed/20)*50;
+  const cTypeKatera = 190;
+  const HP = disp / (cTypeKatera/speed)**2;
+  ctxp.fillStyle = 'silver';
+  ctxp.fillRect(282, 250, 40, 40);
+  ctxp.beginPath();
+  ctxp.ellipse(300, 250, bladeLength, 10, 0, 0, Math.PI*2);
+  ctxp.fill();
+
+    const bodyWidth = 80;
+    const bodyHeight = 40;
+      // Силы
+      const centerX = body.x + bodyWidth / 2;
+      const centerY = body.y + bodyHeight / 2;
+// Мощность винта (вверх)
+  drawArrow(centerX, centerY, centerX, centerY - HP-6, 'blue', `HP=${HP.toFixed(2)}`);
+
+  requestAnimationFrame(drawPropeller);
+}
+
+function startGame(){
+	drawPropeller();
+}
+//drawPropeller();
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Стол измерений — Философия и случай</title>
+<!--  <style>
+    body { font-family: sans-serif; padding: 2em; line-height: 1.6; background: #f9f9f9; }
+    h1, h2 { color: #333; }
+    .section { background: #fff; padding: 1em 2em; margin: 1em 0; border-left: 5px solid #3a3a3a; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .quote { font-style: italic; color: #555; margin: 1em 0; }
+    .thought { background: #eef; padding: 1em; margin: 1em 0; border-left: 5px solid #77f; }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+  </style>
+  -->
+  <link rel="stylesheet" href="../style.css">
+
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+
+<h1>Стол измерений</h1>
+<p class="quote">«Измерение — это акт выбора одной из бесконечных возможностей» — Нильс Бор</p>
+
+<div class="section">
+  <h2>1. Философский рассказ: Линейка и бесконечность</h2>
+  <p>Однажды маленький мальчик нашёл линейку и начал измерять всё подряд: стол, собаку, тень от дерева. Но однажды он захотел измерить мысль. И с этого момента его линейка начала удлиняться, изгибаться, терять числа... Он понял: не всё поддаётся измерению.</p>
+</div>
+
+<div class="section">
+  <h2>2. Парадокс наблюдателя</h2>
+  <p>Ты хочешь узнать, какова температура воздуха в комнате. Но как только ты заходишь с термометром, своим дыханием ты уже меняешь эту температуру. Становится ли измерение истиной, если оно само изменяет объект?</p>
+</div>
+
+<div class="section">
+  <h2>3. Эссе: Почему мы доверяем цифрам?</h2>
+  <p>Мы строим мосты, лечим болезни и запускаем спутники — всё с помощью цифр. Но цифры — лишь символы. Почему мы так в них уверены? Возможно, потому что нам страшно смотреть в глаза случайности...</p>
+</div>
+
+<div class="section">
+  <h2>4. Наблюдение: Два человека — два измерения</h2>
+  <p>Когда один человек смотрит на закат, он замечает цвета. Второй — видит падение солнечного угла в градусах. Кто из них прав? Или каждый создает свою версию реальности?</p>
+</div>
+
+<div class="section">
+  <h2>5. Притча: Камень в реке</h2>
+  <p>Мудрец бросил камень в реку и сказал: «Он утонул, но сделал реку другой». Ученик спросил: «А можно ли измерить эту разницу?» Мудрец ответил: «Попробуй, если умеешь измерять сны».</p>
+</div>
+
+<div class="thought">
+  💡 <strong>Подумай:</strong> А если бы у тебя был прибор, который измеряет доброту, как бы ты его настроил?
+</div>
+
+<div class="section">
+  <h2>Интерактив: Мини-вопрос</h2>
+  <p>Что ты считаешь более точным способом познания: логическое доказательство или случайное озарение?</p>
+  <select id="answer">
+    <option>— выбери —</option>
+    <option>Логическое доказательство</option>
+    <option>Случайное озарение</option>
+    <option>Они дополняют друг друга</option>
+  </select>
+  <button onclick="showResult()">Ответить</button>
+  <p id="result"></p>
+</div>
+
+<script>
+function showResult() {
+  const val = document.getElementById('answer').value;
+  const result = document.getElementById('result');
+  if (val === "Логическое доказательство") {
+    result.textContent = "Ты веришь в структуру. Математика — твой язык.";
+  } else if (val === "Случайное озарение") {
+    result.textContent = "Ты — поэт и философ. Искры в темноте — твой путь.";
+  } else if (val === "Они дополняют друг друга") {
+    result.textContent = "Ты ищешь баланс. И возможно, ты ближе всех к истине.";
+  } else {
+    result.textContent = "Сделай выбор.";
+  }
+}
+</script>
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>

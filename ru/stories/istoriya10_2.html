@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Невесомость в воде</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h2>🛁 Невесомость в ванне — расчёт выталкивающей силы</h2>
+  <label>Масса тела (кг): <input type="number" id="mass" value="70"></label><br>
+  <label>Объём тела (м³): <input type="number" id="volume" value="0.07"></label><br>
+  <button onclick="calculate()">Рассчитать</button>
+  <p id="result"></p>
+
+  <script>
+    function calculate() {
+      const g = 9.8; // ускорение свободного падения
+      const rho = 1000; // плотность воды
+
+      const m = parseFloat(document.getElementById('mass').value);
+      const V = parseFloat(document.getElementById('volume').value);
+
+      const weight = m * g;
+      const archimedes = rho * V * g;
+      const effective = weight - archimedes;
+      const percent = ((effective / weight) * 100).toFixed(1);
+
+      document.getElementById('result').innerHTML =
+        `Полный вес: ${weight.toFixed(1)} Н<br>` +
+        `Выталкивающая сила: ${archimedes.toFixed(1)} Н<br>` +
+        `Вес в воде: ${effective.toFixed(1)} Н (${percent}% от обычного веса)`;
+    }
+  </script>
+</body>
+</html>

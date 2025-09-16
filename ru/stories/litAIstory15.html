@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Фантастические рассказы | Занимательная математика с ИИ</title>
+<!--<style>
+body { font-family: sans-serif; margin: 20px; background: #f0f8ff; }
+h2 { color: #003366; }
+.section { border:1px solid #ccc; padding:15px; margin-bottom:30px; background:#ffffff; border-radius:8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);}
+.canvas-container { text-align:center; margin:15px 0; }
+canvas { border:1px solid #ccc; background:#eef; border-radius:5px;}
+label { display:flex; flex-direction:column; margin:8px 0; }
+input { margin-top:4px; }
+span.value { font-weight:bold; margin-top:2px; }
+</style>-->
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
+
+<div class="section">
+<h2>Рассказ 1: Дирижабль, который летел против ветра</h2>
+<p>Небо над старым городом было необычно тихим. Между облаками медленно плыла гигантская серебристая фигура — дирижабль в форме вертикального цилиндра с боковыми крыльями, которые вращались, словно лопасти ветряка. Но необычно было то, что дирижабль двигался против ветра.</p>
+<p>Капитан Элиас улыбался: «Магнус не подведёт». Его секрет заключался в особой конструкции: цилиндр медленно вращался, создавая боковую подъемную силу, а крылья направляли поток так, что воздушный поток позволял кораблю двигаться в противоположную сторону.</p>
+
+<div class="canvas-container">
+<canvas id="dirigibleCanvas" width="600" height="250"></canvas>
+<label>Скорость вращения крыльев:
+<input type="range" id="dirSpeed" min="0" max="0.1" step="0.001" value="0.02">
+<span class="value" id="dirSpeedVal">0.020</span>
+</label>
+  <a href="../stories/dirigabl.html" class="back-link">Модель Дирижабль&rarr;</a><br>
+
+</div>
+
+<p><b>Пожелание читателю:</b> Попробуй представить свои идеи как у Элиаса: что бы ты сделал, если бы законы физики стали инструментом для игры? Мечтай и моделируй свои фантастические возможности на бумаге и в голове.</p>
+</div>
+
+<div class="section">
+<h2>Рассказ 2: Лодка-перевертыш</h2>
+<p>В океане будущего под водой скользила подводная лодка необычного типа. Её наружный корпус был из пористого бетона, внутренний — из титана с армированным углеродным волокном, а между ними — густая смола, которая могла двигаться, делая поверхность гладкой или пористой.</p>
+<p>Командир Ариэль включила систему «Гладкий-Стелс». Когда поверхность была гладкой, лодка стремительно ускорялась, скользя через воду почти без сопротивления. Когда же смола втягивалась, поверхность становилась пористой — лодка теряла скорость, но её почти невозможно было обнаружить радаром.</p>
+
+<div class="canvas-container">
+<canvas id="submarineCanvas" width="600" height="200"></canvas>
+<label>Гладкость корпуса (α):
+<input type="range" id="subAlpha" min="0" max="1" step="0.01" value="1">
+<span class="value" id="subAlphaVal">1.00</span>
+</label>
+  <a href="../stories/podlodka.html" class="back-link">Модель Подводка&rarr;</a><br>
+</div>
+
+<p><b>Пожелание читателю:</b> Помни, что в самых фантастических идеях скрыта математика. Наблюдай за миром, ищи закономерности и пробуй создавать свои модели: каждая реальная идея может стать основой для удивительной фантастики.</p>
+  <br><a href="./literat_math.html" class="back-link">&larr; Вернуться к оглавлению</a>
+</div>
+
+<script>
+// ===== Дирижабль =====
+const dirCanvas = document.getElementById('dirigibleCanvas');
+const ctxD = dirCanvas.getContext('2d');
+let angle = 0;
+let dirSpeed = parseFloat(document.getElementById('dirSpeed').value);
+document.getElementById('dirSpeed').addEventListener('input', function(){
+    dirSpeed = parseFloat(this.value);
+    document.getElementById('dirSpeedVal').textContent = dirSpeed.toFixed(3);
+});
+
+function drawDirigible() {
+    ctxD.clearRect(0,0,dirCanvas.width,dirCanvas.height);
+    const x = dirCanvas.width/2;
+    const y = dirCanvas.height/2;
+    const w = 200, h = 80;
+
+    ctxD.fillStyle = '#C0C0C0';
+    ctxD.beginPath();
+    ctxD.ellipse(x, y, w/2, h/2, 0, 0, Math.PI*2);
+    ctxD.fill();
+    ctxD.strokeStyle='#000'; ctxD.stroke();
+
+    ctxD.save();
+    ctxD.translate(x,y);
+    ctxD.rotate(angle);
+    ctxD.fillStyle='#1E90FF';
+    ctxD.fillRect(-w/2-10, -5, 40, 10);
+    ctxD.fillRect(w/2-30, -5, 40, 10);
+    ctxD.restore();
+
+    angle += dirSpeed;
+    requestAnimationFrame(drawDirigible);
+}
+drawDirigible();
+
+// ===== Подводная лодка =====
+const subCanvas = document.getElementById('submarineCanvas');
+const ctxS = subCanvas.getContext('2d');
+let alpha = parseFloat(document.getElementById('subAlpha').value);
+document.getElementById('subAlpha').addEventListener('input', function(){
+    alpha = parseFloat(this.value);
+    document.getElementById('subAlphaVal').textContent = alpha.toFixed(2);
+});
+
+function drawSubmarine() {
+    ctxS.clearRect(0,0,subCanvas.width,subCanvas.height);
+    const x = 50, y = 50, w = 500, h = 100;
+
+    const r = Math.round(85*(1-alpha) + 30*alpha);
+    const g = Math.round(85*(1-alpha) + 144*alpha);
+    const b = Math.round(85*(1-alpha) + 255*alpha);
+    ctxS.fillStyle = `rgb(${r},${g},${b})`;
+
+    ctxS.beginPath();
+    ctxS.ellipse(x+w/2, y+h/2, w/2, h/2, 0, 0, Math.PI*2);
+    ctxS.fill();
+    ctxS.strokeStyle="#000"; ctxS.lineWidth=2; ctxS.stroke();
+
+    requestAnimationFrame(drawSubmarine);
+}
+drawSubmarine();
+</script>
+
+</body>
+</html>

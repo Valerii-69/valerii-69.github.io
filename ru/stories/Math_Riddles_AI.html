@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+  <meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Математические загадки с ИИ - Занимательная математика с ИИ</title>
+  <link rel="stylesheet" href="../style.css">
+
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+  <h1>Математические загадки с ИИ</h1>
+  <div id="puzzle"></div>
+  <input type="text" id="answerInput" placeholder="Введите ваш ответ..." autocomplete="off" />
+  <button id="checkBtn">Проверить ответ</button>
+  <div id="feedback"></div>
+  <div id="hint"></div>
+
+  <script>
+    // Загадки по уровням
+    const easy = [
+      { question: "Сколько сторон у треугольника?", answer: "3", hint: "Подумайте о геометрической фигуре с тремя углами." },
+      { question: "Какое число идёт после 99?", answer: "100", hint: "Следующее натуральное число." },
+      { question: "У меня есть 12 яблок, я отдал 7. Сколько осталось?", answer: "5", hint: "Простое вычитание." },
+      { question: "Число 10 умножили на какое число, чтобы получить 100?", answer: "10", hint: "Подумайте, сколько раз 10 помещается в 100." },
+      { question: "Какое число нужно прибавить к 47, чтобы получить 100?", answer: "53", hint: "100 − 47 = ?" }
+    ];
+
+    const medium = [
+      { question: "Я думаю о числе. Если умножить его на 3 и прибавить 5, получится 20. Какое это число?", answer: "5", hint: "Решите уравнение: 3x + 5 = 20" },
+      { question: "Если 5 карандашей стоят 20 рублей, сколько стоит один карандаш?", answer: "4", hint: "Разделите 20 на 5." },
+      { question: "У квадрата периметр 20 см. Чему равна длина одной стороны?", answer: "5", hint: "Периметр квадрата = 4 × сторона." },
+      { question: "Если час назад было 3 часа дня, то сколько будет времени через 5 часов?", answer: "9", hint: "Сначала найдите текущее время, потом прибавьте 5." },
+      { question: "Какое трёхзначное число читается одинаково слева направо и справа налево?", answer: "121", hint: "Это палиндром, средняя цифра — 2." }
+    ];
+
+    const hard = [
+      { question: "Три кошки ловят три мыши за три минуты. Сколько мышей поймают шесть кошек за шесть минут?", answer: "12", hint: "Найдите скорость одной кошки и масштабируйте." },
+      { question: "Я — двузначное число. Сумма цифр равна 9, а разность — 3. Что это за число?", answer: "63", hint: "x + y = 9 и x − y = 3." },
+      { question: "Сумма трёх последовательных нечётных чисел равна 45. Найдите эти числа.", answer: "13,15,17", hint: "Разделите 45 на 3, чтобы найти среднее." },
+      { question: "У Пети было в 2 раза больше яблок, чем у Васи. Вместе у них 18 яблок. Сколько яблок у Пети?", answer: "12", hint: "Составьте уравнение 2x + x = 18." },
+      { question: "На часах 3:15. Какой угол между часовой и минутной стрелками?", answer: "7.5", hint: "Каждая минута часовой стрелки = 0.5°." }
+    ];
+
+    // Функция перемешивания
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    // Случайный выбор уровня
+    const levels = [easy, medium, hard];
+    const puzzles = shuffle(levels[Math.floor(Math.random() * levels.length)]);
+
+    let currentPuzzleIndex = 0;
+
+    const puzzleEl = document.getElementById('puzzle');
+    const answerInput = document.getElementById('answerInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const hintEl = document.getElementById('hint');
+
+    function loadPuzzle(index) {
+      const puzzle = puzzles[index];
+      puzzleEl.textContent = puzzle.question;
+      feedbackEl.textContent = '';
+      hintEl.textContent = '';
+      answerInput.value = '';
+      answerInput.focus();
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      const correctAnswer = puzzles[currentPuzzleIndex].answer.toLowerCase();
+
+      if (!userAnswer) {
+        feedbackEl.textContent = "Пожалуйста, введите ответ.";
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        feedbackEl.style.color = 'green';
+        feedbackEl.textContent = "Правильно! 🎉";
+        currentPuzzleIndex++;
+        if (currentPuzzleIndex >= puzzles.length) {
+          setTimeout(() => {
+            alert("Поздравляем! Вы решили все загадки. Начнём сначала.");
+            currentPuzzleIndex = 0;
+            loadPuzzle(currentPuzzleIndex);
+          }, 1000);
+        } else {
+          setTimeout(() => loadPuzzle(currentPuzzleIndex), 1500);
+        }
+      } else {
+        feedbackEl.style.color = 'red';
+        feedbackEl.textContent = "Неправильно. Попробуйте ещё.";
+        hintEl.textContent = "Подсказка: " + puzzles[currentPuzzleIndex].hint;
+      }
+    });
+
+    // Загрузка первой загадки
+    loadPuzzle(currentPuzzleIndex);
+  </script>
+</body>
+</html>

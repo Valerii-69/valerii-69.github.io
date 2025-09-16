@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Модель изучения многомерности</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  #output { margin-top: 20px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<h2>Модель освоения многомерного восприятия</h2>
+
+<label for="effort">Уровень усилий (E): </label>
+<input id="effort" type="range" min="0" max="1" step="0.01" value="0.5" />
+<span id="effortVal">0.5</span>
+
+<button onclick="simulate()">Симулировать</button>
+
+<div id="output"></div>
+
+<script>
+  // Число уровней освоения (от 0 до n)
+  const n = 5;
+
+  // Коэффициенты обучаемости для каждого уровня
+  const alpha = [0.3, 0.4, 0.5, 0.6, 0.7];
+
+  // Функция вероятности перехода для уровня i за время t с усилиями E
+  function transitionProb(alpha_i, effort, t) {
+    // Интеграл по времени упрощён до effort * t
+    return 1 - Math.exp(-alpha_i * effort * t);
+  }
+
+  // Симуляция изменения вероятностей по времени
+  function simulate() {
+    const effort = parseFloat(document.getElementById('effort').value);
+    document.getElementById('effortVal').textContent = effort.toFixed(2);
+
+    const dt = 0.1; // шаг времени
+    const T = 20;   // время симуляции
+    let p = Array(n+1).fill(0);
+    p[0] = 1; // изначально на уровне 0
+
+    let output = 'Время\t' + Array.from({length: n+1}, (_, i) => 'S'+i).join('\t') + '\n';
+
+    for(let t=0; t<=T; t+=dt) {
+      // Создаём копию текущих вероятностей для обновления
+      let p_new = p.slice();
+
+      for(let i=0; i<=n; i++) {
+        if(i === 0) {
+          let d = -transitionProb(alpha[0], effort, t) * p[0];
+          p_new[0] += d * dt;
+        } else if(i < n) {
+          let d = transitionProb(alpha[i-1], effort, t)*p[i-1] - transitionProb(alpha[i], effort, t)*p[i];
+          p_new[i] += d * dt;
+        } else {
+          let d = transitionProb(alpha[n-1], effort, t)*p[n-1];
+          p_new[n] += d * dt;
+        }
+      }
+      // Нормируем вероятности, чтобы сумма была 1
+      let sum = p_new.reduce((a,b)=>a+b,0);
+      p = p_new.map(x => x/sum);
+
+      output += t.toFixed(1) + '\t' + p.map(x => x.toFixed(3)).join('\t') + '\n';
+    }
+
+    document.getElementById('output').textContent = output;
+  }
+</script>
+
+</body>
+</html>

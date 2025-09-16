@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Лабораторные работы читателей — Авто-Песочница</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; text-align: center; }
+h1 { color: #004d99; }
+.experiment-block {
+  margin: 20px auto; padding: 15px; width: 720px;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
+  border-radius: 10px; background: #fff8f0;
+  text-align: left;
+}
+canvas { border:1px solid #ccc; background:#fff; display:block; margin-top:10px; }
+.note { margin-top:10px; padding:8px; background:#f0faf5; border-left:4px solid #004d99; font-style:italic; }
+button { margin:8px; padding:6px 12px; font-size:14px; }
+.statusMsg { margin-top:6px; font-style:italic; color:#555; }
+.filter { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a><br>
+<h1>Лабораторные работы читателей — Авто-Песочница</h1>
+
+<div class="filter">
+  <input type="text" id="authorFilter" placeholder="Фильтр по автору">
+  <button id="applyFilter">Применить фильтр</button>
+  <button id="resetFilter">Сбросить фильтр</button>
+  <button id="startAll">Старт всех (Ожидание 1 мин)</button>
+  <button id="stopAll">Стоп всех</button>
+</div>
+
+<div id="readerLabs">Загрузка...</div>
+
+<script>
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwtlGpd45-H4gZOu-HaDsKrUmppebX4ResuoACLiBQGaETx_HR2kxmrl9f-bzJIqF4/exec?callback=handleLabs';
+let allLabs = [];
+let runningIntervals = [];
+
+// Функция JSONP, которая будет вызвана Apps Script
+function handleLabs(data) {
+  allLabs = data;
+  displayLabs(allLabs);
+}
+
+function displayLabs(labs) {
+  const readerLabsDiv = document.getElementById('readerLabs');
+  readerLabsDiv.innerHTML = '';
+  runningIntervals.forEach(interval => clearInterval(interval));
+  runningIntervals = [];
+
+  labs.forEach((lab, index) => {
+    const labBlock = document.createElement('div');
+    labBlock.className = 'experiment-block';
+
+    labBlock.innerHTML = `
+      <h2>${lab.title}</h2>
+      <p><strong>Автор:</strong> ${lab.name || 'Аноним'}</p>
+      <p><em>${lab.description}</em></p>
+      <div class="note">Пожелания: ${lab.note || ''}</div>
+      <p><strong>Дата:</strong> ${lab.date}</p>
+      <p><strong>Статус:</strong> ${lab.status || 'не проверено'}</p>
+      <canvas width="600" height="400"></canvas>
+      <div class="statusMsg">⚡ Предварительный просмотр доступен</div>
+    `;
+    readerLabsDiv.appendChild(labBlock);
+
+    const canvas = labBlock.querySelector('canvas');
+    const status = labBlock.querySelector('.statusMsg');
+
+    if (lab.code) {
+      try {
+        lab.func = new Function('canvas', lab.code);
+      } catch (e) {
+        console.error('Ошибка компиляции кода:', e);
+        status.textContent = '❌ Ошибка компиляции кода';
+      }
+    } else {
+      status.textContent = '❌ Код отсутствует';
+    }
+  });
+}
+
+// Фильтр по автору
+document.getElementById('applyFilter').onclick = () => {
+  const filter = document.getElementById('authorFilter').value.toLowerCase();
+  const filtered = allLabs.filter(lab => (lab.name || 'аноним').toLowerCase().includes(filter));
+  displayLabs(filtered);
+};
+
+document.getElementById('resetFilter').onclick = () => {
+  document.getElementById('authorFilter').value = '';
+  displayLabs(allLabs);
+};
+
+// Старт всех экспериментов
+document.getElementById('startAll').onclick = () => {
+  runningIntervals.forEach(interval => clearInterval(interval));
+  runningIntervals = [];
+
+  const canvases = document.querySelectorAll('#readerLabs canvas');
+  canvases.forEach((canvas, i) => {
+    const lab = allLabs[i];
+    if(lab.func){
+      try {
+        const interval = setInterval(() => lab.func(canvas), 60000); // перезапуск каждые 60 сек
+        runningIntervals.push(interval);
+      } catch(e){
+        console.error('Ошибка запуска эксперимента:', e);
+      }
+    }
+  });
+};
+
+// Стоп всех экспериментов
+document.getElementById('stopAll').onclick = () => {
+  runningIntervals.forEach(interval => clearInterval(interval));
+  runningIntervals = [];
+};
+</script>
+
+<script src="https://script.google.com/macros/s/AKfycbxwtlGpd45-H4gZOu-HaDsKrUmppebX4ResuoACLiBQGaETx_HR2kxmrl9f-bzJIqF4/exec?callback=handleLabs"></script>
+  <br><a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+</body>
+</html>

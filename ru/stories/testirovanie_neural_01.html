@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Нейросеть с «кривыми синапсами» — интерактив / Neural Network with Broken Synapses — Interactive / Нейронна мережа з «кривими синапсами» — інтерактив</title>
+<style>
+  :root {
+    --bg:#0b1020; --panel:#121a33; --ink:#e6ecff; --muted:#a8b3d6; --accent:#7aa2ff;
+    --good:#2ecc71; --bad:#ff6b6b; --warn:#f0ad4e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0e1630);color:var(--ink);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji"}
+  header{padding:20px 24px;border-bottom:1px solid #1e2747;background:rgba(0,0,0,0.2);backdrop-filter: blur(6px);position:sticky;top:0;z-index:10}
+  h1{font-size:20px;margin:0}
+  a{color: hsl(200, 100%, 50%); font-weight:bold;}
+  .wrap{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px}
+  .card{background:var(--panel);border:1px solid #1e2747;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.35)}
+  .card h2{font-size:16px;margin:0 0 8px 0;color:var(--accent)}
+  .card .body{padding:16px}
+  .controls label{display:block;margin:8px 0 4px 2px;color:var(--muted);font-size:13px}
+  input[type="range"], select, button{width:100%;padding:10px;border-radius:10px;border:1px solid #2a355f;background:#0f1730;color:var(--ink)}
+  button{cursor:pointer;transition:.2s transform,.2s opacity}
+  button:hover{transform:translateY(-1px)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .netbox{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px}
+  .viz{grid-column:1 / span 2;background:#0b1128;border-radius:16px;border:1px solid #1e2747;display:flex;align-items:center;justify-content:center;min-height:280px}
+  svg{max-width:100%;height:auto}
+  .legend{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+  .dot.gray{background:#8aa0d6}
+  .dot.good{background:var(--good)}
+  .dot.bad{background:var(--bad)}
+  .grid{display:grid;grid-template-columns: repeat(10, minmax(36px,1fr));gap:8px}
+  .cell{border-radius:10px;padding:8px 0;text-align:center;font-weight:600;border:1px solid #1e2747;background:#0f1730}
+  .cell.even{outline:2px solid rgba(122,162,255,.35)}
+  .cell.pred-even{background:rgba(46,204,113,.12)}
+  .cell.pred-odd{background:rgba(255,107,107,.12)}
+  .acc{font-size:14px;color:var(--muted)}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid #2a355f;background:#0f1730;color:var(--ink);font-size:12px;margin-left:8px}
+  .note{font-size:13px;color:var(--muted)}
+  .footer{padding:12px 16px;color:var(--muted);font-size:12px}
+  .link{color:var(--accent)}
+  .strike{stroke-dasharray:4 4;opacity:.35}
+  .noisy{stroke:var(--warn)!important}
+  .flipped{stroke:#c778ff!important}
+</style>
+</head>
+<body>
+
+<!-- ========================== -->
+<!-- ЯЗЫКОВОЙ СЕЛЕКТОР -->
+<!-- ========================== -->
+<div style="padding:12px 24px;display:flex;gap:12px;align-items:center">
+  <span style="color:var(--muted)">Language:</span>
+  <select id="langSelect">
+    <option value="ru">Русский</option>
+    <option value="en">English</option>
+    <option value="ua">Українська</option>
+  </select>
+</div>
+
+<header>
+  <h1 id="title">Нейросеть с «кривыми синапсами» — как порча связей ломает логику</h1>
+</header>
+
+<div class="wrap">
+
+  <!-- ========================== -->
+  <!-- CONTROLS -->
+  <!-- ========================== -->
+  <section class="card">
+    <div class="body controls">
+      <h2 id="controlsTitle">Управление «поломками»</h2>
+      <label for="layerSel" id="layerLabel">Какой слой портим?</label>
+      <select id="layerSel">
+        <option value="both" data-ru="Оба слоя" data-en="Both layers" data-ua="Обидва шари">Оба слоя</option>
+        <option value="ih" data-ru="Вход → Скрытый" data-en="Input → Hidden" data-ua="Вхід → Схований">Вход → Скрытый</option>
+        <option value="ho" data-ru="Скрытый → Выход" data-en="Hidden → Output" data-ua="Схований → Вихід">Скрытый → Выход</option>
+      </select>
+
+      <label for="modeSel" id="modeLabel">Тип поломки</label>
+      <select id="modeSel">
+        <option value="zero" data-ru="Обнулить связь (обрыв)" data-en="Zero connection (break)" data-ua="Обнулити зв'язок (обрив)">Обнулить связь (обрыв)</option>
+        <option value="noise" data-ru="Добавить шум (дрожащая связь)" data-en="Add noise (wobbly)" data-ua="Додати шум (тремтлива)">Добавить шум (дрожащая связь)</option>
+        <option value="flip" data-ru="Инвертировать знак (перепутанные полярности)" data-en="Flip sign (wrong polarity)" data-ua="Інвертувати знак (помилкова полярність)">Инвертировать знак (перепутанные полярности)</option>
+      </select>
+
+      <label for="pct" id="pctLabel">Доля повреждений: <span id="pctVal">0%</span></label>
+      <input id="pct" type="range" min="0" max="100" step="1" value="0" />
+
+      <div class="row" style="margin-top:10px">
+        <button id="btnCorrupt">Испортить связи</button>
+        <button id="btnReset">Сбросить до нормы</button>
+      </div>
+
+      <p class="note" id="noteText" style="margin-top:10px">
+        Задача: распознать <b>чётные</b> числа от 1 до 20. Истинная чётность отмечена <span class="badge">синей рамкой</span>. Цвет ячейки — предсказание сети.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================== -->
+  <!-- VISUALIZATION -->
+  <!-- ========================== -->
+  <section class="card">
+    <div class="body netbox">
+      <div class="viz">
+        <svg id="netSVG" viewBox="0 0 600 300" aria-label="Схема сети"></svg>
+      </div>
+      <div>
+        <h2 id="gridTitle">Классификация чисел</h2>
+        <div id="grid" class="grid" aria-live="polite"></div>
+      </div>
+      <div>
+        <h2 id="accTitle">Точность</h2>
+        <p class="acc" id="accCleanText">До повреждений: <b id="accClean">—</b></p>
+        <p class="acc" id="accNowText">Текущая точность: <b id="accNow">—</b></p>
+        <div class="legend">
+          <span class="dot good"></span> — предсказано «чётное»
+          <span class="dot bad"></span> — предсказано «нечётное»
+          <span class="dot gray"></span> — связи (толще = сильнее)
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer" id="footerText">
+  💡 Трюк: чтобы сеть могла различать чётность, мы добавили скрытую «подсказку»-признак <code>cos(πx)</code>, который равен +1 для чётных и −1 для нечётных. Без него простая линейная модель бы не справилась.
+</div>
+
+<!-- ========================== -->
+<!-- TRAINING VS INFERENCE -->
+<!-- ========================== -->
+<section class="card" style="margin:16px">
+  <div class="body">
+    <h2 id="trainTitle">Демонстрация: Обучение ↔ Применение</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <label for="modeTrainSel" id="modeTrainLabel">Режим</label>
+        <select id="modeTrainSel">
+          <option value="train" data-ru="Training" data-en="Training" data-ua="Навчання">Training</option>
+          <option value="inference" data-ru="Inference" data-en="Inference" data-ua="Виведення">Inference</option>
+        </select>
+        <label for="epochsInput" id="epochsLabel">Эпохи / Epochs / Епохи</label>
+        <input type="number" id="epochsInput" min="1" max="100" value="20">
+        <label for="lrInput" id="lrLabel">Скорость обучения / Learning Rate / Швидкість навчання</label>
+        <input type="number" id="lrInput" min="0.001" max="1" step="0.001" value="0.1">
+        <label for="noiseInput" id="noiseLabel">Шум в данных / Noise / Шум</label>
+        <input type="number" id="noiseInput" min="0" max="1" step="0.01" value="0">
+        <button id="btnRunTraining">Запустить</button>
+      </div>
+      <div>
+        <canvas id="lossCanvas" width="400" height="200" style="background:#0f1730;border:1px solid #1e2747;border-radius:10px"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ==========================
+// Переключение языков (RU/EN/UA)
+// ==========================
+const texts = {
+  title: {
+    ru: 'Нейросеть с «кривыми синапсами» — как порча связей ломает логику',
+    en: 'Neural Network with Broken Synapses — how broken connections break logic',
+    ua: 'Нейронна мережа з «кривими синапсами» — як пошкодження зв’язків ламає логіку'
+  },
+  controlsTitle:{ru:'Управление «поломками»',en:'Corruption controls',ua:'Керування «пошкодженнями»'},
+  layerLabel:{ru:'Какой слой портим?',en:'Which layer to corrupt?',ua:'Який шар пошкоджуємо?'},
+  modeLabel:{ru:'Тип поломки',en:'Damage type',ua:'Тип пошкодження'},
+  pctLabel:{ru:'Доля повреждений:',en:'Damage percentage:',ua:'Доля пошкоджень:'},
+  noteText:{
+    ru:'Задача: распознать чётные числа от 1 до 20. Истинная чётность отмечена синей рамкой. Цвет ячейки — предсказание сети.',
+    en:'Task: classify even numbers from 1 to 20. True parity is marked with blue frame. Cell color — network prediction.',
+    ua:'Завдання: розпізнати парні числа від 1 до 20. Істинна парність відмічена синьою рамкою. Колір клітинки — передбачення мережі.'
+  },
+  accCleanText:{ru:'До повреждений:',en:'Before corruption:',ua:'До пошкоджень:'},
+  accNowText:{ru:'Текущая точность:',en:'Current accuracy:',ua:'Поточна точність:'},
+  footerText:{
+    ru:'💡 Трюк: чтобы сеть могла различать чётность, мы добавили скрытую «подсказку»-признак cos(πx), который равен +1 для чётных и −1 для нечётных. Без него простая линейная модель бы не справилась.',
+    en:'💡 Trick: to classify parity, we added a hidden feature cos(πx), which is +1 for even and -1 for odd. Without it, a simple linear model would fail.',
+    ua:'💡 Трюк: щоб мережа могла розрізняти парність, ми додали прихований «підказковий» ознака cos(πx), який дорівнює +1 для парних і −1 для непарних. Без нього проста лінійна модель не впоралася б.'
+  },
+  trainTitle:{
+    ru:'Демонстрация: Обучение ↔ Применение',
+    en:'Demo: Training ↔ Inference',
+    ua:'Демонстрація: Навчання ↔ Виведення'
+  }
+};
+
+const langSelect = document.getElementById('langSelect');
+langSelect.addEventListener('change',()=>{
+  const lang = langSelect.value;
+  document.getElementById('title').textContent = texts.title[lang];
+  document.getElementById('controlsTitle').textContent = texts.controlsTitle[lang];
+  document.getElementById('layerLabel').textContent = texts.layerLabel[lang];
+  document.getElementById('modeLabel').textContent = texts.modeLabel[lang];
+  document.getElementById('pctLabel').childNodes[0].nodeValue = texts.pctLabel[lang] + ' ';
+  document.getElementById('noteText').textContent = texts.noteText[lang];
+  document.getElementById('accCleanText').childNodes[0].nodeValue = texts.accCleanText[lang] + ' ';
+  document.getElementById('accNowText').childNodes[0].nodeValue = texts.accNowText[lang] + ' ';
+  document.getElementById('footerText').textContent = texts.footerText[lang];
+  document.getElementById('trainTitle').textContent = texts.trainTitle[lang];
+  // Меняем текст опций select через data-* атрибуты
+  [...document.querySelectorAll('select option')].forEach(opt=>{
+    if(opt.dataset[lang]) opt.textContent = opt.dataset[lang];
+  });
+});
+</script>
+
+<!-- ========================== -->
+<!-- Сюда добавим Training vs Inference интерактив (forward + SGD + canvas loss) -->
+<!-- ========================== -->
+
+</body>
+</html>

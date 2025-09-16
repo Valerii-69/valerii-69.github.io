@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neural Network Training vs Inference — RU/EN/UA</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a33;--ink:#e6ecff;--muted:#a8b3d6;--accent:#7aa2ff;--good:#2ecc71;--bad:#ff6b6b;--warn:#f0ad4e}
+body{margin:0;font:16px/1.45 system-ui,Segoe UI,Roboto,Arial;color:var(--ink);background:var(--bg)}
+header{padding:12px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);position:sticky;top:0}
+h1,h2{margin:0 0 8px 0;color:var(--accent)}
+.wrap{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px}
+.card{background:var(--panel);border:1px solid #1e2747;border-radius:16px}
+.card .body{padding:16px}
+label{display:block;margin:6px 0 2px 0;color:var(--muted);font-size:13px}
+input,select,button{width:100%;padding:8px;border-radius:8px;border:1px solid #2a355f;background:#0f1730;color:var(--ink)}
+button{cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(10,36px);gap:6px;margin-top:10px}
+.cell{padding:6px;text-align:center;border-radius:6px;border:1px solid #1e2747;background:#0f1730;font-weight:600}
+.cell.even{outline:2px solid rgba(122,162,255,.35)}
+.cell.pred-even{background:rgba(46,204,113,.12)}
+.cell.pred-odd{background:rgba(255,107,107,.12)}
+canvas{background:#0f1730;border:1px solid #1e2747;border-radius:10px}
+</style>
+</head>
+<body>
+<div style="padding:12px 24px;display:flex;gap:12px;align-items:center">
+  <span style="color:var(--muted)">Language:</span>
+  <select id="langSelect">
+    <option value="ru">Русский</option>
+    <option value="en">English</option>
+    <option value="ua">Українська</option>
+  </select>
+</div>
+
+<header>
+  <h1 id="title">Нейросеть с «кривыми синапсами» — как порча связей ломает логику</h1>
+</header>
+
+<div class="wrap">
+
+  <section class="card">
+    <div class="body">
+      <h2 id="trainTitle">Демонстрация: Обучение ↔ Применение</h2>
+      <label id="modeTrainLabel" for="modeTrainSel">Режим</label>
+      <select id="modeTrainSel">
+        <option value="train" data-ru="Training" data-en="Training" data-ua="Навчання">Training</option>
+        <option value="inference" data-ru="Inference" data-en="Inference" data-ua="Виведення">Inference</option>
+      </select>
+      <label id="epochsLabel" for="epochsInput">Эпохи / Epochs / Епохи</label>
+      <input type="number" id="epochsInput" min="1" max="100" value="20">
+      <label id="lrLabel" for="lrInput">Скорость обучения / Learning Rate / Швидкість навчання</label>
+      <input type="number" id="lrInput" min="0.001" max="1" step="0.001" value="0.1">
+      <label id="noiseLabel" for="noiseInput">Шум в данных / Noise / Шум</label>
+      <input type="number" id="noiseInput" min="0" max="1" step="0.01" value="0">
+      <button id="btnRunTraining">Запустить</button>
+      <div class="grid" id="grid"></div>
+      <canvas id="lossCanvas" width="400" height="200" style="margin-top:12px"></canvas>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ==========================
+// Данные и утилиты
+// ==========================
+const N = 20;
+let inputs = [];
+let targets = [];
+for(let i=1;i<=N;i++){
+  inputs.push([i, Math.cos(Math.PI*i)]); // [x, hidden feature]
+  targets.push(i%2===0?1:0);
+}
+
+// ==========================
+// Мини-сеть: вход -> скрытый -> выход
+// ==========================
+let inputSize = 2, hiddenSize = 3, outputSize = 1;
+let W1 = Array.from({length:inputSize},()=>Array.from({length:hiddenSize},()=>Math.random()*0.5-0.25));
+let b1 = Array(hiddenSize).fill(0);
+let W2 = Array.from({length:hiddenSize},()=>Array.from({length:outputSize},()=>Math.random()*0.5-0.25));
+let b2 = Array(outputSize).fill(0);
+
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+function sigmoidDeriv(x){return x*(1-x);}
+
+// forward pass
+function forward(x){
+  let h = [];
+  for(let j=0;j<hiddenSize;j++){
+    let sum=b1[j];
+    for(let i=0;i<inputSize;i++) sum+=x[i]*W1[i][j];
+    h.push(sigmoid(sum));
+  }
+  let y = [];
+  for(let k=0;k<outputSize;k++){
+    let sum=b2[k];
+    for(let j=0;j<hiddenSize;j++) sum+=h[j]*W2[j][k];
+    y.push(sigmoid(sum));
+  }
+  return {h,y};
+}
+
+// update UI grid
+function updateGrid(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  for(let i=0;i<N;i++){
+    let {y} = forward(inputs[i]);
+    let pred = y[0]>=0.5?1:0;
+    let div=document.createElement('div');
+    div.className='cell';
+    if(i%2===0) div.classList.add('even');
+    div.classList.add(pred===1?'pred-even':'pred-odd');
+    div.textContent = i+1;
+    grid.appendChild(div);
+  }
+}
+
+// ==========================
+// Training: SGD
+// ==========================
+function train(epochs, lr, noise, callback){
+  const lossCanvas=document.getElementById('lossCanvas');
+  const ctx=lossCanvas.getContext('2d');
+  ctx.clearRect(0,0,lossCanvas.width,lossCanvas.height);
+  let losses=[];
+
+  function epochStep(ep){
+    if(ep>=epochs) return;
+    let totalLoss=0;
+    for(let i=0;i<N;i++){
+      // add noise to input
+      let x = inputs[i].map(v=>v + (Math.random()*2-1)*noise);
+      let t = targets[i];
+      let {h,y} = forward(x);
+      let error = t - y[0];
+      totalLoss+=error**2;
+
+      // backward
+      let delta2 = error*sigmoidDeriv(y[0]);
+      let delta1 = h.map((hj,j)=>delta2*W2[j][0]*sigmoidDeriv(hj));
+
+      // update weights
+      for(let j=0;j<hiddenSize;j++){
+        for(let i1=0;i1<inputSize;i1++){
+          W1[i1][j]+=lr*delta1[j]*x[i1];
+        }
+        b1[j]+=lr*delta1[j];
+      }
+      for(let j=0;j<hiddenSize;j++){
+        for(let k=0;k<outputSize;k++){
+          W2[j][k]+=lr*delta2*h[j];
+        }
+      }
+      for(let k=0;k<outputSize;k++) b2[k]+=lr*delta2;
+    }
+    losses.push(totalLoss/N);
+    // draw loss
+    ctx.clearRect(0,0,lossCanvas.width,lossCanvas.height);
+    ctx.beginPath();
+    ctx.strokeStyle='var(--accent)';
+    ctx.moveTo(0,lossCanvas.height);
+    for(let i=0;i<losses.length;i++){
+      let x=i*(lossCanvas.width/epochs);
+      let y=lossCanvas.height - losses[i]*lossCanvas.height*2;
+      ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    updateGrid();
+    requestAnimationFrame(()=>epochStep(ep+1));
+  }
+  epochStep(0);
+}
+
+// ==========================
+// UI Events
+// ==========================
+document.getElementById('btnRunTraining').addEventListener('click',()=>{
+  const mode=document.getElementById('modeTrainSel').value;
+  const epochs=parseInt(document.getElementById('epochsInput').value);
+  const lr=parseFloat(document.getElementById('lrInput').value);
+  const noise=parseFloat(document.getElementById('noiseInput').value);
+  if(mode==='train'){
+    train(epochs, lr, noise);
+  }else{
+    updateGrid();
+  }
+});
+
+// initial render
+updateGrid();
+
+// ==========================
+// Language switch
+// ==========================
+const langSelect=document.getElementById('langSelect');
+const texts={
+title:{ru:'Нейросеть с «кривыми синапсами» — как порча связей ломает логику',en:'Neural Network with Broken Synapses — how broken connections break logic',ua:'Нейронна мережа з «кривими синапсами» — як пошкодження зв’язків ламає логіку'},
+trainTitle:{ru:'Демонстрация: Обучение ↔ Применение',en:'Demo: Training ↔ Inference',ua:'Демонстрація: Навчання ↔ Виведення'}
+};
+langSelect.addEventListener('change',()=>{
+  let l=langSelect.value;
+  document.getElementById('title').textContent=texts.title[l];
+  document.getElementById('trainTitle').textContent=texts.trainTitle[l];
+  // option texts
+  [...document.querySelectorAll('select option')].forEach(opt=>{if(opt.dataset[l]) opt.textContent=opt.dataset[l];});
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Ломка нейронов — интерактив</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#0b1224;--fg:#e5e7eb;--mut:#93a3b3;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--panel:#0f172a;--card:#101827;--wire:#334155;--accent:#60a5fa}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Roboto}
+  header{padding:16px 20px;border-bottom:1px solid #1f2937;background:#0b1224}
+  h1{margin:0;font-size:20px}
+  a{color: hsl(200, 100%, 50%); /* Blue */ font-weight: bold;}
+  main{display:grid;grid-template-columns:320px 1fr;gap:16px;padding:16px}
+  .panel{background:var(--panel);border:1px solid #1f2937;border-radius:12px;padding:14px}
+  label{display:block;margin:8px 0 6px 0;color:var(--mut)}
+  input[type="range"]{width:100%}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{background:#0ea5b7;border:none;color:white;padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn.secondary{background:#1f2937}
+  .stat{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  #net{background:var(--card);border:1px solid #1f2937;border-radius:12px;height:520px;position:relative;overflow:hidden}
+  .node{position:absolute;width:18px;height:18px;border-radius:50%;background:#0b132a;border:2px solid var(--accent);display:grid;place-items:center;font-size:11px}
+  .wire{position:absolute;height:2px;background:var(--wire);transform-origin:left center;opacity:.7}
+  .node.hidden{border-color:#22d3ee}
+  .node.out{border-color:#22c55e}
+  .tag{position:absolute;background:#0008;color:#d1d5db;font-size:11px;padding:2px 6px;border-radius:6px}
+  .pill{display:inline-block;border:1px solid #1f2937;border-radius:999px;padding:2px 8px;color:#cbd5e1;font-size:12px}
+  .error{font-weight:700}
+</style>
+</head>
+<body>
+    <a href="../stories/trenager.html" class="back-link">&larr; Вернуться к тренажеру</a>
+
+<header>
+  <h1>Ломка нейронов — наблюдаем, как дефекты портят ответы</h1>
+</header>
+<main>
+  <section class="panel">
+    <label>Входы (x₁..x₃)</label>
+    <div class="row">
+      <input id="x1" type="range" min="-1" max="1" step="0.01" value="0.2">
+      <input id="x2" type="range" min="-1" max="1" step="0.01" value="0.6">
+      <input id="x3" type="range" min="-1" max="1" step="0.01" value="-0.3">
+    </div>
+
+    <label>Дефект</label>
+    <select id="fault" style="width:100%;padding:8px;border-radius:8px;background:#0b132a;color:var(--fg);border:1px solid #1f2a44">
+      <option value="none">Нет</option>
+      <option value="zero">Занулить синапс</option>
+      <option value="noise">Шум в синапсе (σ)</option>
+      <option value="bias">Смещение нейрона (bias leak)</option>
+      <option value="saturate">Насыщение активации</option>
+      <option value="spike">Случайный выброс на выходе</option>
+    </select>
+
+    <div id="paramBox"></div>
+
+    <label>Целевой вектор y*</label>
+    <div class="row">
+      <input id="t1" type="range" min="-1" max="1" step="0.01" value="0.1">
+      <input id="t2" type="range" min="-1" max="1" step="0.01" value="-0.2">
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnApply">Применить дефект</button>
+      <button class="btn secondary" id="btnReset">Сброс сети</button>
+    </div>
+
+    <div class="stat">
+      <span>Ошибка L2 (эталон vs дефект):</span>
+      <span class="error mono" id="err">0.000</span>
+      <span>Δ выходов (|ŷ−y|, по компонентам):</span>
+      <span class="mono" id="delta">[0.000, 0.000]</span>
+    </div>
+  </section>
+
+  <section id="net">
+    <div class="tag" style="left:16px;top:12px">Входной слой</div>
+    <div class="tag" style="left:50%;top:12px;transform:translateX(-50%)">Скрытый слой (ReLU)</div>
+    <div class="tag" style="right:16px;top:12px">Выход</div>
+    <!-- Узлы и провода создадим скриптом -->
+  </section>
+</main>
+
+<script>
+// ——— Модель: 3→4→2 ———
+const dims = {in:3, hid:4, out:2};
+const W1 = num2d(dims.hid, dims.in, () => rnd(-0.8,0.8));
+const b1 = num1d(dims.hid, () => rnd(-0.2,0.2));
+const W2 = num2d(dims.out, dims.hid, () => rnd(-0.8,0.8));
+const b2 = num1d(dims.out, () => rnd(-0.2,0.2));
+
+// Эталонные копии
+const W1_ref = deepCopy(W1), b1_ref = deepCopy(b1), W2_ref = deepCopy(W2), b2_ref = deepCopy(b2);
+
+// GUI refs
+const net = document.getElementById('net');
+const inputs = [ 'x1','x2','x3' ].map(id=>document.getElementById(id));
+const targets = [ 't1','t2' ].map(id=>document.getElementById(id));
+const errEl = document.getElementById('err');
+const dEl = document.getElementById('delta');
+const faultSel = document.getElementById('fault');
+const paramBox = document.getElementById('paramBox');
+
+// Сеть визуально
+const layout = {
+  xIn: 60, xHid: 50, xOut: 86, // проценты
+  top: 80, gap: 80
+};
+const nodes = {in:[], hid:[], out:[]};
+const wires = [];
+
+function createNode(layer, i, xPct, yPx, cls=''){
+  const n = document.createElement('div');
+  n.className = 'node ' + cls;
+  n.style.left = xPct + '%';
+  n.style.top = yPx + 'px';
+  n.textContent = '';
+  net.appendChild(n);
+  nodes[layer].push(n);
+  return n;
+}
+function connect(a,b){
+  const w = document.createElement('div');
+  w.className = 'wire';
+  const ax = a.offsetLeft+9, ay = a.offsetTop+9;
+  const bx = b.offsetLeft+9, by = b.offsetTop+9;
+  const dx = bx-ax, dy = by-ay, len = Math.hypot(dx,dy);
+  const ang = Math.atan2(dy,dx)*180/Math.PI;
+  w.style.left = ax+'px'; w.style.top = ay+'px'; w.style.width = len+'px';
+  w.style.transform = `rotate(${ang}deg)`;
+  net.appendChild(w);
+  wires.push(w);
+}
+function place(){
+  // очистка
+  net.querySelectorAll('.node,.wire').forEach(e=>e.remove());
+  nodes.in=[]; nodes.hid=[]; nodes.out=[]; wires.length=0;
+  const h = net.clientHeight;
+  const yBase = layout.top;
+
+  for(let i=0;i<dims.in;i++) createNode('in',i,layout.xIn, yBase+i*layout.gap,'');
+  for(let i=0;i<dims.hid;i++) createNode('hid',i,layout.xHid, yBase-40+i*layout.gap,'hidden');
+  for(let i=0;i<dims.out;i++) createNode('out',i,layout.xOut, yBase+20+i*layout.gap,'out');
+
+  // Соединения
+  for(let i=0;i<dims.in;i++) for(let j=0;j<dims.hid;j++) connect(nodes.in[i], nodes.hid[j]);
+  for(let j=0;j<dims.hid;j++) for(let k=0;k<dims.out;k++) connect(nodes.hid[j], nodes.out[k]);
+}
+window.addEventListener('resize', place);
+place();
+
+// Параметры дефектов
+let faultParam = 0.4; // по умолчанию для шума/насыщения/спайка
+function renderParam(){
+  paramBox.innerHTML = '';
+  const f = faultSel.value;
+  if (f==='none' || f==='zero') return;
+  const label = document.createElement('label');
+  label.textContent = f==='noise' ? 'σ шума' : (f==='bias' ? 'Δ смещения' : (f==='saturate' ? 'Порог насыщения' : 'Вероятность спайка'));
+  const r = document.createElement('input');
+  r.type='range'; r.min = (f==='bias')? -1 : 0; r.max=1; r.step=0.01; r.value=faultParam;
+  r.oninput = e => faultParam = parseFloat(e.target.value);
+  paramBox.append(label,r);
+}
+faultSel.addEventListener('change', renderParam);
+renderParam();
+
+// Линейная алгебра
+function relu(v){return v.map(x=>Math.max(0,x))}
+function matvec(W,v){ // W [m x n], v [n] -> [m]
+  return W.map(row => row.reduce((s,wij,idx)=>s+wij*v[idx],0));
+}
+function add(a,b){return a.map((x,i)=>x+b[i])}
+function sub(a,b){return a.map((x,i)=>x-b[i])}
+function l2(a){return Math.sqrt(a.reduce((s,x)=>s+x*x,0))}
+function clip(v,thr){return v.map(x=>Math.sign(x)*Math.min(Math.abs(x),thr))}
+
+// Прямой проход
+function forward(x, W1b=W1, b1b=b1, W2b=W2, b2b=b2, saturateThr=null, spikeProb=0){
+  let h = add(matvec(W1b,x), b1b);
+  h = relu(h);
+  if (saturateThr!=null) h = clip(h, Math.max(0.0001, saturateThr));
+  let y = add(matvec(W2b,h), b2b);
+  if (Math.random()<spikeProb){
+    const k = Math.floor(Math.random()*y.length);
+    y[k] += rnd(-1,1)*(0.5+Math.abs(faultParam));
+  }
+  return {h,y};
+}
+
+// Применение дефекта к копии весов
+function applyFault(){
+  resetToRef(); // сначала чисто
+  const f = faultSel.value;
+  if (f==='none') return;
+
+  if (f==='zero'){
+    // зануляем случайный синапс
+    const L = Math.random()<0.5 ? 'W1' : 'W2';
+    if (L==='W1'){
+      const i = randi(0,dims.hid-1), j = randi(0,dims.in-1);
+      W1[i][j] = 0;
+      glowWire('in',j,'hid',i);
+    } else {
+      const i = randi(0,dims.out-1), j = randi(0,dims.hid-1);
+      W2[i][j] = 0;
+      glowWire('hid',j,'out',i);
+    }
+  }
+  if (f==='noise'){
+    // добавим гауссов шум к случайному набору синапсов
+    for (let i=0;i<dims.hid;i++) for (let j=0;j<dims.in;j++) if (Math.random()<0.15) W1[i][j]+=gauss(0,faultParam);
+    for (let i=0;i<dims.out;i++) for (let j=0;j<dims.hid;j++) if (Math.random()<0.15) W2[i][j]+=gauss(0,faultParam);
+  }
+  if (f==='bias'){
+    // утечка смещения в одном скрытом нейроне
+    const k = randi(0,dims.hid-1);
+    b1[k] += faultParam;
+    glowNode('hid',k);
+  }
+  if (f==='saturate'){
+    // будем обрезать ReLU сверху
+    state.saturate = Math.max(0.05, faultParam);
+  }
+  if (f==='spike'){
+    state.spike = Math.max(0, Math.min(1, faultParam));
+  }
+}
+
+const state = {saturate:null, spike:0};
+
+function update(){
+  // входы и цель
+  const x = inputs.map(r=>parseFloat(r.value));
+  const t = targets.map(r=>parseFloat(r.value));
+
+  // эталон
+  const y_ref = forward(x, W1_ref,b1_ref,W2_ref,b2_ref).y;
+
+  // дефектная
+  const y_def = forward(x, W1,b1,W2,b2, state.saturate, state.spike).y;
+
+  const d = sub(y_def, y_ref);
+  dEl.textContent = `[${d.map(v=>v.toFixed(3)).join(', ')}]`;
+  errEl.textContent = l2(d).toFixed(3);
+
+  // оттенок выходных узлов по отклонению
+  nodes.out.forEach((n,i)=>{
+    const a = Math.min(1, Math.abs(d[i])*1.2);
+    n.style.boxShadow = `0 0 ${8+10*a}px ${a*0.8}px rgba(239,68,68,${0.6*a})`;
+  });
+}
+
+function resetToRef(){
+  copy2d(W1_ref,W1); copy1d(b1_ref,b1); copy2d(W2_ref,W2); copy1d(b2_ref,b2);
+  state.saturate = null; state.spike = 0;
+  // снять подсветки
+  net.querySelectorAll('.wire').forEach(w=>w.style.background='var(--wire)');
+  net.querySelectorAll('.node').forEach(n=>n.style.outline='none');
+}
+
+document.getElementById('btnApply').onclick = ()=>{applyFault(); update();};
+document.getElementById('btnReset').onclick = ()=>{resetToRef(); update();};
+[...inputs,...targets].forEach(el=>el.addEventListener('input', update));
+
+function glowWire(layerA,idxA,layerB,idxB){
+  // найдём j-й провод между указанными узлами — приблизительно по геометрии
+  // упрощение: подсветим все провода, исходящие из узла A к слою B
+  wires.forEach(w=>w.style.background='var(--wire)');
+  const a = nodes[layerA][idxA], b = nodes[layerB][idxB];
+  const ax=a.offsetLeft+9, ay=a.offsetTop+9, bx=b.offsetLeft+9, by=b.offsetTop+9;
+  // подсветим наиболее близкий к этому отрезку
+  let best=null, bestD=1e9;
+  net.querySelectorAll('.wire').forEach(w=>{
+    const rect = w.getBoundingClientRect(), nr = net.getBoundingClientRect();
+    const wx = w.offsetLeft, wy = w.offsetTop;
+    const wl = parseFloat(w.style.width||'0');
+    const dx = (wx+wl) - wx, dy = 0; // приближенно
+    const d = Math.hypot((wx-ax),(wy-ay)) + Math.hypot((wx+wl-bx),(wy-by));
+    if (d<bestD){best=w; bestD=d;}
+  });
+  if (best) best.style.background = '#22d3ee';
+}
+function glowNode(layer, idx){
+  net.querySelectorAll('.node').forEach(n=>n.style.outline='none');
+  const n = nodes[layer][idx];
+  n.style.outline = '2px solid #f59e0b';
+}
+
+// утилиты
+function rnd(a,b){return a+Math.random()*(b-a)}
+function randi(a,b){return Math.floor(rnd(a,b+1))}
+function gauss(mu=0,sigma=1){
+  let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random();
+  return mu + sigma*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function num2d(m,n,fn){return Array.from({length:m},()=>Array.from({length:n},fn))}
+function num1d(n,fn){return Array.from({length:n},fn)}
+function deepCopy(A){return JSON.parse(JSON.stringify(A))}
+function copy2d(src,dst){for(let i=0;i<src.length;i++) for(let j=0;j<src[0].length;j++) dst[i][j]=src[i][j]}
+function copy1d(src,dst){for(let i=0;i<src.length;i++) dst[i]=src[i]}
+
+// старт
+update();
+</script>
+    <a href="../stories/trenager.html" class="back-link">&larr; Вернуться к тренажеру</a>
+</body>
+</html>

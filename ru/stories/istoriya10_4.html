@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Невесомость в ванне</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      background-color: #e0f7ff;
+      display: block;
+      margin: 20px auto;
+    }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Невесомость в ванне: Модель сил (click window for refresh)</h2>
+  <canvas id="bathCanvas" width="500" height="440"></canvas>
+
+  <script>
+    const canvas = document.getElementById('bathCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Константы
+    const g = 9.8; // ускорение свободного падения
+    const waterLevel = 300;
+    const bodyWidth = 80;
+    const bodyHeight = 40;
+
+    // Параметры тела
+    let body = {
+      x: 210,
+      y: 100,
+      vy: 0,
+      density: 600, // плотность тела < плотности воды (всплывает)
+      volume: 0.032, // м³
+      mass: 0.032 * 600, // масса = плотность * объём
+      color: 'orange'
+    };
+
+    // Плотность воды
+    const waterDensity = 1000;
+
+    function drawBath() {
+      // Вода
+      ctx.fillStyle = '#b3e5fc';
+      ctx.fillRect(0, waterLevel, canvas.width, canvas.height - waterLevel);
+    }
+
+    function drawBody() {
+      ctx.fillStyle = body.color;
+      ctx.fillRect(body.x, body.y, bodyWidth, bodyHeight);
+
+      // Силы
+      const centerX = body.x + bodyWidth / 2;
+      const centerY = body.y + bodyHeight / 2;
+
+      // Веса (вниз)
+      drawArrow(centerX, centerY, centerX, centerY + 50, 'red', 'mg');
+
+      // Выталкивающая (вверх)
+      drawArrow(centerX, centerY, centerX, centerY - 50, 'blue', 'Fа');
+
+      // Реакция дна, если тело касается
+      if (body.y + bodyHeight >= waterLevel + 80) {
+        drawArrow(centerX, centerY, centerX, centerY - 30, 'green', 'N');
+      }
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, label) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2;
+
+      // Линия
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      // Стрелка
+      let angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 5 * Math.cos(angle - Math.PI / 6), y2 - 5 * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - 5 * Math.cos(angle + Math.PI / 6), y2 - 5 * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      // Надпись
+      ctx.fillText(label, x2 + 5, y2 + 5);
+    }
+
+    function updatePhysics() {
+      const gravity = body.mass * g;
+      const buoyancy = waterDensity * g * body.volume;
+
+      let netForce = buoyancy - gravity;
+
+      // Реакция дна, если опустился слишком низко
+      const bottom = waterLevel + 80;
+      if (body.y + bodyHeight >= bottom && netForce > 0) {
+        netForce = 0;
+        body.vy = 0;
+        body.y = bottom - bodyHeight;
+      }
+
+      // ускорение и скорость
+      const acceleration = netForce / body.mass;
+      body.vy += acceleration * 0.1; // шаг времени
+      body.y += body.vy;
+
+      // ограничение, чтобы тело не выходило за верх воды
+      if (body.y < 0) {
+        body.y = 0;
+        body.vy = 0;
+      }
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBath();
+      updatePhysics();
+      drawBody();
+      requestAnimationFrame(loop);
+    }
+
+//    loop();
+canvas.addEventListener('click', function() {
+body = {
+      x: 210,
+      y: 100,
+      vy: 0,
+      density: 600, // плотность тела < плотности воды (всплывает)
+      volume: 0.032, // м³
+      mass: 0.032 * 600, // масса = плотность * объём
+      color: 'orange'
+    };
+	loop();
+}, false);
+  </script>
+</body>
+</html>

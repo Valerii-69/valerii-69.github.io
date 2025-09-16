@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Вселенная качающихся частиц</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: black;
+    }
+    #slider-container {
+      margin: 10px auto;
+      width: 300px;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Вселенная качающихся частиц</h2>
+  <div id="slider-container">
+    <label for="frequencySlider">Скорость колебаний: <span id="freqLabel">1.0</span></label>
+    <input type="range" id="frequencySlider" min="0.1" max="5" step="0.1" value="1">
+  </div>
+  <canvas id="universe" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('universe');
+    const ctx = canvas.getContext('2d');
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const particles = [];
+    const numParticles = 100;
+
+    // Коэффициент частоты — зависит от ползунка
+    let frequencyMultiplier = 1;
+
+    for (let i = 0; i < numParticles; i++) {
+      particles.push({
+        x0: Math.random() * width,
+        y0: Math.random() * height,
+        r: 2 + Math.random() * 3,
+        phase: Math.random() * Math.PI * 2,
+        color: `hsl(${Math.random() * 360}, 100%, 70%)`
+      });
+    }
+
+    function animate(t) {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let p of particles) {
+        const angle = p.phase + t * 0.002 * frequencyMultiplier;
+        const x = p.x0; // + Math.sin(angle) * 20;
+        const y = p.y0 + Math.cos(angle) * 20;
+
+        ctx.beginPath();
+        ctx.arc(x, y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Обработка ползунка
+    const slider = document.getElementById('frequencySlider');
+    const label = document.getElementById('freqLabel');
+
+    slider.addEventListener('input', () => {
+      frequencyMultiplier = parseFloat(slider.value);
+      label.textContent = frequencyMultiplier.toFixed(1);
+    });
+
+    animate(0);
+  </script>
+</body>
+</html>
