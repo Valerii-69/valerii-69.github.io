@@ -52,8 +52,8 @@ footer {
 const canvas = document.getElementById('treeCanvas');
 const ctx = canvas.getContext('2d');
 let branches = [];
-
-canvas.addEventListener('mouseenter', () => {
+let allGrown = true;
+	canvas.addEventListener('mouseenter', () => {
     canvas.style.cursor = 'pointer'; // Изменить курсор на "указатель"
   });
 
@@ -130,7 +130,6 @@ function drawBranch(branch) {
 // Анимация роста
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let allGrown = true;
     branches.forEach(branch => {
         if (branch.length < branch.maxLength) {
             branch.length += branch.growthSpeed;
@@ -165,14 +164,95 @@ canvas.addEventListener('mousemove', (e) => {
 
 // Создание дерева и запуск анимации
 createBranch(canvas.width/2, canvas.height - 450, 100, -90, 7);
+
+
+class FallingCharacter {
+    constructor(char, x) {
+        this.char = char; // The character or string to be displayed
+        this.x = x;       // The horizontal position
+        this.y = -50;     // Start off-screen at the top
+        this.speed = 0.5 * 2 + 1; // Random falling speed  Math.random()
+        this.fontSize = 0.5 * 30 + 20; // Random font size Math.random()
+        this.alpha = 1;   // Initial opacity
+    }
+
+    draw() {
+        ctx.save(); // Save the current canvas state
+        ctx.globalAlpha = this.alpha; // Set the opacity
+        ctx.fillStyle = 'green';
+        ctx.font = `${this.fontSize}px Arial`;
+        ctx.fillText(this.char, this.x, this.y);
+        ctx.restore(); // Restore the previous state (important for globalAlpha)
+    }
+
+    update() {
+        this.y += this.speed; // Move the character down
+        this.alpha -= 0.005;  // Slowly fade the character out
+
+        // If the character is off-screen or fully faded, reset it to the top
+        if (this.y > canvas.height + 50 || this.alpha <= 0) {
+            this.reset();
+        }
+    }
+
+    reset() {
+        this.y = -this.fontSize; // Reset to the top
+        if(this.x < canvas.width){this.x = this.x + 10;}else{this.x = 0;};
+        this.speed = 0.5 * 2 + 1;
+        this.fontSize = 0.5 * 30 + 20;
+        this.alpha = 1;
+    }
+
+
+
+/*    reset() {
+        this.y = -this.fontSize; // Reset to the top
+        this.x = Math.random() * canvas.width;
+        this.speed = Math.random() * 2 + 1;
+        this.fontSize = Math.random() * 30 + 20;
+        this.alpha = 1;
+    }*/
+}
+
+const textToFall = "CLICK ME";
+const characters = [];
+
+// Split the text and create a FallingCharacter for each one
+for (let i = 0; i < textToFall.length; i++) {
+    const char = textToFall[i];
+    const x = 100+i*24;//(canvas.width / textToFall.length) * i;
+    characters.push(new FallingCharacter(char, x));
+}
+
+// Main animation loop
+function animate1() {
+    // Clear the canvas, adding a semi-transparent black background
+    // to create a "ghost" or "trail" effect
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw and update each character
+    for (const char of characters) {
+        char.update();
+        char.draw();
+    }
+
+    // Request the next animation frame for a smooth loop
+        if (!allGrown) requestAnimationFrame(animate1);
+}
+
+// Start the animation
 animate();
+animate1();
+
+
+
 
 function startSITE(){
  window.location.href = "epigraph_universal.html"; 
 }
 
 </script>
-
 </body>
 </html>
 
