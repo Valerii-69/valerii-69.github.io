@@ -1,0 +1,2 @@
+Накладання синусоїдальних хвиль. При кліку додається нова гармоніка. 
+<canvas id="waves" width="400" height="200"></canvas> <script> const canvas=document.getElementById('waves'); const ctx=canvas.getContext('2d'); let harmonics=[1]; function draw(){ ctx.clearRect(0,0,400,200); ctx.beginPath(); for(let x=0;x<400;x++){ let y=100; for(let h of harmonics){ y+=20*Math.sin((x/400)*h*2*Math.PI); } ctx.lineTo(x,y); } ctx.stroke(); } canvas.addEventListener('click',()=>{ harmonics.push(harmonics.length+1); draw(); }); draw(); </script> 

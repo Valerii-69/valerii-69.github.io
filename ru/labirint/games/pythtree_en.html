@@ -1,0 +1,2 @@
+Fractal tree grows square by square. 
+<canvas id="tree" width="300" height="200"></canvas> <script> const c=document.getElementById("tree"),ctx=c.getContext("2d"); function draw(x,y,size,angle,depth){ if(depth===0) return; ctx.save(); ctx.translate(x,y); ctx.rotate(angle); ctx.fillRect(0,0,size,-size); let nx=0,ny=-size; draw(nx,ny,size*0.7,-Math.PI/4,depth-1); draw(nx+size*0.7,ny,size*0.7,Math.PI/4,depth-1); ctx.restore(); } draw(150,200,40,0,8); </script> 

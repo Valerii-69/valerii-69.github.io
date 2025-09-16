@@ -1,0 +1,2 @@
+Шарик подпрыгивает, подчиняясь гравитации и упругим столкновениям. 
+<canvas id="ball" width="300" height="200"></canvas> <script> const canvas=document.getElementById("ball"); const ctx=canvas.getContext("2d"); let x=150,y=50,vx=2,vy=0,g=0.3,r=10; function step(){ ctx.clearRect(0,0,300,200); vy+=g; x+=vx; y+=vy; if(y+r>200){ y=200-r; vy*=-0.8; } if(x-r<0||x+r>300){ vx*=-1; } ctx.beginPath(); ctx.arc(x,y,r,0,2*Math.PI); ctx.fill(); requestAnimationFrame(step); } step(); </script> 
