@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Лабиринт-сюрприз</title>
+  <style>
+    body { font-family: sans-serif; }
+    #maze { display: grid; grid-template-columns: repeat(5, 150px); gap: 10px; }
+    .cell {
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 5px;
+      text-align: center;
+      background: #fafafa;
+      min-height: 100px;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cell.hidden {
+      background: #ddd;
+      cursor: default;
+    }
+    .cell canvas {
+      border: 1px solid #aaa;
+      margin-top: 5px;
+      background: white;
+    }
+    #viewer {
+      margin-top: 20px;
+      width: 480px;
+      height: 600px;
+      border: 2px solid black;
+	  border-radius: 6px;
+    }
+#langButtons button { margin: 5px; 
+padding:6px 12px; 
+border-radius: 6px; 
+border: none; 
+cursor:pointer; 
+background-color:#4caf50; 
+color:white; }
+canvas {
+  border-radius: 5px; /* Adjust the value for desired roundness */
+  border: 1px solid #ccc; /* Optional: add a border to see the effect more clearly */
+}
+  </style>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+  <h1>Лабиринт</h1>
+<div id="langButtons">
+  <button onclick="switchLang('ru')">Русский</button>
+  <button onclick="switchLang('en')">English</button>
+  <button onclick="switchLang('ua')">Українська</button>
+</div>
+  <button id="nextBatch">Следующий лабиринт</button>
+  <table>
+  <tr><td><div id="maze"></div></td><td><iframe id="viewer"  style="background-color: #cffee4;"></iframe></td></tr>
+	</table>
+  <script>
+    let currentLang = "ru";
+    let modules = [];
+    const maze = document.getElementById("maze");
+    const viewer = document.getElementById("viewer");
+
+    const rows = 5, cols = 5;
+
+    viewer.onload = function() {
+        var iframeDoc = viewer.contentWindow.document;
+        var body = iframeDoc.querySelector('body');
+        body.style.fontSize = '18px';
+    };
+
+    function sample(arr, n) {
+      const shuffled = arr.slice().sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, n);
+    }
+
+    // ======== Мини-анимации ========
+    function startSnakePreview(canvas) {
+      const ctx = canvas.getContext("2d");
+      let x = 10, y = 10, dx = 2, dy = 2;
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "green";
+        ctx.fillRect(x, y, 10, 10);
+        x += dx; y += dy;
+        if (x<0 || x>canvas.width-10) dx*=-1;
+        if (y<0 || y>canvas.height-10) dy*=-1;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function startClubPreview(canvas) {
+      const ctx = canvas.getContext("2d");
+      let angle = 0;
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.rotate(angle);
+        ctx.fillStyle = "blue";
+        ctx.beginPath();
+        ctx.arc(0, -10, 6, 0, Math.PI*2);
+        ctx.arc(-10, 10, 6, 0, Math.PI*2);
+        ctx.arc(10, 10, 6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+        angle += 0.05;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function startCrimePreview(canvas) {
+      const ctx = canvas.getContext("2d");
+      let r = 5, growing = true;
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, canvas.height/2, r, 0, Math.PI*2);
+        ctx.stroke();
+        if (growing) r+=0.5; else r-=0.5;
+        if (r>20) growing=false;
+        if (r<5) growing=true;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // ======== Создание карты ========
+    function createMap() {
+      maze.innerHTML = "";
+
+      const candidates = modules.filter(m =>
+        ["snake","club","crime","game"].includes(m.model)
+      );
+
+      const chosen = sample(candidates, Math.floor(Math.random()*5)+3);
+      const positions = sample([...Array(rows*cols).keys()], chosen.length);
+
+      for (let i=0; i<rows*cols; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell hidden";
+
+        const modIndex = positions.indexOf(i);
+        if (modIndex !== -1) {
+          const mod = chosen[modIndex];
+          cell.classList.remove("hidden");
+
+          const title = (typeof mod.title === "object") ? mod.title[currentLang] : mod.title;
+          const label = document.createElement("div");
+          label.textContent = title;
+          cell.appendChild(label);
+
+          // мини-превью
+          if (["snake","club","crime","game"].includes(mod.model)) {
+            const canvas = document.createElement("canvas");
+            canvas.width = 40; canvas.height = 40;
+            cell.appendChild(canvas);
+
+            if (mod.model==="snake") startSnakePreview(canvas);
+            if (mod.model==="club") startClubPreview(canvas);
+            if (mod.model==="crime") startCrimePreview(canvas);
+          }
+
+          cell.addEventListener("click", () => {
+            viewer.src = mod.content[currentLang];
+          });
+        }
+        maze.appendChild(cell);
+      }
+    }
+
+// ====== Переключение языка ======
+function switchLang(lang){
+  currentLang = lang;
+  createMap();
+}
+
+
+    // ======== Загрузка матрицы ========
+    function loadRandomMatrix(callback) {
+      const oldScript = document.getElementById("matrixScript");
+      if (oldScript) oldScript.remove();
+
+      const randomMatrix = Math.floor((Math.random()*4)+0.6);
+      const script = document.createElement("script");
+      script.src = `js/matrix${randomMatrix}.js`;
+      script.id = "matrixScript";
+      script.onload = () => {
+        modules = window[`modules${randomMatrix}`];
+        callback();
+      };
+      document.head.appendChild(script);
+    }
+
+    document.getElementById("nextBatch").addEventListener("click", () => {
+      loadRandomMatrix(() => {
+        createMap();
+      });
+    });
+
+    loadRandomMatrix(() => {
+      createMap();
+    });
+  </script>
+</body>
+</html>
