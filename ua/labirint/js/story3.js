@@ -1,18 +1,17 @@
 const story3 = document.getElementById('story3');
 story3.innerHTML = `
-<h3>История 3: Частицы случайности</h3>
-<p>Наблюдайте за хаотичным движением частиц. Добавляйте новые частицы и изменяйте силу магнитного поля, чтобы увидеть, как формируются кластеры и вихри.</p>
+<h3>Історія 3: Частинки випадковості</h3>
+<p>Спостерігайте за хаотичним рухом частинок. Додайте нові частинки та змінюйте силу магнітного поля, щоб побачити, як формуються кластери та вихори.</p>
 <canvas id="particleCanvas" width="800" height="400"></canvas>
-<div class="controls">
-  <label>Количество частиц: <span id="numVal">50</span></label>
-  <input type="range" id="numParticles" min="10" max="200" value="50">
-  <label>Сила поля: <span id="forceVal">1</span></label>
-  <input type="range" id="forceField" min="-5" max="5" step="0.1" value="1">
-  <button id="addParticle">Добавить частицу</button>
-  <button id="resetParticles">Сбросить</button>
+<div class="controls"> 
+<label>Кількість частинок: <span id="numVal">50</span></label> 
+<input type="range" id="numParticles" min="10" max="200" value="50"> 
+<label>Сила поля: <span id="forceVal">1</span></label> 
+<input type="range" id="forceField" min="-5" max="5" step="0.1" value="1"> 
+<button id="addParticle">Додати частку</button> 
+<button id="resetParticles">Скинути</button>
 </div>
-<p class="wish">Даже в хаосе есть закономерности. Смотрите на случайные движения как на маленькую модель реального мира: экспериментируйте, меняйте условия, и математика покажет вам скрытые структуры.</p>
-`;
+<p class="wish">Навіть у хаосі є закономірності. Дивіться на випадкові рухи як на маленьку модель реального світу: експериментуйте, змінюйте умови і математика покаже вам приховані структури.</p>`;
 
 const particleCanvas = document.getElementById("particleCanvas");
 const ctxParticle = particleCanvas.getContext("2d");
