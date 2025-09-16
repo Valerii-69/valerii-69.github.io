@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Лабиринт-сюрприз</title>
+  <title>Surprise Maze</title>
   <style>
     body { font-family: sans-serif; }
     #maze { display: grid; grid-template-columns: repeat(5, 150px); gap: 10px; }
@@ -50,19 +50,19 @@ canvas {
   </style>
 </head>
 <body>
-  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
-  <h1>Лабиринт</h1>
+  <a href="../oglavlenie.html" class="back-link">&larr; Return to Contents</a>
+  <h1>Maze</h1>
 <div id="langButtons">
-  <button onclick="switchLang('ru')">Русский</button>
+<!--  <button onclick="switchLang('ru')">Русский</button>-->
   <button onclick="switchLang('en')">English</button>
-  <button onclick="switchLang('ua')">Українська</button>
+<!--  <button onclick="switchLang('ua')">Українська</button>-->
 </div>
-  <button id="nextBatch">Следующий лабиринт</button>
+  <button id="nextBatch">Next labyrinth</button>
   <table>
   <tr><td><div id="maze"></div></td><td><iframe id="viewer"  style="background-color: #cffee4;"></iframe></td></tr>
 	</table>
   <script>
-    let currentLang = "ru";
+    let currentLang = "en";
     let modules = [];
     const maze = document.getElementById("maze");
     const viewer = document.getElementById("viewer");
