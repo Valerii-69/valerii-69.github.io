@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Заспокійлива сила ландшафту</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+
+<h2>🧮 Модель емоційного впливу ландшафту</h2>
+
+<label>Насиченість кольорів (0–1): <input type="number" id="color" step="0.1" min="0" max="1" value="0.6"></label>
+<label>Контраст рельєфу (0–1): <input type="number" id="relief" step="0.1" min="0" max="1" value="0.4"></label>
+<label>Висота спостереження (метри): <input type="number" id="height" step="10" min="0" max="500" value="100"></label>
+
+<button onclick="calculate()">Розрахувати</button>
+
+<div class="result" id="output"></div>
+
+<script>
+function calculate() {
+  const C = parseFloat(document.getElementById("color").value);
+  const R = parseFloat(document.getElementById("relief").value);
+  const H = parseFloat(document.getElementById("height").value);
+
+  const H_norm = Math.exp(-Math.pow((H - 120) / 80, 2));
+  const E = (0.6 * C + 0.4 * R) * H_norm;
+
+  document.getElementById("output").textContent =
+    "📊 Емоційний вплив: " + E.toFixed(3) +
+    (E > 0.5 ? " — заспокоює" : " — збуджує або нейтрально");
+}
+</script>
+
+</body>
+</html>

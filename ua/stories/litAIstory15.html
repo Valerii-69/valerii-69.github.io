@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Фантастичні оповідання | Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a><br>
+
+<div class="section">
+<h2>Оповідання 1: Дирижабль, який летів проти вітру</h2>
+<p>Небо над старим містом було надзвичайно тихим. Серед хмар повільно пливла гігантська срібляста фігура — дирижабль у формі вертикального циліндра з боковими крилами, що оберталися, як лопаті вітряка. Але незвично було те, що дирижабль рухався проти вітру.</p>
+<p>Капітан Еліас усміхався: «Магнус не підведе». Його секрет полягав у особливій конструкції: циліндр обертався повільно, створюючи бічну підйомну силу, а крила направляли потік так, що повітря дозволяло кораблю рухатися в протилежному напрямку.</p>
+
+<div class="canvas-container">
+<canvas id="dirigibleCanvas" width="600" height="250"></canvas>
+<label>Швидкість обертання крил:
+<input type="range" id="dirSpeed" min="0" max="0.1" step="0.001" value="0.02">
+<span class="value" id="dirSpeedVal">0.020</span>
+</label>
+<a href="../stories/dirigabl.html" class="back-link">Модель Дирижабль&rarr;</a><br>
+</div>
+
+<p><b>Бажання читачеві:</b> Спробуй уявити ідеї як Еліас: що б ти зробив, якби закони фізики стали твоїм інструментом для гри? Мрій і моделюй свої фантастичні можливості на папері та в уяві.</p>
+</div>
+
+<div class="section">
+<h2>Оповідання 2: Перевернута човен</h2>
+<p>В океані майбутнього під водою ковзав підводний човен незвичайного типу. Його зовнішній корпус був з пористого бетону, внутрішній — з титану, армованого вуглецевим волокном, а між ними — густе смола, що могла рухатися, роблячи поверхню гладкою або пористою.</p>
+<p>Командир Аріель включила систему «Гладкий-Стелс». Коли поверхня була гладкою, човен стрімко прискорювався, ковзаючи водою майже без опору. Коли смола втягувалася, поверхня ставала пористою — човен втратив швидкість, але його майже неможливо було виявити радаром.</p>
+
+<div class="canvas-container">
+<canvas id="submarineCanvas" width="600" height="200"></canvas>
+<label>Гладкість корпусу (α):
+<input type="range" id="subAlpha" min="0" max="1" step="0.01" value="1">
+<span class="value" id="subAlphaVal">1.00</span>
+</label>
+<a href="../stories/podlodka.html" class="back-link">Модель Підводний Човен&rarr;</a><br>
+</div>
+
+<p><b>Бажання читачеві:</b> Пам’ятай, що математика прихована навіть у найфантастичніших ідеях. Спостерігай за світом, шукай закономірності та створюй свої моделі: кожна реальна ідея може стати основою для дивовижної фантастики.</p>
+
+<br><a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<script>
+// Дирижабль
+const dirCanvas = document.getElementById('dirigibleCanvas');
+const ctxD = dirCanvas.getContext('2d');
+let angle = 0;
+let dirSpeed = parseFloat(document.getElementById('dirSpeed').value);
+document.getElementById('dirSpeed').addEventListener('input', function(){
+    dirSpeed = parseFloat(this.value);
+    document.getElementById('dirSpeedVal').textContent = dirSpeed.toFixed(3);
+});
+function drawDirigible() {
+    ctxD.clearRect(0,0,dirCanvas.width,dirCanvas.height);
+    const x = dirCanvas.width/2;
+    const y = dirCanvas.height/2;
+    const w = 200, h = 80;
+    ctxD.fillStyle = '#C0C0C0';
+    ctxD.beginPath();
+    ctxD.ellipse(x, y, w/2, h/2, 0, 0, Math.PI*2);
+    ctxD.fill();
+    ctxD.strokeStyle='#000'; ctxD.stroke();
+    ctxD.save();
+    ctxD.translate(x,y);
+    ctxD.rotate(angle);
+    ctxD.fillStyle='#1E90FF';
+    ctxD.fillRect(-w/2-10, -5, 40, 10);
+    ctxD.fillRect(w/2-30, -5, 40, 10);
+    ctxD.restore();
+    angle += dirSpeed;
+    requestAnimationFrame(drawDirigible);
+}
+drawDirigible();
+
+// Підводний човен
+const subCanvas = document.getElementById('submarineCanvas');
+const ctxS = subCanvas.getContext('2d');
+let alpha = parseFloat(document.getElementById('subAlpha').value);
+document.getElementById('subAlpha').addEventListener('input', function(){
+    alpha = parseFloat(this.value);
+    document.getElementById('subAlphaVal').textContent = alpha.toFixed(2);
+});
+function drawSubmarine() {
+    ctxS.clearRect(0,0,subCanvas.width,subCanvas.height);
+    const x = 50, y = 50, w = 500, h = 100;
+    const r = Math.round(85*(1-alpha) + 30*alpha);
+    const g = Math.round(85*(1-alpha) + 144*alpha);
+    const b = Math.round(85*(1-alpha) + 255*alpha);
+    ctxS.fillStyle = `rgb(${r},${g},${b})`;
+    ctxS.beginPath();
+    ctxS.ellipse(x+w/2, y+h/2, w/2, h/2, 0, 0, Math.PI*2);
+    ctxS.fill();
+    ctxS.strokeStyle="#000"; ctxS.lineWidth=2; ctxS.stroke();
+    requestAnimationFrame(drawSubmarine);
+}
+drawSubmarine();
+</script>
+
+</body>
+</html>

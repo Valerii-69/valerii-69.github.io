@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Особисте дослідження математики та ШІ через історії, експерименти та моделювання.">
+  <meta name="keywords" content="математика, ШІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>HTML+JS Демонстрація — Філософія та випадок</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+<header>
+  <h2>Цікава математика з ШІ</h2>
+</header>
+
+<h1>HTML+JS Демонстрація</h1>
+
+<p>Нижче наведено інтерактивний блок, де при кліку генерується випадкове число.  
+Це проста демонстрація динамічної взаємодії з користувачем за допомогою JavaScript.</p>
+
+<div id="demoBox" tabindex="0" role="button" aria-label="Натисніть, щоб згенерувати число">Натисни мене</div>
+
+<button id="resetBtn">Скинути</button>
+
+<pre><code>
+// Отримуємо посилання на елементи сторінки
+const demoBox = document.getElementById('demoBox');
+const resetBtn = document.getElementById('resetBtn');
+
+// Функція для генерації випадкового числа від 1 до 100
+function randomNumber() {
+  return Math.floor(Math.random() * 100) + 1;
+}
+
+// Обробник кліку по блоку
+demoBox.addEventListener('click', () => {
+  demoBox.textContent = randomNumber();
+});
+
+// Обробник кліку по кнопці скидання
+resetBtn.addEventListener('click', () => {
+  demoBox.textContent = 'Натисни мене';
+});
+
+// Доступність через клавіатуру (Enter або Пробіл)
+demoBox.addEventListener('keydown', (event) => {
+  if(event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    demoBox.textContent = randomNumber();
+  }
+});
+</code></pre>
+
+<div class="comment">
+  <strong>Пояснення коду:</strong>
+  <ul>
+    <li><code>getElementById</code> — шукає елемент за ID на сторінці.</li>
+    <li><code>Math.random()</code> генерує число від 0 до 1 (не включаючи 1).</li>
+    <li><code>Math.floor()</code> округлює вниз до цілого числа.</li>
+    <li>Обробники подій <code>click</code> та <code>keydown</code> запускають функції при кліку чи натисканні клавіш.</li>
+    <li>Атрибути <code>tabindex</code> та <code>role="button"</code> роблять блок доступним для навігації клавіатурою.</li>
+    <li><code>event.preventDefault()</code> відміняє стандартну поведінку браузера (наприклад, прокрутку при пробілі).</li>
+  </ul>
+</div>
+
+<script>
+const demoBox = document.getElementById('demoBox');
+const resetBtn = document.getElementById('resetBtn');
+
+function randomNumber() {
+  return Math.floor(Math.random() * 100) + 1;
+}
+
+demoBox.addEventListener('click', () => {
+  demoBox.textContent = randomNumber();
+});
+
+resetBtn.addEventListener('click', () => {
+  demoBox.textContent = 'Натисни мене';
+});
+
+demoBox.addEventListener('keydown', (event) => {
+  if(event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    demoBox.textContent = randomNumber();
+  }
+});
+</script>
+
+<footer>
+  © 2025 Цікава математика з ШІ
+</footer>
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>
+

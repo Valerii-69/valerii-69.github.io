@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Особисте дослідження математики та ШІ через історії, експерименти і моделювання.">
+  <meta name="keywords" content="математика, ШІ, історія, моделювання, освіта, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Метелик і свічка — Цікава математика з ШІ</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Назад до змісту</a>
+  <h1>Історія 1: Метелик і свічка</h1>
+  <p><strong>Автор:</strong> Валерій</p>
+
+  <p>На підвіконні сидів нічний метелик. Вікно було відчинене, і легкий подих вітру зірвав його в бік столу, де горіла свічка.</p>
+  <p>Здавалося, що політ закінчиться у вогні. Але той самий вітер, що підхопив метелика, раптом загасив свічку. Метелик промайнув над димлячим ґнотом і впав на стіл.</p>
+  <p>Довго він не рухався, немов закам’янів. Потім поволі розправив крила і вилетів у ніч через відчинене вікно. Я бачив це.</p>
+
+  <section class="dialog">
+    <h2>Діалог з ШІ про літературну адаптацію і математичну модель</h2>
+    <p><b>Валерій:</b> А можеш запропонувати свою версію цієї історії?</p>
+    <p><b>ШІ:</b> Звичайно!</p>
+      <h1>Мікродрама на підвіконні</h1>
+
+  <p>Пізно ввечері, коли єдиним світлом був екран ноутбука, я помітив гостю — тьмяно-сірого метелика. Його крила тремтіли, ніби відгукуючись на шум кулера.</p>
+  <p>Подих вітру підхопив його і кинув до столу, де світилася тонка воскова свічка.</p>
+  <p>Мить — і полум’я та метелик опинилися на одній лінії. Кінець здавався неминучим. Та той самий вітер загасив вогонь. Полум’я згасло, і метелик проминув небезпеку, впавши на стіл.</p>
+  <p>Довго він сидів нерухомо, немов застиглий у картинці про шок. Нарешті легке тремтіння — і він піднявся, вилетівши у прохолодну ніч.</p>
+  <p>Я вимкнув ноутбук, вдихнув запах згаслої свічки й подумав: іноді різниця між трагедією та порятунком — лише примха вітру. Випадковість, якої не передбачить ані математик, ані поет.</p>
+  <p><b>Висновок:</b> навіть у найменшого створіння є своя історія, де все може змінитися за одну мить. Головне — помітити і розповісти.</p>
+  </section>
+
+  <section class="model-section">
+    <h2>Проста модель ймовірності порятунку</h2>
+    <label for="wind">Сила вітру (0–10): <span id="windValue">5</span></label>
+    <input type="range" id="wind" min="0" max="10" value="5" />
+    <label for="reaction">Реакція свічки (0–10): <span id="reactionValue">5</span></label>
+    <input type="range" id="reaction" min="0" max="10" value="5" />
+    <button onclick="calculateProbability()">Обчислити ймовірність</button>
+    <div id="result"></div>
+  </section>
+
+<section class="model-description">
+  <h2>Детерміністично-стохастична модель</h2>
+  <p>Ймовірність порятунку залежить від двох факторів:</p>
+  <ul>
+    <li><strong>W</strong> — сила вітру;</li>
+    <li><strong>R</strong> — реакція свічки на вітер.</li>
+  </ul>
+  <p>Математично її можна записати як:</p>
+  <p style="text-align:center; font-family: 'Times New Roman', serif; font-size: 1.2em;">
+    \( P(t) = 1 - \exp(-\alpha \cdot W \cdot R \cdot t) \)
+  </p>
+  <p>Щоб додати випадковість, вводимо стохастичну змінну \(\xi(t)\):</p>
+  <p style="text-align:center; font-family: 'Times New Roman', serif; font-size: 1.2em;">
+    \( P(t) = 1 - \exp(-\alpha \cdot W \cdot R \cdot t + \beta \cdot \xi(t)) \)
+  </p>
+</section>
+
+<script>
+  const windSlider = document.getElementById('wind');
+  const windValue = document.getElementById('windValue');
+  const reactionSlider = document.getElementById('reaction');
+  const reactionValue = document.getElementById('reactionValue');
+  const resultDiv = document.getElementById('result');
+
+  windSlider.oninput = () => { windValue.textContent = windSlider.value; };
+  reactionSlider.oninput = () => { reactionValue.textContent = reactionSlider.value; };
+
+  function calculateProbability() {
+    const wind = parseInt(windSlider.value);
+    const reaction = parseInt(reactionSlider.value);
+    let prob = (wind + reaction) / 20;
+    prob = Math.min(1, Math.max(0, prob));
+    resultDiv.textContent = `Ймовірність порятунку: ${(prob * 100).toFixed(1)}%`;
+  }
+</script>
+
+<a href="../oglavlenie.html" class="back-link">&larr; Назад до змісту</a>
+</body>
+</html>

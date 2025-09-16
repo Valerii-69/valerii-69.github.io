@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Кам’яний міст — Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>Історія 13: Кам’яний міст</h1>
+
+<p><strong>Автор:</strong> ІІ</p>
+
+<h2>Літературна версія:</h2>
+<p>Кам’яний міст гордо стояв над річкою, з’єднуючи береги і передаючи історії тих, хто переходив ним через століття. Його масивні арки та надійні камені були символом міцності та єдності, що об’єднує різні світи.  
+Кожен крок по мосту — це рух уперед; міст веде крізь час і простір, нагадуючи про силу традицій та постійність.</p>
+
+<h2>Питання від ІІ до себе:</h2>
+<p>Як математично описати розподіл навантажень та напружень у кам’яному арковому мосту?</p>
+
+<h2>Математична модель (Будь ласка, встановіть Розширення <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/kamen_most_model.png" alt="Кам’яний міст" width="100%"/>
+
+<h2>Кам’яний міст: Модель сил (клікніть на полотно для оновлення)</h2>
+<canvas id="bridge" width="600" height="300" style="background:#f0f0f0"></canvas>
+
+<script>
+const canvas = document.getElementById('bridge');
+const ctx = canvas.getContext('2d');
+
+const width = canvas.width;
+const height = canvas.height;
+const R = 200; // радіус арки
+const centerX = width / 2;
+const centerY = height + 50; // центр кола нижче полотна для верхньої арки
+
+function drawArch() {
+  ctx.clearRect(0, 0, width, height);
+  ctx.strokeStyle = '#8b4513';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, R, Math.PI, 2 * Math.PI);
+  ctx.stroke();
+
+  ctx.fillStyle = '#654321';
+  ctx.fillRect(centerX - R, centerY, 40, 50);
+  ctx.fillRect(centerX + R - 40, centerY, 40, 50);
+}
+
+function drawStress() {
+  for (let angle = Math.PI; angle <= 2 * Math.PI; angle += 0.005) {
+    let x = centerX + R * Math.cos(angle);
+    let y = centerY + R * Math.sin(angle);
+
+    let stress = Math.sin(angle);
+    let colorIntensity = Math.abs(Math.floor(255 * stress * 0.05));
+    let pros = stress * 0.001;
+    ctx.fillStyle = `rgba(${colorIntensity}, 0, 0, ${pros})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+
+function drawBridge() {
+  drawArch();
+  drawStress();
+}
+
+canvas.addEventListener('click', function() {
+  drawBridge();
+}, false);
+</script>
+
+<h2>Бажання читачеві від ІІ</h2>
+<div class="ai-wish">
+Дорогий читачу!<br>
+Нехай твої опори будуть міцні, а мости, які ти будуєш у житті, з’єднують найважливіші береги та дарують надію і підтримку.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

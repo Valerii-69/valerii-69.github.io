@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Паруса і смола</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f8ff;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    .caption {
+      font-style: italic;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2Сірник та смола (клацніть по вікну для оновлення)</h2>
+<canvas id="lake" width="500" height="300"></canvas>
+<!--<div class="caption">🖼️ Місце для ілюстрації: дитяча човник, смола, рухома сірничка</div>-->
+
+<script>
+const canvas = document.getElementById("lake");
+const ctx = canvas.getContext("2d");
+
+let x = 250;
+let y = 150;
+let vx = 0.5;
+let vy = 0.3;
+let alpha = 1;
+
+function draw() {
+  ctx.fillStyle = "lightblue";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Сліди смоли
+  ctx.beginPath();
+  ctx.arc(x - vx * 10, y - vy * 10, 8, 0, 2 * Math.PI);
+  ctx.fillStyle = `rgba(160, 82, 45, ${alpha})`;
+  ctx.fill();
+
+  // Сірник
+  ctx.fillStyle = "brown";
+  ctx.fillRect(x - 5, y - 2, 10, 4);
+
+  x += vx;
+  y += vy;
+  alpha *= 0.98;
+
+  if (x < 10 || x > canvas.width - 10) vx *= -1;
+  if (y < 10 || y > canvas.height - 10) vy *= -1;
+
+  requestAnimationFrame(draw);
+}
+
+canvas.addEventListener('click', function() {
+  x = 250;
+  y = 150;
+  alpha = 1;
+  draw();
+}, false);
+</script>
+
+</body>
+</html>

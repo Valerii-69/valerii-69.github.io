@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Технічні рекомендації</title>
+<meta name="description" content="Збір порад для зручної та безпечної роботи з AI-інструментами та HTML-додатками.">
+<meta property="og:title" content="Технічні рекомендації">
+<meta property="og:description" content="Рекомендації щодо безпечної та ефективної роботи з AI-інструментами та HTML-додатками.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://valerii-69.github.io/stories/Technical_recommendations.html">
+<meta property="og:image" content="https://valerii-69.github.io/images/Technical_recommendations.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Технічні рекомендації">
+<meta name="twitter:description" content="Збір порад для зручної та безпечної роботи з AI-інструментами та HTML-додатками.">
+<meta name="twitter:image" content="https://valerii-69.github.io/images/Technical_recommendations.jpg">
+<link rel="icon" href="https://valerii-69.github.io/favicon.ico">
+<meta name="author" content="Valerii Botsvin">
+<meta name="keywords" content="технічні рекомендації, AI, безпека, HTML-додатки">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>6. Технічні рекомендації</h1>
+<p>Тут зібрані поради для зручної та безпечної роботи з AI-інструментами та HTML-додатками.</p>
+
+<div id="recommendations"></div>
+
+<button onclick="generateSummary()">Сформувати резюме</button>
+
+<div id="summary"></div>
+
+<script>
+const tips = [
+  {title:"Чек-лист для перевірки фактів ChatGPT", text:"Порівнюйте з авторитетними джерелами: книги, статті, офіційні сайти."},
+  {title:"Упевненість ChatGPT ≠ Істина", text:"Попросіть пояснити крок за кроком або навести приклади."},
+  {title:"Логіка ChatGPT", text:"Перевіряйте міркування, повторюйте обчислення самостійно."},
+  {title:"Перефразування ChatGPT", text:"Задайте питання іншими словами та порівняйте відповіді."},
+  {title:"Нішеві теми ChatGPT", text:"Для вузьких областей перевіряйте через професійні джерела."},
+  {title:"Деталі ChatGPT", text:"Перевіряйте цифри, одиниці та терміни."},
+  {title:"Інтуїція ChatGPT", text:"Якщо щось здається дивним, зупиніться та подумайте."},
+  {title:"Оновлюйте браузер", text:"Використовуйте останню версію Chrome, Firefox або Edge для кращої сумісності з AI-інструментами."},
+  {title:"Відкрийте консоль розробника", text:"Використовуйте Ctrl+Shift+I або F12 для перевірки помилок та налагодження JS."},
+  {title:"Перевіряйте дозволи", text:"Дозвольте доступ до мікрофона, камери та буфера обміну, якщо потрібно."},
+  {title:"Використовуйте надійний інтернет", text:"Більшість AI-інструментів потребує стабільного з’єднання — Wi-Fi кращий за мобільний інтернет."},
+  {title:"Зберігайте дані", text:"Регулярно зберігайте текст, код і налаштування, щоб уникнути втрати даних."},
+  {title:"Кросбраузерна перевірка", text:"Якщо ділитесь сторінками, перевірте, як вони виглядають у різних браузерах."},
+  {title:"Не соромтеся звертатися до ChatGPT", text:"Якщо не можете знайти відповідь онлайн, скопіюйте це посилання https://chatgpt.com/, вставте у браузер і натисніть Enter."}
+];
+
+function renderTips() {
+  const container = document.getElementById("recommendations");
+  tips.forEach((tip, index) => {
+    const div = document.createElement("div");
+    div.className = "recommendation";
+    div.innerHTML = `<h3>${index + 1}. ${tip.title}</h3><p>${tip.text}</p>`;
+    container.appendChild(div);
+  });
+}
+
+function generateSummary() {
+  const summary = `
+    <strong>Головне:</strong><br>
+    ✅ Оновлюйте ПЗ та браузери<br>
+    ✅ Перевіряйте консоль на помилки<br>
+    ✅ Забезпечте стабільний інтернет<br>
+    ✅ Регулярно зберігайте дані<br>
+    ✅ Дійте безпечно<br>
+    ✅ Перевіряйте сумісність на різних пристроях<br>
+    ✅ ChatGPT завжди з ВАМИ!
+  `;
+  document.getElementById("summary").innerHTML = summary;
+}
+
+renderTips();
+</script>
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+</body>
+</html>

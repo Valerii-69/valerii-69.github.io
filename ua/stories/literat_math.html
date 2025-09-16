@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Література та математика — Занимальна математика з ІІ</title>
+<meta name="description" content="Поєднуємо літературу та математику з допомогою штучного інтелекту для цікавого навчання.">
+<meta property="og:title" content="Література та математика — Занимальна математика з ІІ">
+<meta property="og:description" content="Літературно-математична сторінка з ІІ: навчання та цікаві завдання.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://valerii-69.github.io/stories/literat_math.html">
+<meta property="og:image" content="https://valerii-69.github.io/images/literat_math.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Література та математика — Занимальна математика з ІІ">
+<meta name="twitter:description" content="Поєднання літератури та математики з ІІ.">
+<meta name="twitter:image" content="https://valerii-69.github.io/images/literat_math.jpg">
+<link rel="icon" href="https://valerii-69.github.io/favicon.ico">
+<meta name="author" content="Valerii Botsvin">
+<meta name="keywords" content="література, математика, ІІ, навчання, завдання">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+
+  <h1>Література та математика</h1>
+
+  <p class="intro">
+    Колекція художніх оповідань, створених штучним інтелектом, де математика зустрічається з художнім словом.
+  </p>
+
+  <p><strong>Автор:</strong> Штучний інтелект</p>
+
+  <div class="controls">
+    <label for="sortSelect">Сортувати: </label>
+    <select id="sortSelect">
+      <option value="default">За порядком додавання</option>
+      <option value="alphabet">За абеткою</option>
+    </select>
+  </div>
+
+  <ul class="story-list" id="storyList">
+    <li>Завантаження списку оповідань...</li>
+  </ul>
+
+  <h2>Бажання читачеві від ІІ</h2>
+  <div class="ai-wish">
+    Дорогий читачу!<br>
+Нехай ці історії нагадають тобі, що математика живе не лише в підручниках,
+    але й у кожному предметі, русі та моменті. Читай з цікавістю, думай з радістю, і, можливо,
+    ти відкриєш у звичних речах щось абсолютно нове.
+  </div>
+
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+
+  <script>
+    let stories = [];
+    const storyListEl = document.getElementById('storyList');
+    const sortSelect = document.getElementById('sortSelect');
+
+    function renderStories(list) {
+      storyListEl.innerHTML = "";
+      list.forEach((story, index) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = story.link;
+        a.textContent = `${index + 1}. ${story.title}`;
+        li.appendChild(a);
+        storyListEl.appendChild(li);
+      });
+    }
+
+    sortSelect.addEventListener('change', () => {
+      if (sortSelect.value === "alphabet") {
+        const sorted = [...stories].sort((a, b) => a.title.localeCompare(b.title, 'uk'));
+        renderStories(sorted);
+      } else {
+        renderStories(stories);
+      }
+    });
+
+    fetch("stories.json")
+      .then(res => res.json())
+      .then(data => {
+        stories = data;
+        renderStories(stories);
+      })
+      .catch(err => {
+        storyListEl.innerHTML = "<li>Помилка завантаження списку оповідань.</li>";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>

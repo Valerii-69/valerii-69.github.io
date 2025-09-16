@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Генеруйте цікаві математичні історії інтерактивно разом з ІІ.">
+  <meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
+  <title>Генератор математичних історій — Занимальна математика з ІІ</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+  <h1>Генератор математичних історій</h1>
+  <label for="topicSelect">Виберіть тему:</label>
+  <select id="topicSelect">
+    <option value="journey">Подорож у часі</option>
+    <option value="puzzle">Математична загадка</option>
+    <option value="experiment">Науковий експеримент</option>
+    <option value="magic">Магія чисел</option>
+  </select>
+  <button id="generateBtn">Створити першу історію</button>
+  <div id="story"></div>
+  <button id="againBtn" style="display:none; margin-top:10px;">Створити наступну історію</button>
+
+  <script>
+    const stories = {
+      journey: [
+        "Одного разу герой вирушив у подорож у часі, де кожна секунда вимірювалася золотими годинниками з незвичною геометрією. Щоб повернутися додому, він повинен був розв'язати загадку на основі числа π.",
+        "Мандрівник у часі відкрив давній храм, побудований за принципами фрактальної геометрії, і розгадав таємницю нескінченності за допомогою математики.",
+        "У далекому майбутньому машини часу працювали за формулами алгебри, і лише знання теореми Піфагора могло відкрити портал.",
+        "Хлопчик потрапив в епоху, де арифметика ще не існувала, і допоміг людям рахувати овець за допомогою числових рядів."
+      ],
+      puzzle: [
+        "У маленькому місті з'явився мудрець, який розв'язував загадки, використовуючи лише числа Фібоначчі. Його найскладніша загадка залишалася нерозв'язаною століттями.",
+        "Загадка в математиці часто приховує просту істину: знайти закономірність у хаосі — значить зрозуміти світ.",
+        "На стіні замку було рівняння, яке відкривало двері лише тому, хто вмів складати ряди нескінченності.",
+        "Дитині подарували кубик Рубіка, і вона відкрила, що за кожною комбінацією ховається своя математична закономірність."
+      ],
+      experiment: [
+        "У лабораторії вчені створили машину, яка візуалізувала потоки чисел, схожі на танець світних частинок у темряві.",
+        "Експеримент показав, що навіть випадкові числа можуть створювати дивовижні закономірності, якщо уважно за ними спостерігати.",
+        "Молода дослідниця зібрала телескоп, який показував не зірки, а графіки функцій у космосі.",
+        "Фізик провів дослід і помітив, що формули іноді передбачають результат точніше, ніж прилади."
+      ],
+      magic: [
+        "У далекій країні числа мали магічну силу — вони могли змінювати форму і створювати дивовижні візерунки, що оживали на очах.",
+        "Чарівник чисел створив закляття, яке дозволяло розуміти мову природи через рівняння та формули.",
+        "У лісі стояв магічний камінь, на якому були вигравірувані прості числа — вони захищали землю від хаосу.",
+        "Учениця чарівника відкрила книгу, де закляття були написані у вигляді рівнянь, і кожна відповідь оживала перед її очима."
+      ]
+    };
+
+    const topicSelect = document.getElementById("topicSelect");
+    const generateBtn = document.getElementById("generateBtn");
+    const storyDiv = document.getElementById("story");
+    const againBtn = document.getElementById("againBtn");
+    let queues = {};
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function getNextStory(topic) {
+      if (!queues[topic] || queues[topic].length === 0) {
+        queues[topic] = shuffle([...stories[topic]]);
+      }
+      return queues[topic].shift();
+    }
+
+    function generateStory() {
+      const topic = topicSelect.value;
+      const generatedStory = getNextStory(topic);
+      storyDiv.textContent = generatedStory;
+      againBtn.style.display = "inline-block";
+    }
+
+    generateBtn.addEventListener("click", generateStory);
+    againBtn.addEventListener("click", generateStory);
+  </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Пластмасовий обруч — Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>Історія 8: Пластмасовий обруч</h1>
+
+<p><strong>Автор:</strong> ІІ</p>
+
+<h2>Літературна версія:</h2>
+<p>
+Пластмасовий обруч грався сонячними променями на асфальті, поки маленька дівчинка кружляла з ним на галявині. Він пам’ятав веселі дні, коли кожен оберт був новим танцем, а сміх — музикою руху.  
+Здавався простим предметом, але в кожному оберті ховалася історія радості та легкості, що дарували дітям хвилини щастя.
+</p>
+
+<h2>Питання від ІІ до себе:</h2>
+<p>Як описати обертальний рух обруча на талії з урахуванням зміни кутової швидкості та сил тертя?</p>
+
+<h2>Математична модель (Будь ласка, встановіть Розширення <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/obruch_model.png" alt="Пластмасовий обруч" width="100%"/>
+
+<h2>Пластмасовий обруч: Модель сил (клікніть на полотно для оновлення)</h2>
+<canvas id="hula" width="800" height="800" style="background:#fff0f5"></canvas>
+
+<script>
+const canvas = document.getElementById('hula');
+const ctx = canvas.getContext('2d');
+
+let omega0 = 0.4;
+let b = 0.05;
+let I = 1;
+let omega = omega0;
+let theta = 0;
+let t = 0;
+
+function drawHula(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(angle);
+  ctx.strokeStyle = '#ff69b4';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(angle, angle, 180, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function step() {
+  omega = omega0 * Math.exp(- (b / I) * t);
+  theta += omega;
+  drawHula(theta);
+  t += 0.05;
+  if (omega > 0.001) {
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+ omega0 = 0.4;
+ omega = omega0;
+ theta = 0;
+ t = 0;
+ step();
+}, false);
+</script>
+
+<h2>Бажання читачеві від ІІ</h2>
+<div class="ai-wish">
+Дорогий читачу!<br>
+Нехай кожен твій оберт буде наповнений радістю руху та легкістю, а будь-які перешкоди розсіються, як легкий вітерець.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

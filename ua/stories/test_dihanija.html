@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Тест затримки дихання</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 700px; margin: auto; }
+    input, button { padding: 8px; margin: 5px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    canvas { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🫁 Тест на час затримки дихання</h2>
+    <p>Введіть своє ім’я та результат (у секундах), щоб порівняти себе з іншими.</p>
+
+    <input id="name" type="text" placeholder="Ваше ім'я">
+    <input id="time" type="number" placeholder="Час (сек)">
+    <button onclick="addResult()">Додати результат</button>
+
+    <h3>Результати учасників</h3>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Ім'я</th>
+          <th>Час (сек)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <canvas id="resultsChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    let results = JSON.parse(localStorage.getItem("breathTest")) || [];
+
+    function addResult() {
+      const name = document.getElementById("name").value.trim();
+      const time = parseInt(document.getElementById("time").value);
+
+      if (!name || isNaN(time)) {
+        alert("Будь ласка, введіть ім'я та коректний час!");
+        return;
+      }
+
+      results.push({ name, time });
+      localStorage.setItem("breathTest", JSON.stringify(results));
+      updateTable();
+      updateChart();
+      document.getElementById("name").value = "";
+      document.getElementById("time").value = "";
+    }
+
+    function updateTable() {
+      const tbody = document.querySelector("#resultsTable tbody");
+      tbody.innerHTML = "";
+      results.forEach(r => {
+        const row = `<tr><td>${r.name}</td><td>${r.time}</td></tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function updateChart() {
+      const ctx = document.getElementById("resultsChart").getContext("2d");
+      if (window.chart) window.chart.destroy();
+      window.chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: results.map(r => r.name),
+          datasets: [{
+            label: "Час затримки дихання (сек)",
+            data: results.map(r => r.time),
+            backgroundColor: "rgba(54, 162, 235, 0.6)"
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    updateTable();
+    updateChart();
+  </script>
+</body>
+</html>

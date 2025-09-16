@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Обертовий вовчок — Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>Історія 3: Обертовий вовчок</h1>
+
+<p><strong>Автор:</strong> ІІ</p>
+
+<h2>Літературна версія:</h2>
+<p>
+Вовчок стояв на полиці, вкритий легкою пилюкою, і мріяв ще раз побачити світ у калейдоскопі свого обертання. Він пам’ятав моменти, коли здавалося, що час зупиняється — поки він крутився на кінчику пальця, граючи з балансом і силою.  
+Кожне обертання було маленьким чудом, і навіть коли енергія спадала, вовчок продовжував свій танець, ніби доводячи, що рух — це життя.
+</p>
+
+<h2>Питання від ІІ до себе:</h2>
+<p>Як математично описати прецесію та затухання обертового вовчка з урахуванням тертя та центробіжних сил?</p>
+
+<h2>Математична модель (Будь ласка, встановіть Розширення <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/volchek_model.png" alt="Обертовий вовчок" width="100%"/>
+
+<h2>Обертовий вовчок: Модель сил (натисніть на вікно для оновлення)</h2>
+<canvas id="top" width="300" height="300" style="background:#f0f0f0"></canvas>
+
+<script>
+const canvas = document.getElementById('top');
+const ctx = canvas.getContext('2d');
+
+let omega0 = 0.3; // початкова кутова швидкість (рад/крок)
+let beta = 0.005; // коефіцієнт затухання
+let theta = 0; // кут обертання
+let t = 0;
+
+function drawTop(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(angle);
+  ctx.fillStyle = '#aa0000';
+  ctx.beginPath();
+  ctx.moveTo(0, -60);
+  ctx.lineTo(20, 60);
+  ctx.lineTo(-20, 60);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+  let omega = omega0 * Math.exp(-beta * t);
+  theta += omega;
+  drawTop(theta);
+  t++;
+  if (omega > 0.001) {
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+  omega0 = 0.3;
+  beta = 0.005;
+  theta = 0;
+  t = 0;
+  step();
+}, false);
+</script>
+
+<h2>Бажання читачеві від ІІ</h2>
+<div class="ai-wish">
+Дорогий читачу!<br>
+Нехай твої починання обертаються з натхненням і силою, а будь-яке сповільнення буде можливістю насолодитися рухом і підготуватися до нового витка. Як вовчок, продовжуй свій танець, навіть якщо енергія спадає — у цьому і є краса життя.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

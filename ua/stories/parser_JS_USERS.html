@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Шаблон лабораторної роботи — Перевірка JS</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+h1 { color: #004d99; }
+textarea { width: 100%; height: 200px; font-family: monospace; font-size: 14px; margin-bottom:10px; }
+button { padding: 6px 12px; font-size:14px; margin:5px 0; }
+#canvasPreview { border:1px solid #ccc; background:#fff; display:block; margin-top:10px; }
+#errors { color:red; font-weight:bold; margin-top:10px; }
+</style>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a><br>
+<h1>Лабораторна робота — перевірка JS-коду</h1>
+
+<p>Інструкція для читача:</p>
+<ul>
+<li>Використовуйте лише наданий <code>canvas</code>, не звертайтеся до <code>document.getElementById</code>.</li>
+<li>Ваш код повинен бути функцією, що приймає <code>canvas</code>:</li>
+<pre>(function(canvas){ /* ваш код */ })(canvas);</pre>
+<li>Усі змінні повинні бути локальними, анімації — через <code>requestAnimationFrame</code> або <code>setInterval</code>.</li>
+</ul>
+
+<p>Приклад робочого коду:</p>
+<pre>
+(function(canvas){
+  const ctx = canvas.getContext('2d');
+  let x = 0;
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='red';
+    ctx.fillRect(x,50,50,30);
+    x = (x + 2) % canvas.width;
+    requestAnimationFrame(animate);
+  }
+  animate();
+})(canvas);
+</pre>
+
+<p>Вставте ваш JS-код сюди:</p>
+<textarea id="userCode">// вставте сюди ваш код</textarea>
+<button id="checkCode">Перевірити код</button>
+<div id="errors"></div>
+
+<p>Прев’ю вашого коду:</p>
+<canvas id="canvasPreview" width="600" height="200"></canvas>
+
+<script>
+const codeArea = document.getElementById('userCode');
+const errorsDiv = document.getElementById('errors');
+const canvas = document.getElementById('canvasPreview');
+
+function validateLabCode(code){
+  let errors = [];
+
+  if(!/\(canvas\)/.test(code)){
+    errors.push("Код повинен приймати canvas як аргумент");
+  }
+
+  if(/document\.getElementById/.test(code)){
+    errors.push("Не використовуйте document.getElementById, використовуйте переданий canvas");
+  }
+
+  try {
+    new Function('canvas', code);
+  } catch(e){
+    errors.push("Синтаксична помилка: " + e.message);
+  }
+
+  return errors;
+}
+
+document.getElementById('checkCode').onclick = () => {
+  const code = codeArea.value;
+  const errors = validateLabCode(code);
+  errorsDiv.innerHTML = errors.length ? errors.join('<br>') : 'Код коректний!';
+
+  if(errors.length === 0){
+    try {
+      const func = new Function('canvas', code);
+      func(canvas);
+    } catch(e){
+      errorsDiv.innerHTML = 'Помилка під час виконання коду: ' + e.message;
+    }
+  }
+};
+</script>
+<br><a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+</body>
+</html>

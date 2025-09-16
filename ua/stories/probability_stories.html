@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head> 
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript"> 
+<link rel="icon" href="favicon.ico" type="image/x-icon"> 
+<title>Філософія та випадок — Історії ймовірності</title> 
+<link rel="stylesheet" href="../style.css">
+
+</head>
+<body> 
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутись до змісту</a>
+<header> 
+<h2>Цікава математика з ІІ</h2>
+</header> 
+<h1>Філософія та випадок — Історії ймовірності</h1> 
+
+<label for="storySelect">Виберіть історію:</label> 
+<select id="storySelect" onchange="showStory()"> 
+<option value="">-- Виберіть --</option> 
+<option value="1">Парадокс днів народження</option> 
+<option value="2">Історія з підкиданням монети</option> 
+<option value="3">Вірогідність виграшу в лотерею</option> 
+<option value="4">Парадокс брехуна</option> 
+<option value="5">Болле та випадкові числа</option> 
+</select> 
+
+<div class="story-text" id="storyText"></div>
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfAevXddtJDNp7t0u6FlASm9i5zXWQnq3bNIFscj5ZnxTC9YQ/viewform?embedded=true" width="640" marginheight="0" marginwidth="0">Завантаження…</iframe> 
+
+
+<div id="responseMsg"></div> 
+
+<script> 
+const stories = { 
+1: `Парадокс днів народження:\n\nУ групі з усього 23 осіб ймовірність того, що хоча б у двох збігається день народження, перевищує 50%. Це дивно, адже 23 — невелика кількість порівняно з 365!', 
+2: `Історія з підкиданням монети:\n\nЯкщо підкидати монету багато разів поспіль, здається, що результат повинен розподілятися рівномірно. Але після серії з декількох орлів люди часто починають думати, що скоро випаде решка - це називається помилкою гравця. 
+3: `Вірогідність виграшу в лотерею:\n\nШанси виграти великий джекпот можуть бути як 1 до мільйонів. Проте мільйони людей продовжують грати, сподіваючись на успіх. Цікаво, що багато хто не усвідомлює, наскільки малі ці шанси. 
+4: `Парадокс брехуна: Людина каже: "Усі твердження, які я роблю, помилкові." Якщо це правда, то він бреше. Якщо брехня — отже, він каже правду. Цей парадокс стосується логіки та ймовірності істинності тверджень. 
+5: `Болле і випадкові числа:\n\nФізик Болле вивчав випадкові числа і виявив, що вони часто підкоряються певним розподілам, що дивно, враховуючи хаотичність подій, що здається.' 
+}; 
+
+function showStory() { 
+const select = document.getElementById('storySelect'); 
+const storyText = document.getElementById('storyText'); 
+const val = select.value; 
+if (val && stories[val]) { 
+storyText.textContent = stories[val]; 
+} else { 
+storyText.textContent = ''; 
+} 
+document.getElementById('responseMsg').textContent = ''; 
+} 
+
+function submitComment() { 
+const email = document.getElementById('emailInput').value.trim(); 
+const comment = document.getElementById('commentInput').value.trim(); 
+const storyId = document.getElementById('storySelect').value; 
+
+if (!storyId) { 
+alert('Будь ласка, виберіть історію.'); 
+return; 
+} 
+if (! comment) { 
+alert('Будь ласка, введіть коментар'); 
+return; 
+} 
+if (!email || !validateEmail(email)) { 
+alert('Будь ласка, введіть коректний email.'); 
+return; 
+} 
+
+// Надсилання коментаря (тут приклад fetch до Apps Script) 
+fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', { 
+method: 'POST', 
+body: JSON.stringify({ 
+storyId, 
+comment, 
+email 
+}), 
+headers: { 
+'Content-Type': 'application/json' 
+} 
+}) 
+.then(response => response.json()) 
+.then(data => { 
+if (data.status === 'ok') { 
+document.getElementById('responseMsg').textContent = 'Дякую! Ваш коментар відправлено.'; 
+document.getElementById('commentInput').value = ''; 
+document.getElementById('emailInput').value = ''; 
+} else { 
+document.getElementById('responseMsg').textContent = 'Помилка при надсиланні.'; 
+} 
+}) 
+.catch(() => { 
+document.getElementById('responseMsg').textContent = 'Помилка при надсиланні.'; 
+}); 
+} 
+
+function validateEmail(email) { 
+const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+return re.test (email); 
+} 
+</script>
+<footer> 
+© 2025 Цікава математика з ІІ
+</footer> 
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутись до змісту</a>
+
+</body>
+</html>

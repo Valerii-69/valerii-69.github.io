@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Відчуття ваги тіла у воді</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h2>Відчуття ваги тіла у воді</h2>
+
+  <label>Маса тіла (кг): <input type="number" id="mass" value="70"></label><br>
+  <label>Об'єм тіла (літри): <input type="number" id="volume" value="70"></label><br>
+  <label>Густина рідини (кг/м³): <input type="number" id="density" value="1000"></label><br>
+  <button onclick="calculate()">Розрахувати</button>
+
+  <p id="result"></p>
+
+  <script>
+    function calculate() {
+      const m = parseFloat(document.getElementById('mass').value);
+      const V_liters = parseFloat(document.getElementById('volume').value);
+      const rho = parseFloat(document.getElementById('density').value);
+
+      const V = V_liters / 1000; // м³
+      const g = 9.81;
+
+      const F_t = m * g;
+      const F_a = rho * g * V;
+      const F_o = F_t - F_a;
+
+      const percent = ((F_o / F_t) * 100).toFixed(1);
+
+      document.getElementById('result').innerHTML =
+        `Вага у повітрі: ${F_t.toFixed(2)} Н<br>` +
+        `Виштовхувальна сила: ${F_a.toFixed(2)} Н<br>` +
+        `Відчутна вага у воді: ${F_o.toFixed(2)} Н (${percent}% від ваги у повітрі)<br>` +
+        `<strong>${percent < 10 ? "Відчуття невагомості!" : "Вага відчувається значно."}</strong>`;
+    }
+  </script>
+</body>
+</html>

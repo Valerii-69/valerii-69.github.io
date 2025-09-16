@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ШІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ШІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Філософія і випадок — Побажання читачеві</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+<header>
+  <h2>Захоплива математика з ШІ</h2>
+</header>
+
+  <h1>Побажання читачеві</h1>
+
+  <div class="philo-wish">
+    <p><em>
+      Хай випадок приведе вас туди, де ви станете тими, ким завжди були призначені бути.  
+      Хай кожен поворот стане можливістю, а кожна мить — уроком і відкриттям.
+    </em></p>
+  </div>
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeWIKohbPCnx6BC505qcNgyJXd8qD07SDmASpV3A_8C8AT_vg/viewform?embedded=true" width="840" height="795" frameborder="0" marginheight="0" marginwidth="0">Завантаження…</iframe>
+
+  <div class="tree" id="tree"></div>
+
+  <script>
+    const form = document.getElementById('wishForm');
+    const tree = document.getElementById('tree');
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const wishText = document.getElementById('wish').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if (!wishText || !email) return;
+
+      const leaf = document.createElement('div');
+      leaf.className = 'leaf';
+      leaf.textContent = '🌿 ' + wishText;
+      tree.appendChild(leaf);
+
+      fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section: 'Філософія і випадок — Побажання читачеві',
+          email: email,
+          wish: wishText
+        })
+      });
+
+      form.reset();
+    });
+  </script>
+<footer>
+  © 2025 Захоплива математика з ШІ
+</footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+</body>
+</html>
+

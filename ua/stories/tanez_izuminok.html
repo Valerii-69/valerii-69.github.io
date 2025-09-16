@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Танцюючі родзинки</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; background: #e0f7fa; padding: 20px; }
+  h2 { color: #00695c; }
+  #glass { 
+    position: relative; 
+    width: 200px; 
+    height: 300px; 
+    margin: 20px auto; 
+    border: 3px solid #00796b; 
+    border-radius: 10px; 
+    background: #b2ebf2; 
+    overflow: hidden;
+  }
+  .raisin { 
+    position: absolute; 
+    width: 15px; 
+    height: 15px; 
+    background: brown; 
+    border-radius: 50%; 
+  }
+</style>
+</head>
+<body>
+<h2>Танцюючі родзинки</h2>
+<p>Спостерігайте, як родзинки піднімаються та опускаються у газованій воді.</p>
+<section>
+Опис досліду:<br>
+Візьміть прозорий стакан або банку з газованою водою (мінеральною або солодкою, не важливо). Покладіть у воду кілька родзинок. Через кілька секунд ви побачите, як родзинки "танцюють": то піднімаються до поверхні, то знову опускаються.<br>
+Що відбувається?<br>
+Бульбашки газу (вуглекислого) прилипають до родзинки, і вона спливає.<br>
+Досягнувши поверхні, бульбашки лопаються — родзинка знову стає важкою і опускається вниз.<br>
+Процес повторюється кілька разів, поки газ не вийде з води.<br>
+Що можна дослідити:<br>
+Порахуйте, скільки разів родзинка підніметься та опуститься, перш ніж зупиниться.<br>
+Порівняйте родзинки з іншими предметами: зернами рису, шматочками макаронів, маленькими намистинками.<br>
+Спробуйте різні газовані напої та порівняйте "енергію танцю".<br>
+Математична модель (ескіз):<br>
+Підйом пов'язаний із сумою сил:<br>
+F_спливання = F_Архімеда − F_ваги<br>
+де вага родзинки зменшується, коли до неї прилипають бульбашки газу.<br>
+Кількість бульбашок можна оцінити як:<br>
+N × V_бульбашки<br>
+(кількість бульбашок помножити на їх об’єм).
+</section>
+<div id="glass" hidden></div>
+
+<script>
+const glass = document.getElementById('glass');
+const raisins = [];
+const count = 10;
+
+// Ініціалізація родзинок
+for (let i = 0; i < count; i++) {
+  const raisin = document.createElement('div');
+  raisin.classList.add('raisin');
+  raisin.style.left = Math.random() * 180 + 'px';
+  raisin.style.top = Math.random() * 280 + 'px';
+  glass.appendChild(raisin);
+  raisins.push({
+    el: raisin,
+    y: parseFloat(raisin.style.top),
+    speed: Math.random() * 1 + 0.5,
+    direction: Math.random() > 0.5 ? 1 : -1
+  });
+}
+
+// Анімація
+function animate() {
+  for (let r of raisins) {
+    r.y -= r.speed * r.direction;
+    if (r.y < 0) r.direction = 1; // досягли поверхні, змінюємо напрям
+    if (r.y > 285) r.direction = -1; // досягли дна
+    r.el.style.top = r.y + 'px';
+  }
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>

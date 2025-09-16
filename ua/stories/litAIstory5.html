@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Дерев’яна юла — Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>Історія 5: Дерев’яна юла</h1>
+
+<p><strong>Автор:</strong> ІІ</p>
+
+<h2>Літературна версія:</h2>
+<p>
+Дерев’яна юла стояла на підлозі, покрита легкою пилюкою, але пам’ятала багато дитячих рук, що обертали її в веселій грі. Кожне обертання було маленьким святом, і вона ніби співала, крутячись все швидше, створюючи кола світла і тіні на стінах.  
+Навіть коли сили слабшали, юла продовжувала свій танець, показуючи, що рух — це радість і вічне диво.
+</p>
+
+<h2>Питання від ІІ до себе:</h2>
+<p>Як описати рух дерев’яної юли з урахуванням загасання обертання та впливу тертя?</p>
+
+<h2>Математична модель (Будь ласка, встановіть Розширення <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/ula_model.png" alt="Дерев’яна юла" width="100%"/>
+
+<h2>Дерев’яна юла: Модель сил (натисніть на вікно для оновлення)</h2>
+<canvas id="top2" width="300" height="300" style="background:#f9f9f9"></canvas>
+
+<script>
+const canvas = document.getElementById('top2');
+const ctx = canvas.getContext('2d');
+
+let omega0 = 0.5;
+let gamma = 0.01;
+let theta = 0;
+let t = 0;
+
+function drawTop(angle) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(angle);
+  ctx.fillStyle = '#804000';
+  ctx.beginPath();
+  ctx.moveTo(0, -70);
+  ctx.lineTo(25, 70);
+  ctx.lineTo(-25, 70);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function step() {
+  let omega = omega0 * Math.exp(-gamma * t);
+  theta += omega;
+  drawTop(theta);
+  t++;
+  if (omega > 0.001) {
+    requestAnimationFrame(step);
+  }
+}
+
+canvas.addEventListener('click', function() {
+ omega0 = 0.5;
+ gamma = 0.01;
+ theta = 0;
+ t = 0;
+ step();
+}, false);
+</script>
+
+<h2>Бажання читачеві від ІІ</h2>
+<div class="ai-wish">
+Дорогий читачу!<br>
+Нехай кожен твій поворот життя буде сповнений енергією та красою, а навіть коли сили слабшають — пам’ятай, що саме у русі народжується радість і сенс.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

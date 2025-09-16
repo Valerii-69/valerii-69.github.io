@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Старий парус — Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>Історія 2: Старий парус</h1>
+
+<p><strong>Автор:</strong> ІІ</p>
+
+<h2>Літературна версія:</h2>
+<p>
+Старий парус тихо шелестіє на вітрі, втомлений від довгих років та безлічі подорожей. Він пам’ятає часи, коли міг розправитися на повну і зловити найслабший порив, перетворюючи його на могутній поштовх уперед.  
+Моря та вітри були його стихією, і він відчував себе живим, коли човен ковзав хвилями, а сонце грало на воді. Тепер він висить у човні, інколи трохи тремтячий від нового вітру, але вже не здатний рвати вперед з колишньою силою.  
+Проте в кожному пориві вітру він чує поклик пригод — тихий шепіт надії, що колись вітер знову оживить старого друга і подарує відчуття свободи.
+</p>
+
+<h2>Питання від ІІ до себе:</h2>
+<p>Як можна описати рух вітрильника, враховуючи силу вітру, опір води та кут нахилу вітрила?</p>
+
+<h2>Математична модель (Будь ласка, встановіть Розширення <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/parus_model.png" alt="Парус і вітер" width="100%"/>
+
+<h2>Парус і вітер: Модель сил (натисніть на вікно для оновлення)</h2>
+<canvas id="sailboat" width="800" height="200" style="background:#a0d8ef"></canvas>
+
+<script>
+const canvas = document.getElementById('sailboat');
+const ctx = canvas.getContext('2d');
+
+let boatX = 20;
+let v = 0;
+const m = 500; // маса човна (кг)
+const dt = 0.1; // крок часу
+const k = 30; // коефіцієнт опору води
+const Cw = 1.2; // ефективність вітрила
+const A = 20; // площа вітрила (м²)
+const rho = 1.225; // густина повітря (кг/м³)
+const Vwind = 10; // швидкість вітру (м/с)
+const alpha = Math.PI / 4; // кут між вітром і вітрилом 45 градусів
+
+function forceWind() {
+  return Cw * A * rho * Vwind * Vwind * Math.cos(alpha);
+}
+
+function forceResistance() {
+  return -k * v;
+}
+
+function step() {
+  const Fw = forceWind();
+  const Fr = forceResistance();
+  const a = (Fw + Fr) / m;
+
+  v += a * dt;
+  if (v < 0) v = 0;
+
+  boatX += v * dt * 10;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // малюємо човен
+  ctx.fillStyle = '#654321';
+  ctx.fillRect(boatX, 120, 100, 30);
+
+  // вітрило
+  ctx.beginPath();
+  ctx.moveTo(boatX + 50, 120);
+  ctx.lineTo(boatX + 50, 60);
+  ctx.lineTo(boatX + 90, 120);
+  ctx.closePath();
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  requestAnimationFrame(step);
+}
+
+canvas.addEventListener('click', function() {
+  boatX = 50;
+  v = 0;
+  step();
+}, false);
+</script>
+
+<h2>Бажання читачеві від ІІ</h2>
+<div class="ai-wish">
+Дорогий читачу!<br>
+Нехай у кожному пориві вітру ти відчуваєш свободу та силу, навіть якщо шлях здається довгим і втомливим. Як старий парус, не втрачай надії вдихнути нове життя у свої мрії та дії. Математика і природа завжди поряд, щоб допомогти зрозуміти та підтримати тебе у шляху.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

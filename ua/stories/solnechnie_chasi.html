@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Сонячний годинник</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(to top, #87CEEB, #fff);
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    #scene {
+      margin: 20px auto;
+      width: 300px;
+      height: 300px;
+      position: relative;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background: #fefefe;
+    }
+    .stick {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      width: 6px;
+      height: 100px;
+      background: brown;
+      border-radius: 3px;
+    }
+    .shadow {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      height: 4px;
+      background: rgba(0,0,0,0.4);
+      transform-origin: left center;
+    }
+    #controls {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Сонячний годинник</h2>
+  <section>
+    Ідея: спостерігати, як змінюється довжина тіні об’єкта протягом дня.<br>
+    Що потрібно:<br>
+    Олівець (або паличка, лінійка).<br>
+    Аркуш паперу.<br>
+    Годинник.<br>
+    Лінійка для вимірювань.<br>
+    Хід експерименту:<br>
+    Вставте олівець вертикально в пластилін.<br>
+    Покладіть на аркуш паперу біля вікна або на вулиці.<br>
+    Обведіть тінь та підпишіть час.<br>
+    Повторіть через годину (обведіть нову тінь та знову підпишіть час).<br>
+    Зробіть кілька вимірювань протягом дня.<br>
+    Спостереження:<br>
+    Довжина тіні змінюється.<br>
+    Кут повороту тіні змінюється.<br>
+    Питання для вас:<br>
+    Коли тінь найдовша?<br>
+    Коли найкоротша?<br>
+    Чи можна за тінню визначати час доби?<br>
+    Математична модель:<br>
+    Якщо висота палички = h, а довжина тіні = L:<br>
+    tan(α) = h / L<br>
+    де α — кут між Сонцем і горизонтом.<br>
+    Вітаємо! Ви створили "сонячний годинник"!
+  </section>
+
+  <p>Переміщуйте повзунок, щоб побачити, як тінь змінюється протягом дня.</p>
+
+  <div id="scene">
+    <div class="stick"></div>
+    <div class="shadow" id="shadow"></div>
+  </div>
+
+  <div id="controls">
+    <label for="timeRange">Час: <span id="timeLabel">12:00</span></label><br>
+    <input type="range" id="timeRange" min="6" max="18" step="0.01" value="12">
+  </div>
+
+  <script>
+    const shadow = document.getElementById('shadow');
+    const timeRange = document.getElementById('timeRange');
+    const timeLabel = document.getElementById('timeLabel');
+
+    function updateShadow(time) {
+      const angle = (time - 12) * 10;
+      const length = 120 / Math.max(0.2, Math.cos((time - 12) * Math.PI / 12));
+
+      shadow.style.width = length + "px";
+      shadow.style.transform = `translateX(0%) rotate(${angle}deg)`;
+
+      const hours = Math.floor(time);
+      const minutes = Math.round((time - hours) * 60);
+      timeLabel.textContent = `${hours.toString().padStart(2,"0")}:${minutes.toString().padStart(2,"0")}`;
+    }
+
+    timeRange.addEventListener("input", (e) => {
+      updateShadow(parseFloat(e.target.value));
+    });
+
+    updateShadow(12);
+  </script>
+</body>
+</html>

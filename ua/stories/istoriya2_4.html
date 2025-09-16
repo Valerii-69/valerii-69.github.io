@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<title>Модель: Вплив ландшафту на сприйняття</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: linear-gradient(to top, #cceeff, #ffffff);
+    margin: 0; padding: 2em;
+  }
+  canvas {
+    display: block;
+    margin: 1em auto;
+    border: 2px solid #aaa;
+    background: #eef;
+  }
+  .info {
+    max-width: 700px;
+    margin: auto;
+  }
+  label {
+    display: block;
+    margin: 1em 0 0.2em;
+  }
+</style>
+</head>
+<body>
+  <h1>Модель сприйняття ландшафту</h1>
+  <div class="info">
+    <p>Ця модель ілюструє, як насиченість кольорів та висота спостереження впливають на суб’єктивне сприйняття ландшафту — «заспокійливий» чи «збудливий» ефект.</p>
+    
+    <label>Насиченість кольорів (0–1):</label>
+    <input type="range" id="saturation" min="0" max="1" step="0.01" value="0.5">
+
+    <label>Висота спостереження (умовні одиниці):</label>
+    <input type="range" id="height" min="1" max="100" value="30">
+
+    <p><strong>Емоційний ефект:</strong> <span id="effect"></span></p>
+  </div>
+
+  <canvas id="landscape" width="600" height="300"></canvas>
+
+  <script>
+    const saturationSlider = document.getElementById('saturation');
+    const heightSlider = document.getElementById('height');
+    const canvas = document.getElementById('landscape');
+    const ctx = canvas.getContext('2d');
+    const effectText = document.getElementById('effect');
+
+    function updateLandscape() {
+      const saturation = parseFloat(saturationSlider.value);
+      const height = parseFloat(heightSlider.value);
+
+      drawLandscape(saturation);
+      const effect = calculateEmotionalEffect(saturation, height);
+      effectText.textContent = effect;
+    }
+
+    function drawLandscape(saturation) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const skyColor = `rgba(${200 + saturation * 55}, ${220 + saturation * 25}, 255, 1)`;
+      ctx.fillStyle = skyColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+
+      for (let i = 0; i < 3; i++) {
+        const green = Math.floor(100 + saturation * 100 - i * 20);
+        ctx.fillStyle = `rgb(50, ${green}, 50)`;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2 + i * 20);
+        for (let x = 0; x <= canvas.width; x++) {
+          const y = canvas.height / 2 + i * 20 + 20 * Math.sin((x + i * 100) * 0.01);
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    function calculateEmotionalEffect(saturation, height) {
+      const value = saturation * Math.log(height);
+
+      if (value < 1.5) return "Заспокійливий";
+      if (value < 3) return "Нейтральний";
+      return "Збудливий";
+    }
+
+    saturationSlider.addEventListener('input', updateLandscape);
+    heightSlider.addEventListener('input', updateLandscape);
+
+    updateLandscape();
+  </script>
+</body>
+</html>

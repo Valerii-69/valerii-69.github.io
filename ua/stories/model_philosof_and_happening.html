@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ШІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ШІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Модель — Філософія та випадок</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fafafa;
+      color: #222;
+    }
+    header, footer {
+      background-color: #2a6d66;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    h1 {
+      text-align: center;
+      color: #2a4d69;
+    }
+    .formula {
+      font-size: 1.2rem;
+      margin: 15px 0 25px 0;
+      text-align: center;
+    }
+    #modelCanvas {
+      display: block;
+      margin: 0 auto 30px auto;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 8px;
+    }
+    #explanation {
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 30px;
+      background: #e8f0fe;
+      padding: 15px 20px;
+      border-radius: 6px;
+      border-left: 5px solid #2a4d69;
+    }
+    button {
+      display: block;
+      margin: 0 auto 20px auto;
+      background-color: #2a4d69;
+      color: white;
+      font-size: 1.1rem;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #1b2e43;
+    }
+  </style>
+
+  <!-- MathJax для формул -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+<header>
+  <h2>Захоплююча математика з ШІ</h2>
+</header>
+
+  <h1>Модель — Філософія та випадок</h1>
+
+  <p>У цьому розділі ми розглянемо просту математичну модель випадкового вибору,  
+  яка ілюструє вплив ймовірностей на результати подій.</p>
+
+  <div class="formula">
+    $$ P(A) = \frac{n(A)}{n(S)} $$
+  </div>
+
+  <canvas id="modelCanvas" width="600" height="250" aria-label="Інтерактивна модель випадкового вибору"></canvas>
+
+  <button id="runButton">Запустити симуляцію</button>
+
+  <div id="explanation">
+    <p><strong>Опис моделі:</strong></p>
+    <p>Припустимо, у нас є кошик із кольоровими кульками. Кожен колір відповідає певній події.  
+    Ймовірність витягнути кульку певного кольору пропорційна кількості кульок цього кольору.</p>
+
+    <p>Нижче ви можете запустити симуляцію 1000 випадкових виборів і побачити результати.</p>
+
+    <p><strong>Питання для роздумів:</strong></p>
+    <ul>
+      <li>Як зміниться результат, якщо змінити кількість кульок певного кольору?</li>
+      <li>Чи можна вважати цю модель точною для реальних ситуацій?</li>
+      <li>Як пов’язані випадковість і детермінізм у таких моделях?</li>
+    </ul>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('modelCanvas');
+    const ctx = canvas.getContext('2d');
+    const runButton = document.getElementById('runButton');
+
+    const balls = [
+      { color: '#f44336', label: 'Червоний', count: 40 },
+      { color: '#2196f3', label: 'Синій', count: 30 },
+      { color: '#4caf50', label: 'Зелений', count: 20 },
+      { color: '#ffeb3b', label: 'Жовтий', count: 10 },
+    ];
+
+    const totalBalls = balls.reduce((sum, b) => sum + b.count, 0);
+    let results = balls.map(b => ({ ...b, picked: 0 }));
+
+    function drawChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const chartHeight = 150;
+      const chartWidth = 500;
+      const barWidth = chartWidth / balls.length - 20;
+      const startX = 50;
+      const startY = 200;
+
+      const maxCount = Math.max(...results.map(r => r.picked));
+
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(startX - 10, startY - chartHeight - 10);
+      ctx.lineTo(startX - 10, startY + 10);
+      ctx.lineTo(startX + chartWidth + 10, startY + 10);
+      ctx.stroke();
+
+      results.forEach((r, i) => {
+        const barHeight = maxCount ? (r.picked / maxCount) * chartHeight : 0;
+        const x = startX + i * (barWidth + 20);
+        const y = startY - barHeight;
+
+        ctx.fillStyle = r.color;
+        ctx.fillRect(x, y, barWidth, barHeight);
+
+        ctx.fillStyle = '#000';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(r.label, x + barWidth / 2, startY + 30);
+        ctx.fillText(r.picked, x + barWidth / 2, y - 5);
+      });
+    }
+
+    function simulate(n = 1000) {
+      results.forEach(r => r.picked = 0);
+
+      const pool = [];
+      balls.forEach(b => {
+        for (let i = 0; i < b.count; i++) pool.push(b.color);
+      });
+
+      for (let i = 0; i < n; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const color = pool[idx];
+        const res = results.find(r => r.color === color);
+        if (res) res.picked++;
+      }
+    }
+
+    runButton.addEventListener('click', () => {
+      simulate();
+      drawChart();
+    });
+
+    drawChart();
+  </script>
+<footer>
+  © 2025 Захоплююча математика з ШІ
+</footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

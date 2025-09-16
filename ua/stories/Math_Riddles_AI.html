@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Особисте дослідження математики та ШІ через історії, експерименти та загадки.">
+  <meta name="keywords" content="математика, ШІ, загадки, моделювання, діти, освіта, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Математичні загадки з ШІ - Занимальна математика з ШІ</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+  <h1>Математичні загадки з ШІ</h1>
+  <div id="puzzle"></div>
+  <input type="text" id="answerInput" placeholder="Введіть вашу відповідь..." autocomplete="off" />
+  <button id="checkBtn">Перевірити відповідь</button>
+  <div id="feedback"></div>
+  <div id="hint"></div>
+
+  <script>
+    const easy = [
+      { question: "Скільки сторін у трикутника?", answer: "3", hint: "Подумайте про геометричну фігуру з трьома кутами." },
+      { question: "Яке число йде після 99?", answer: "100", hint: "Наступне натуральне число." },
+      { question: "У мене є 12 яблук, я віддав 7. Скільки залишилось?", answer: "5", hint: "Просте віднімання." },
+      { question: "10 помножити на яке число дорівнює 100?", answer: "10", hint: "Скільки разів 10 поміщається в 100?" },
+      { question: "Яке число потрібно додати до 47, щоб отримати 100?", answer: "53", hint: "100 − 47 = ?" }
+    ];
+
+    const medium = [
+      { question: "Я думаю про число. Якщо помножити його на 3 і додати 5, отримаємо 20. Яке це число?", answer: "5", hint: "Розв'яжіть 3x + 5 = 20" },
+      { question: "Якщо 5 олівців коштують 20 гривень, скільки коштує один олівець?", answer: "4", hint: "Поділіть 20 на 5." },
+      { question: "У квадрата периметр 20 см. Яка довжина однієї сторони?", answer: "5", hint: "Периметр = 4 × сторона." },
+      { question: "Годину тому була 3 година дня. Який час буде через 5 годин?", answer: "9", hint: "Спочатку знайдіть поточний час, потім додайте 5 годин." },
+      { question: "Яке трицифрове число читається однаково зліва направо і справа наліво?", answer: "121", hint: "Це паліндром, середня цифра — 2." }
+    ];
+
+    const hard = [
+      { question: "Три коти ловлять три миші за три хвилини. Скільки мишей зловлять шість котів за шість хвилин?", answer: "12", hint: "Знайдіть швидкість одного кота і масштабування." },
+      { question: "Я — двозначне число. Сума цифр = 9, різниця = 3. Яке це число?", answer: "63", hint: "x + y = 9 і x − y = 3." },
+      { question: "Сума трьох послідовних непарних чисел = 45. Знайдіть ці числа.", answer: "13,15,17", hint: "Поділіть 45 на 3, щоб знайти середнє число." },
+      { question: "У Петра було в 2 рази більше яблук, ніж у Василя. Разом у них 18 яблук. Скільки яблук у Петра?", answer: "12", hint: "Складіть рівняння 2x + x = 18." },
+      { question: "На годиннику 3:15. Який кут між годинниковою та хвилинною стрілками?", answer: "7.5", hint: "Кожна хвилина годинної стрілки = 0.5°." }
+    ];
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    const levels = [easy, medium, hard];
+    const puzzles = shuffle(levels[Math.floor(Math.random() * levels.length)]);
+
+    let currentPuzzleIndex = 0;
+    const puzzleEl = document.getElementById('puzzle');
+    const answerInput = document.getElementById('answerInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const hintEl = document.getElementById('hint');
+
+    function loadPuzzle(index) {
+      const puzzle = puzzles[index];
+      puzzleEl.textContent = puzzle.question;
+      feedbackEl.textContent = '';
+      hintEl.textContent = '';
+      answerInput.value = '';
+      answerInput.focus();
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      const correctAnswer = puzzles[currentPuzzleIndex].answer.toLowerCase();
+
+      if (!userAnswer) { feedbackEl.textContent = "Будь ласка, введіть відповідь."; return; }
+
+      if (userAnswer === correctAnswer) {
+        feedbackEl.style.color = 'green';
+        feedbackEl.textContent = "Правильно! 🎉";
+        currentPuzzleIndex++;
+        if (currentPuzzleIndex >= puzzles.length) {
+          setTimeout(() => {
+            alert("Вітаємо! Ви розв'язали всі загадки. Почнемо спочатку.");
+            currentPuzzleIndex = 0;
+            loadPuzzle(currentPuzzleIndex);
+          }, 1000);
+        } else { setTimeout(() => loadPuzzle(currentPuzzleIndex), 1500); }
+      } else {
+        feedbackEl.style.color = 'red';
+        feedbackEl.textContent = "Неправильно. Спробуйте ще.";
+        hintEl.textContent = "Підказка: " + puzzles[currentPuzzleIndex].hint;
+      }
+    });
+
+    loadPuzzle(currentPuzzleIndex);
+  </script>
+</body>
+</html>

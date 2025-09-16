@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Особисте дослідження математики та ШІ через історії, експерименти та моделювання.">
+  <meta name="keywords" content="математика, ШІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Творча майстерня та Запитай ШІ - Занятна математика з ШІ</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+  <h1>Творча майстерня: створюємо історію з ШІ</h1>
+  <section>
+    <label for="ideaInput">Введіть вашу ідею або тему для історії:</label>
+    <textarea id="ideaInput" placeholder="Наприклад: пригода математика у космосі"></textarea>
+    <button id="generateStoryBtn">Створити історію</button>
+    <button id="saveStoryBtn">Зберегти історію</button>
+    <div id="storyResult"></div>
+  </section>
+
+  <h1>Запитай ШІ</h1>
+  <section>
+    <label for="chatInput">Введіть запитання до ШІ:</label>
+    <input type="text" id="chatInput" placeholder="Введіть запитання..." autocomplete="off" />
+    <button id="sendChatBtn">Відправити</button>
+    <div id="chatMessages"></div>
+  </section>
+
+  <script>
+    const ideaInput = document.getElementById('ideaInput');
+    const generateStoryBtn = document.getElementById('generateStoryBtn');
+    const saveStoryBtn = document.getElementById('saveStoryBtn');
+    const storyResult = document.getElementById('storyResult');
+
+    function generateStory(idea) {
+      return `
+Одного разу, натхненний ідеєю "${idea}", наш герой вирушив у незвичайну пригоду, де числа і формули оживали, а математичні загадки перетворювались на захопливі випробування. 
+
+На кожному кроці він відкривав нові таємниці та розумів, що математика — це мова Всесвіту, яка допомагає розгадати його загадки.
+
+Нехай ця історія надихне вас досліджувати світ з цікавістю та творчістю!`;
+    }
+
+    generateStoryBtn.addEventListener('click', () => {
+      const idea = ideaInput.value.trim();
+      if (!idea) { alert('Будь ласка, введіть ідею для історії.'); return; }
+      storyResult.textContent = generateStory(idea);
+    });
+
+    saveStoryBtn.addEventListener('click', () => {
+      const storyText = storyResult.textContent.trim();
+      if (!storyText) { alert('Спершу створіть історію, щоб її зберегти.'); return; }
+      localStorage.setItem('savedStory', storyText);
+      alert('Історія збережена у локальному сховищі браузера! Обмеження: ~5–10 МБ.');
+    });
+
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem('savedStory');
+      if (saved) storyResult.textContent = saved;
+    });
+
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function appendMessage(sender, text) {
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="chat-${sender}">${sender==='user'?'Ви':'ШІ'}:</span> <span>${text}</span>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function generateAIResponse(question) {
+      const lower = question.toLowerCase();
+      if (lower.includes('математика')) return 'Математика — це мова Всесвіту, що вивчає числа та фігури.';
+      if (lower.includes('чому')) return 'Тому що світ влаштований так, і ми намагаємось його зрозуміти.';
+      if (lower.includes('що таке')) return 'Це фундаментальне питання, що потребує точного визначення.';
+      if (lower.includes('хто')) return 'Цікаве питання! Спробуйте пошукати в енциклопедії.';
+      return 'Дякую за запитання! Я ще вчуся і поки не знаю точної відповіді.';
+    }
+
+    sendChatBtn.addEventListener('click', () => {
+      const question = chatInput.value.trim();
+      if (!question) { alert('Будь ласка, введіть запитання.'); return; }
+      appendMessage('user', question);
+      chatInput.value = '';
+      setTimeout(() => { appendMessage('ai', generateAIResponse(question)); }, 800);
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key==='Enter') sendChatBtn.click();
+    });
+  </script>
+
+  <a href="../oglavlenie.html" class="back-link">&larr; Повернутися до змісту</a>
+</body>
+</html>

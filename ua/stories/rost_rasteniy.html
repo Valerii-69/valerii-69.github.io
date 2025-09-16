@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Експеримент: Ріст рослин та світло</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #fdfdfd;
+    }
+    h2 {
+      color: #2c6e49;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 15px;
+      width: 100%;
+      max-width: 600px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    th {
+      background: #e6f2e6;
+    }
+    #chartContainer {
+      margin-top: 20px;
+      max-width: 700px;
+    }
+    .note {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f0faf5;
+      border-left: 4px solid #2c6e49;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌱 Експеримент: Ріст рослин та світло</h2>
+  <p><b>Мета:</b> Спостерігати, як світло впливає на ріст та напрямок ростків квасолі.</p>
+
+<section>
+Ідея: перевірити, як напрямок та кількість світла впливають на ріст рослини.<br>
+Необхідні матеріали:<br>
+2 однакових стакани або горщики з ґрунтом,<br>
+насіння (наприклад, квасоля або горох, швидко проростає),<br>
+лінійка, лампа або вікно.<br>
+Хід експерименту:<br>
+Посадіть насіння у два стакани.<br>
+Один стакан поставте на вікно (світло зверху).<br>
+Інший — у коробку з маленьким бічним отвором (світло збоку).<br>
+Щодня вимірюйте висоту ростків лінійкою.<br>
+Записуйте результати у таблицю:<br>
+День &emsp; Висота на вікні (см) &emsp; Висота у коробці (см) &emsp; Кут нахилу (якщо видно)<br>
+1			<br>
+2			<br>
+3			<br>
+...			<br>
+🔢 Математична модель:<br>
+Ріст можна описати як лінійну функцію:<br>
+h(t) = a ⋅ t + b,<br>
+де <br>
+h — висота, <br>
+t — час (дні), <br>
+a — середній ріст за день.<br>
+Кут можна оцінити по фотографії або виміряти транспортиром.<br>
+❓Питання для вас:<br>
+Чому ростки тягнуться до світла?<br>
+Чи можна передбачити їх висоту на 10-й день?<br>
+Як зміниться ріст, якщо світла буде більше/менше?
+</section>
+
+  <table id="dataTable">
+    <tr>
+      <th>День</th>
+      <th>Висота на вікні (см)</th>
+      <th>Висота у коробці (см)</th>
+      <th>Кут нахилу (°)</th>
+    </tr>
+    <tr>
+      <td>1</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>2</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>3</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>4</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+    <tr>
+      <td>5</td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>
+    </tr>
+  </table>
+
+  <button onclick="drawChart()">Побудувати графік</button>
+
+  <div id="chartContainer">
+    <canvas id="growthChart"></canvas>
+  </div>
+
+  <div class="note">
+    ✨ <b>Побажання читачеві:</b>  
+    Нехай кожен ваш експеримент стане маленьким кроком до розуміння світу.  
+    Рослини тягнуться до світла — а ви тягніться до знань! 🌞📚
+  </div>
+
+  <script>
+    function drawChart() {
+      const table = document.getElementById("dataTable");
+      const days = [];
+      const windowHeights = [];
+      const boxHeights = [];
+
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        const day = parseInt(row.cells[0].innerText);
+        const windowHeight = parseFloat(row.cells[1].children[0].value);
+        const boxHeight = parseFloat(row.cells[2].children[0].value);
+
+        if (!isNaN(day)) days.push(day);
+        if (!isNaN(windowHeight)) windowHeights.push(windowHeight);
+        else windowHeights.push(null);
+        if (!isNaN(boxHeight)) boxHeights.push(boxHeight);
+        else boxHeights.push(null);
+      }
+
+      const ctx = document.getElementById("growthChart").getContext("2d");
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: days,
+          datasets: [
+            {
+              label: "Висота на вікні (см)",
+              data: windowHeights,
+              borderColor: "green",
+              fill: false
+            },
+            {
+              label: "Висота у коробці (см)",
+              data: boxHeights,
+              borderColor: "orange",
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Висота (см)" }
+            },
+            x: {
+              title: { display: true, text: "День експерименту" }
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

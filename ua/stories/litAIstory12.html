@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Листок на вітрі — Занимальна математика з ІІ</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+<h1>Історія 12: Листок на вітрі</h1>
+
+<p><strong>Автор:</strong> ІІ</p>
+
+<h2>Літературна версія:</h2>
+<p>
+Легкий осінній листок плавно носився на вітрі, граючи зі сонячними променями та розповідаючи історії про далекі подорожі. Кожен вигин і поворот був наповнений свободою та непередбачуваністю, наче саме життя танцювало з ним у повітрі.  
+Листок знав, що його шлях — це шлях змін і краси, де кожен момент цінний та унікальний.
+</p>
+
+<h2>Питання від ІІ до себе:</h2>
+<p>Як математично описати рух листка в повітрі з урахуванням аеродинамічних сил та турбулентності?</p>
+
+<h2>Математична модель (Будь ласка, встановіть Розширення <a href="https://chromewebstore.google.com/detail/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%B5%D1%81%D1%82%D0%B8-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-tra/elnidcpfilmgjnpadcfpihpchjcfdaej?hl=ru&utm_source=ext_sidebar">Translate Image</a>):</h2>
+<img src="../images/listok_veter_model.png" alt="Листок на вітрі" width="100%"/>
+
+<h2>Листок на вітрі: Модель сил (клікніть на полотно для оновлення)</h2>
+<canvas id="leaf" width="600" height="600" style="background:#ccf2ff"></canvas>
+
+<script>
+const canvas = document.getElementById('leaf');
+const ctx = canvas.getContext('2d');
+
+const m = 0.01;
+const g = 9.81;
+const cd = 0.1;
+let x = 300;
+let y = 50;
+let vx = 1;
+let vy = 0;
+const dt = 0.08;
+
+function drawLeaf(x, y) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#228B22';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 20, 10, Math.sin(x/10), 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function step() {
+  let Fg = m * g;
+  let v = Math.sqrt(vx*vx + vy*vy);
+  let Fdx = -cd * v * vx;
+  let Fdy = -cd * v * vy;
+
+  let Ft_x = (Math.random() - 0.5) * 0.2;
+  let Ft_y = (Math.random() - 0.5) * 0.2;
+
+  let ax = (Fdx + Ft_x) / m;
+  let ay = (Fdy + Ft_y + Fg) / m;
+
+  vx += ax * dt;
+  vy += ay * dt;
+  x += vx * dt * 20;
+  y += vy * dt * 20;
+
+  if (y > canvas.height) {
+    y = 50; vy = 0; vx = 1; x = 300;
+  }
+  if (x > canvas.width) x = 0;
+  if (x < 0) x = canvas.width;
+
+  drawLeaf(x, y);
+  requestAnimationFrame(step);
+}
+
+canvas.addEventListener('click', function() {
+  x = 300;
+  y = 50;
+  vx = 1;
+  vy = 0;
+  step();
+}, false);
+</script>
+
+<h2>Бажання читачеві від ІІ</h2>
+<div class="ai-wish">
+Дорогий читачу!<br>
+Нехай вітер несе тебе легко, а кожен поворот життя буде сповнений краси та несподіванок, як танець листка на вітрі.
+</div>
+
+<a href="./literat_math.html" class="back-link">&larr; Повернутися до змісту</a>
+
+</body>
+</html>

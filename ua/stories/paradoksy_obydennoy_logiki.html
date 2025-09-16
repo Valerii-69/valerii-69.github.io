@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Парадокси повсякденної логіки — міні-колекція</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#98a8b8;--glass:rgba(255,255,255,0.04)}
+    *{box-sizing:border-box}
+    body{font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;background:linear-gradient(180deg,#071021 0%, #071728 60%);color:#e6eef6;margin:0;padding:40px;}
+    .container{max-width:900px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042a38}
+    h1{font-size:20px;margin:0}
+    p.lead{color:var(--muted);margin-top:6px}
+    .controls{display:flex;gap:10px;margin:18px 0}
+    button{background:var(--glass);border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px 12px;border-radius:10px;cursor:pointer}
+    button.primary{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#042a38;border:none;font-weight:600}
+    .card{background:rgba(255,255,255,0.02);border-radius:14px;padding:20px;box-shadow:0 6px 24px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+    .paradox{margin:18px 0;padding:14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.02)}
+    .dialog{font-family: Georgia, 'Times New Roman', serif;margin:0 0 8px 0}
+    blockquote{margin:8px 0 0 0;padding-left:12px;border-left:3px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .philos{margin-top:10px;color:var(--muted);font-size:14px}
+    .hidden{opacity:0;transform:translateY(8px)}
+    .fade-in{animation:fadeIn .6s ease forwards}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    @media print{body{background:white;color:black} .card{box-shadow:none;border:none}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">ПЛ</div>
+      <div>
+        <h1>Парадокси повсякденної логіки — міні-колекція</h1>
+        <p class="lead">Короткі сценки та нотатки про те, як прості питання перетворюються на психологічні ігри.</p>
+      </div>
+    </header>
+
+    <div class="controls">
+      <button id="playBtn" class="primary">Показати по черзі</button>
+      <button id="showAllBtn">Показати все одразу</button>
+      <button id="downloadBtn">Завантажити HTML</button>
+      <button id="copyBtn">Скопіювати текст</button>
+    </div>
+
+    <div class="card" id="card">
+      <div class="meta">
+        <div>Автор: Валерій + ШІ (версія для сайту)</div>
+        <div id="date"></div>
+      </div>
+
+      <section id="intro" class="hidden">
+        <h2>Вступ</h2>
+        <p>У повсякденній мові ми часто шукаємо не стільки інформацію, скільки підтвердження власної картини світу. І тоді просте питання перестає бути простим. Годинник стає допитом, дорога — тестом намірів, склянка води — іспитом на спрагу. Ці маленькі розмовні пастки смішні і трохи сумні, бо відображають звичку захищати себе навіть від нешкідливих фактів.</p>
+      </section>
+
+      <div id="paradoxes">
+        <article class="paradox hidden">
+          <p class="dialog"><strong>1. Час і мотиви</strong><br>
+          — <em>Котра година?</em><br>
+          — <em>А навіщо вам?</em></p>
+          <blockquote>Іронія: ніби сам час має знати, для чого його питають.</blockquote>
+          <p class="philos">Філософія: іноді люди захищають інформацію, що належить усім. Це питання не про години, а про довіру.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>2. Місце та наміри</strong><br>
+          — <em>Де знаходиться бібліотека?</em><br>
+          — <em>А що ви там хочете?</em></p>
+          <blockquote>Іронія: шлях до знань проходить через бюрократію цікавості.</blockquote>
+          <p class="philos">Філософія: у нашому світі маршрути все частіше охороняють не стіни, а люди, які вимагають пояснень.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>3. Спрага та сумнів</strong><br>
+          — <em>Можна мені склянку води?</em><br>
+          — <em>А ви хочете пити?</em></p>
+          <blockquote>Іронія: прохання води як загадка без очевидної відповіді.</blockquote>
+          <p class="philos">Філософія: навіть найпростіші потреби іноді потребують доказів — ми вчимося виправдовувати спрагу.</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>4. Приналежність і підозра</strong><br>
+          — <em>Це ваш велосипед?</em><br>
+          — <em>А навіщо вам?</em></p>
+          <blockquote>Іронія: невинне питання миттєво перетворюється на допит.</blockquote>
+          <p class="philos">Філософія: власність стає приводом для психологічних ігор «хто кому що повинен пояснювати».</p>
+        </article>
+
+        <article class="paradox hidden">
+          <p class="dialog"><strong>5. Погода та підозри</strong><br>
+          — <em>А дощ буде?</em><br>
+          — <em>А ви збираєтесь гуляти?</em></p>
+          <blockquote>Іронія: прогноз погоди видають лише разом із вашими планами.</blockquote>
+          <p class="philos">Філософія: ми часто пов’язуємо чуже питання з власними уявленнями про те, що «нормально» знати.</p>
+        </article>
+      </div>
+
+      <section id="conclusion" class="hidden">
+        <h3>Висновок</h3>
+        <p>Парадокси повсякденної логіки смішні, бо виникають із простих ситуацій і закінчуються психологічними лабіринтами. Але вони цінні: у кожному є маленький урок про те, як ми сприймаємо чужі питання. Іноді достатньо просто відповісти — і подарувати факт без перевірки «нащо».</p>
+      </section>
+
+      <footer>
+        <div>Натисніть «Показати по черзі», щоб переглянути як міні-лекцію, або «Показати все одразу» для друку та швидкого копіювання.</div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('date').textContent = new Date().toLocaleDateString('uk-UA', {year:'numeric',month:'long',day:'numeric'});
+
+    const items = Array.from(document.querySelectorAll('.hidden'));
+    const playBtn = document.getElementById('playBtn');
+    const showAllBtn = document.getElementById('showAllBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function playSequentially() {
+      items.forEach(i=>{i.classList.remove('fade-in'); i.style.opacity=0});
+      let delay = 0;
+      items.forEach(el => {setTimeout(()=>{el.classList.add('fade-in');}, delay); delay += 700;});
+    }
+
+    function showAll() { items.forEach(el=> el.classList.add('fade-in')); }
+
+    playBtn.addEventListener('click', playSequentially);
+    showAllBtn.addEventListener('click', showAll);
+
+    downloadBtn.addEventListener('click', ()=>{
+      const html = '<!doctype html>' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'paradoksi_povsyakdennoi_logiky.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      const textParts = Array.from(document.querySelectorAll('.card *')).map(el => el.innerText).join('\n\n');
+      try{ await navigator.clipboard.writeText(textParts); copyBtn.textContent='Скопійовано!'; setTimeout(()=> copyBtn.textContent='Скопіювати текст',1500);}catch(e){alert('Не вдалося скопіювати автоматично. Виділіть текст і натисніть Ctrl+C.');}
+    });
+
+    window.addEventListener('load', ()=>{document.getElementById('intro').classList.add('fade-in');});
+  </script>
+</body>
+</html>

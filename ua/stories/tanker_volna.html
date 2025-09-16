@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Танкер і хвиля</title>
+<style>
+  body { font-family: Arial; margin: 20px; }
+  canvas { border: 1px solid #ccc; display: block; margin-top: 10px; }
+  input[type="range"] { width: 300px; }
+</style>
+</head>
+<body>
+<h1>Емулятор руху танкера по хвилях</h1>
+<h3>Щоб оновити, клікніть на полотно</h3>
+<p>Змінюйте амплітуду та частоту хвиль, щоб побачити, як це впливає на стійкість танкера.</p>
+<label for="amp">Амплітуда хвиль (м): <span id="amp_val">1.2</span></label>
+<input type="range" id="amp" min="0" max="10" value="1.2" step="0.1"><br>
+<label for="freq">Частота хвиль (Гц): <span id="freq_val">0.3</span></label>
+<input type="range" id="freq" min="0.1" max="6" value="0.3" step="0.1"><br>
+<canvas id="tankercanvas" width="600" height="300"></canvas>
+<p><b>Порада читачеві:</b> експериментуйте з параметрами, щоб знайти комбінації, при яких танкер втрачає стійкість.</p>
+
+<script>
+const canvas = document.getElementById('tankercanvas');
+const ctx = canvas.getContext('2d');
+const ampSlider = document.getElementById('amp');
+const freqSlider = document.getElementById('freq');
+const ampVal = document.getElementById('amp_val');
+const freqVal = document.getElementById('freq_val');
+
+// Оновлення підписів повзунків
+function updateLabels() {
+  ampVal.textContent = ampSlider.value;
+  freqVal.textContent = freqSlider.value;
+}
+freqSlider.oninput = ampSlider.oninput = updateLabels;
+updateLabels();
+
+let t = 0;
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const amp = parseFloat(ampSlider.value);
+  const freq = parseFloat(freqSlider.value);
+  const wave = amp * Math.sin(freq * t);
+  const waveT = amp * Math.cos(freq * t);
+
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0, 200 + wave, canvas.width, 200); // вода
+  ctx.fillStyle = 'gray';
+  ctx.fillRect(200, 150 + waveT + 20, 200, 60); // танкер
+
+  t += 0.05;
+  requestAnimationFrame(draw);
+}
+
+// Перезапуск анімації при кліку
+canvas.addEventListener('click', () => { t = 0; draw(); }, false);
+draw();
+</script>
+</body>
+</html>

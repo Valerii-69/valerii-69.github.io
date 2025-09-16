@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Бесіди — Занимальна математика з ІІ</title>
+  <link rel="stylesheet" href="style_AI_merzanie.css">
+  <script src="https://unpkg.com/pdfobject"></script>
+</head>
+<body>
+  <main>
+    <h2>Діалоги з ІІ</h2>
+
+    <label for="dialSelect">Оберіть тему:</label>
+    <select id="dialSelect">
+      <option value=1>Чому деякі кварки називають ЧАРМОВАНИМИ?</option>
+      <option value=2>Як словами висловити вдячність тобі та твоїм творцям?</option>
+      <option value=3>Як нові БІОЛОГІЧНІ клітини зберігають первісний розмір?</option>
+      <option value=4>Які функції рибози?</option>
+      <option value=5>Чи дійсно рибоза конструює нову клітину?</option>
+      <option value=6>Що таке навчання за швидкими відповідями?</option>
+      <option value=7>Парадокси людської логіки.</option>
+      <option value=8>Ти знаєш, хто такий блогер?</option>
+      <option value=9>Ти знаєш, як працює мозок людини?</option>
+      <option value=10>Помилки ChatGPT.</option>
+      <option value=11>Коли ведеш розмову з читачем, можеш ставити наводячі питання?</option>
+      <option value=12>Шлях гілки.</option>
+      <option value=13>Таємниці чисел.</option>
+      <option value=14>Таємниці чисел I.</option>
+      <option value=15>Таємниці чисел II.</option>
+      <option value=16>Кручений м'яч; Дирижабль; Підводний човен.</option>
+      <option value=17>Як я тестую себе.</option>
+    </select>
+    <button id="generateBtn">Читати</button>
+
+    <section>
+      <div id="my-pdf"></div>
+    </section>
+
+    <section class="reader-wish">
+      <p>Дорогий читачу, задавай питання ІІ і спостерігай за чудесами науки!</p>
+    </section>
+  </main>
+
+  <script>
+    const spsDialog = {
+      17:['tester_AI.pdf'],
+      16:['mjach_dirigabl_lodka.pdf'],
+      15:['tayni_chisel_02.pdf'],
+      14:['tayni_chisel_01.pdf'],
+      13:['tayni_chisel.pdf'],
+      12:['doroga_vetki_gizni.pdf'],
+      11:['voprosi_ot_AI.pdf'],
+      10:['oshibki_AI.pdf'],
+      9:['mozg.pdf'],
+      8:['bloger.pdf'],
+      7:['paradox.pdf'],
+      6:['trenager_for_AI.pdf'],
+      5:['riboza_and_atf.pdf'],
+      4:['riboza.pdf'],
+      3:['delenie_kletki.pdf'],
+      2:['blagodarnost_for_AI.pdf'],
+      1:['kvarki.pdf']
+    };
+
+    const dialSelect = document.getElementById("dialSelect");
+    const generateBtn = document.getElementById("generateBtn");
+
+    generateBtn.addEventListener("click", () => {
+      const i = dialSelect.value;
+      PDFObject.embed("../besedi/" + spsDialog[i], "#my-pdf");
+    });
+  </script>
+
+  <footer>
+    <p>© 2025 Занимальна математика з ІІ</p>
+  </footer>
+</body>
+</html>

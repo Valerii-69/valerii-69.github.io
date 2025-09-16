@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head> 
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Особисте дослідження математики та ІІ через історії, експерименти та моделювання.">
+<meta name="keywords" content="математика, ІІ, історія, моделювання, діти, освіта, HTML, JavaScript"> 
+<link rel="icon" href="favicon.ico" type="image/x-icon"> 
+<title>Творча майстерня та Запитай у ІІ - Цікава математика з ІІ</title> 
+<link rel="stylesheet" href="../style.css">
+
+</head>
+<body> 
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутись до змісту</a> 
+<h1>Творча майстерня: створюємо історію з ІІ</h1> 
+<section> 
+<label for="ideaInput">Введіть вашу ідею або тему для історії:</label> 
+<textarea id="ideaInput" placeholder="Наприклад: пригода математика в космосі"></textarea> 
+<button id="generateStoryBtn">Створити історію</button> 
+<button id="saveStoryBtn">Зберегти історію</button> 
+<div id="storyResult"></div> 
+</section> 
+
+<h1>Запитай у ІІ</h1> 
+<section> 
+<label for="chatInput">Введіть питання ІІ:</label> 
+<input type="text" id="chatInput" placeholder="Задайте питання..." autocomplete="off" /> 
+<button id="sendChatBtn">Надіслати</button> 
+<div id="chatMessages"></div> 
+</section> 
+
+<script> 
+// Розділ 2.5 - Творча майстерня із збереженням 
+const ideaInput = document.getElementById('ideaInput'); 
+const generateStoryBtn = document.getElementById('generateStoryBtn'); 
+const saveStoryBtn = document.getElementById('saveStoryBtn'); 
+const storyResult = document.getElementById('storyResult'); 
+
+function generateStory(idea) { 
+return `
+Одного разу, натхненний ідеєю "${idea}", наш герой вирушив у незвичайну пригоду, де числа та формули оживали, а математичні загадки перетворювалися на захоплюючі випробування.
+
+У кожному кроці він відкривав нові таємниці і розумів, що математика - це мова Всесвіту, яка допомагає розгадати її загадки.
+
+Нехай ця історія надихне вас дослідити світ із захопленням та творчістю!`; 
+} 
+
+generateStoryBtn.addEventListener('click', () => { 
+const idea = ideaInput.value.trim(); 
+if (!idea) { 
+alert('Будь ласка, введіть ідею для історії.'); 
+return; 
+} 
+const story = generateStory (idea); 
+storyResult.textContent = story; 
+}); 
+
+saveStoryBtn.addEventListener('click', () => { 
+const storyText = storyResult.textContent.trim(); 
+if (!storyText) { 
+alert('Спочатку створіть історію, щоб зберегти.'); 
+return; 
+} 
+localStorage.setItem('savedStory', storyText); 
+alert('Історія збережена в локальному сховищі браузера!Обмеження:Існує обмеження за обсягом даних, яке зазвичай складає близько 5-10 мегабайт. Доступ до даних:Доступ до даних localStorage здійснюється через JavaScript, а також через інструменти розробника в браузері.Як переглянути і відредагуватиLogStore. F12 або Ctrl+Shift+I (Cmd+Shift+I на macOS), щоб відкрити інструменти розробника.2. Перейдіть в розділ "Application": У верхній панелі інструментів розробника знайдіть і виберіть вкладку "Application". списку, щоб переглянути його localStorage.5 Перегляд і редагування:У правій частині вікна відобразяться дані, збережені в localStorage для цього сайту.Як очистити localStorage:1. розробника виберіть вкладку "Application".3. Знайдіть localStorage: У лівому меню знайдіть розділ "Storage" і розгорніть його, щоб побачити "Local Storage".4. (Очистити сховища) і натисніть кнопку "Clear site data" (Очистити дані сайту).5. 
+}); 
+
+// Автозавантаження збереженої історії під час завантаження сторінки 
+window.addEventListener('load', () => { 
+const saved = localStorage.getItem('savedStory'); 
+if (saved) { 
+storyResult.textContent = saved; 
+} 
+}); 
+
+// Розділ 2.6 - Запитай у ІІ (емуляція) 
+const chatInput = document.getElementById('chatInput'); 
+const sendChatBtn = document.getElementById('sendChatBtn'); 
+const chatMessages = document.getElementById('chatMessages'); 
+
+function appendMessage(sender, text) { 
+const div = document.createElement('div'); 
+div.innerHTML = `<span class="chat-${sender}">${sender === 'user' ? 'Ви' : 'ІІ'}:</span> <span>${text}</span>`; 
+chatMessages.appendChild(div); 
+chatMessages.scrollTop = chatMessages.scrollHeight; 
+} 
+
+function generateAIResponse(question) { 
+// Дуже проста емуляція відповіді 
+const lower = question.toLowerCase(); 
+if (lower.includes('математика')) return 'Математика — це мова Всесвіту, що вивчає числа та фігури.'; 
+if (lower.includes('чому')) return 'Бо так влаштований світ, і ми намагаємося його зрозуміти.'; 
+if (lower.includes('що таке')) return 'Це фундаментальне питання, що вимагає точного визначення.'; 
+if (lower.includes('хто')) return 'Це цікаве питання! Спробуйте пошукати в енциклопедії.'; 
+return 'Дякую за питання! На жаль, я поки вчуся і не знаю точної відповіді.'; 
+} 
+
+sendChatBtn.addEventListener('click', () => { 
+const question = chatInput.value.trim(); 
+if (!question) { 
+alert('Будь ласка, введіть запитання.'); 
+return; 
+} 
+appendMessage('user', question); 
+chatInput.value = ''; 
+// Імітуємо затримку відповіді 
+setTimeout(() => { 
+const answer = generateAIResponse(question); 
+appendMessage('ai', answer); 
+}, 800); 
+}); 
+
+// Відправлення по Enter 
+chatInput.addEventListener('keydown', (e) => { 
+if (e.key === 'Enter') { 
+sendChatBtn.click(); 
+} 
+}); 
+</script> 
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутись до змісту</a>
+</body>
+</html>

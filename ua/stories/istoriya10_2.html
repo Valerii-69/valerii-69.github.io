@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Невагомість у воді</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f0f9ff; }
+    label, input, select { display: block; margin: 0.5em 0; }
+    .result { margin-top: 1em; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h2>🛁 Невагомість у ванні — розрахунок виштовхувальної сили</h2>
+  <label>Маса тіла (кг): <input type="number" id="mass" value="70"></label><br>
+  <label>Об'єм тіла (м³): <input type="number" id="volume" value="0.07"></label><br>
+  <button onclick="calculate()">Розрахувати</button>
+  <p id="result"></p>
+
+  <script>
+    function calculate() {
+      const g = 9.8; // прискорення вільного падіння
+      const rho = 1000; // густина води
+
+      const m = parseFloat(document.getElementById('mass').value);
+      const V = parseFloat(document.getElementById('volume').value);
+
+      const weight = m * g;
+      const buoyancy = rho * V * g;
+      const effective = weight - buoyancy;
+      const percent = ((effective / weight) * 100).toFixed(1);
+
+      document.getElementById('result').innerHTML =
+        `Звичайна вага: ${weight.toFixed(1)} Н<br>` +
+        `Виштовхувальна сила: ${buoyancy.toFixed(1)} Н<br>` +
+        `Вага у воді: ${effective.toFixed(1)} Н (${percent}% від звичайної ваги)`;
+    }
+  </script>
+</body>
+</html>
