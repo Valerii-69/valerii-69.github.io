@@ -1,13 +1,12 @@
 const story1 = document.getElementById('story1');
 story1.innerHTML = `
-<h3>История 1: Змея спасает птенца</h3>
-<p>Змея заметила маленького птенца, которого подстерегал ястреб. Своими плавными, волнообразными движениями она лавировала среди веток, корректируя траекторию, чтобы спасти птенца в последний момент.</p>
+<h3>Story 1: A snake saves a chick</h3>
+<p>A snake noticed a little chick being stalked by a hawk. With her smooth, undulating movements, she maneuvered among the branches, adjusting her trajectory to save the chick at the last moment.</p>
 <div class="canvas-container">
 <canvas id="snakeCanvas" width="800" height="300" style="border:1px solid #ccc; background:#fff;"></canvas><br>
-<iframe src="zmeja.html" width="680" height="400" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+<iframe src="zmeja.html" width="680" height="400" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
 </div>
-<p class="wish">Наблюдая за тем, как змея лавирует среди веток и спасает птенца, помните: даже самые сложные траектории можно понять, если смотреть внимательно и пытаться моделировать движение. Пусть ваша любознательность ведёт вас, как гибкое тело змеи, к новым открытиям!</p>
-`;
+<p class="wish">Watching the snake maneuver among the branches and save the chick, remember: even the most complex trajectories can be understood if you watch carefully and try to model the movement. Let your curiosity lead you, like the flexible body of the snake, to new discoveries!</p>`;
 /*
 const snakeCanvas = document.getElementById("snakeCanvas");
 const ctxSnake = snakeCanvas.getContext("2d");

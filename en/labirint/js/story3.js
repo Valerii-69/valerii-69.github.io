@@ -1,18 +1,17 @@
 const story3 = document.getElementById('story3');
 story3.innerHTML = `
-<h3>История 3: Частицы случайности</h3>
-<p>Наблюдайте за хаотичным движением частиц. Добавляйте новые частицы и изменяйте силу магнитного поля, чтобы увидеть, как формируются кластеры и вихри.</p>
+<h3>Story 3: Particles of Randomness</h3>
+<p>Watch the chaotic movement of particles. Add new particles and change the magnetic field strength to see how clusters and vortices form.</p>
 <canvas id="particleCanvas" width="800" height="400"></canvas>
 <div class="controls">
-  <label>Количество частиц: <span id="numVal">50</span></label>
-  <input type="range" id="numParticles" min="10" max="200" value="50">
-  <label>Сила поля: <span id="forceVal">1</span></label>
-  <input type="range" id="forceField" min="-5" max="5" step="0.1" value="1">
-  <button id="addParticle">Добавить частицу</button>
-  <button id="resetParticles">Сбросить</button>
+<label>Number of particles: <span id="numVal">50</span></label>
+<input type="range" id="numParticles" min="10" max="200" value="50">
+<label>Field strength: <span id="forceVal">1</span></label>
+<input type="range" id="forceField" min="-5" max="5" step="0.1" value="1">
+<button id="addParticle">Add particle</button>
+<button id="resetParticles">Reset</button>
 </div>
-<p class="wish">Даже в хаосе есть закономерности. Смотрите на случайные движения как на маленькую модель реального мира: экспериментируйте, меняйте условия, и математика покажет вам скрытые структуры.</p>
-`;
+<p class="wish">Even in chaos there are patterns. Look at random movements as a small model of the real world: experiment, change the conditions, and mathematics will show you hidden structures.</p>`;
 
 const particleCanvas = document.getElementById("particleCanvas");
 const ctxParticle = particleCanvas.getContext("2d");
