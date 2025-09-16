@@ -1,47 +1,46 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Занимательная математика с ИИ — интерактивные истории</title>
+<title>Entertaining Mathematics with AI — Interactive Stories</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+<a href="../oglavlenie.html" class="back-link">&larr; Return to Contents</a>
 
-<h2>Занимательная математика с ИИ — интерактивные истории</h2>
+<h2>Entertaining Mathematics with AI — Interactive Stories</h2>
 
 <div id="bridge">
-Каждая история, хоть и разная по содержанию и стилю, показывает одну и ту же удивительную истину: мир можно исследовать и понимать через наблюдение, эксперимент и математическое моделирование. От ловкой змеи, спасшей птенца, через логические цепочки криминалистического расследования, до хаотичных частиц случайности — все они приглашают вас стать исследователем и увидеть скрытые закономерности вокруг нас.
-</div>
+Each story, though different in content and style, shows the same amazing truth: the world can be explored and understood through observation, experimentation, and mathematical modeling. From a clever snake that saved a chick, through the logical chains of a forensic investigation, to chaotic particles of chance - they all invite you to become an explorer and see the hidden patterns around us. </div>
 
 <div id="buttons">
-  <button onclick="showStory('story1')">История 1: Змея и птенец</button>
-  <button onclick="showStory('story2')">История 2: Криминалистика</button>
-  <button onclick="showStory('story3')">История 3: Частицы случайности</button>
+<button onclick="showStory('story1')">Story 1: The Snake and the Chick</button>
+<button onclick="showStory('story2')">Story 2: Forensics</button>
+<button onclick="showStory('story3')">Story 3: Particles of Randomness</button>
 </div>
 
-<!-- История 1 -->
+<!-- Story 1 -->
 <div id="story1" class="story"></div>
 
-<!-- История 2 -->
+<!-- Story 2 -->
 <div id="story2" class="story">
-<h3>История 2: Математическое моделирование в раскрытии преступления</h3>
-<p>В криминалистическом расследовании каждое движение оставляет след. Используя математическое моделирование, можно восстановить траектории, анализировать вероятности и находить закономерности, недоступные простому наблюдению.</p>
-<p class="wish">В мире, где каждое движение оставляет след, математическая логика может стать вашим самым надёжным инструментом. Смотрите на события как на цепочку закономерностей, моделируйте их, экспериментируйте, и пусть наука помогает вам видеть то, что скрыто от глаза.</p>
+<h3>Story 2: Mathematical Modeling in Crime Solving</h3>
+<p>In a forensic investigation, every move leaves a trace. Using mathematical modeling, you can reconstruct trajectories, analyze probabilities, and find patterns that are inaccessible to simple observation.</p>
+<p class="wish">In a world where every move leaves a trace, mathematical logic can become your most reliable tool. Look at events as a chain of patterns, model them, experiment, and let science help you see what is hidden from the eye.</p>
 </div>
 
-<!-- История 3 -->
+<!-- Story 3 -->
 <div id="story3" class="story"></div>
 
 <script src="../labirint/js/story1.js"></script>
 <script src="../labirint/js/story3.js"></script>
 <script>
 function showStory(id) {
-  const stories = document.querySelectorAll('.story');
-  stories.forEach(story => story.style.display = 'none');
-  document.getElementById(id).style.display = 'block';
+const stories = document.querySelectorAll('.story');
+stories.forEach(story => story.style.display = 'none');
+document.getElementById(id).style.display = 'block';
 }
-// Показать первую историю по умолчанию
+// Show first story by default
 showStory('story1');
 </script>
 
