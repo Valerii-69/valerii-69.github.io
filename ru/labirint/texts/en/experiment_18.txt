@@ -1,0 +1,1 @@
+Suspend a pendulum on two strings of different lengths and swing it. Observe the unpredictable motion and try to spot patterns in the chaos.

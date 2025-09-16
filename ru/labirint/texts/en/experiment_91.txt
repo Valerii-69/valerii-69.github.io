@@ -1,0 +1,1 @@
+Compose a melody using a sequence of numbers. Notice how numbers create rhythm and harmony.

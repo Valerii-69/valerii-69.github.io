@@ -1,0 +1,1 @@
+Draw a fractal or open a generator. Notice repeating patterns at different scales.

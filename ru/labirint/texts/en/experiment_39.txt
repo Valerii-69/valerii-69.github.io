@@ -1,0 +1,1 @@
+Use balls on strings like in a Newton's cradle. Lift one ball and release. Observe how energy transfers along the chain.

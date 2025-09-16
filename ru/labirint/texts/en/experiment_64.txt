@@ -1,0 +1,1 @@
+Draw a spiral on paper. Try to move a small bead along it to observe the constant distance between turns.

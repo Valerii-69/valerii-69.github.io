@@ -1,0 +1,1 @@
+Draw a spiral and think where it ends. Can you ever complete it?
