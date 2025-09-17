@@ -203,7 +203,7 @@ function switchLang(lang){
       const oldScript = document.getElementById("matrixScript");
       if (oldScript) oldScript.remove();
 
-      const randomMatrix = Math.floor((Math.random()*4)+0.6);
+      const randomMatrix = Math.floor((Math.random()*3)+1);
       const script = document.createElement("script");
       script.src = `js/matrix${randomMatrix}.js`;
       script.id = "matrixScript";
