@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Афоризмы</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #fefefc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px; /* фиксированная полоска */
+      overflow: hidden;
+    }
+
+    #aphorism {
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+      white-space: nowrap;
+
+      /* Градиентный текст */
+      background: linear-gradient(
+        90deg,
+        #2ecc71,
+        #27ae60,
+        #58d68d,
+        #239b56,
+        #1e8449
+      );
+      background-size: 400% 400%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      animation: emeraldFlow 12s ease infinite;
+    }
+
+    @keyframes emeraldFlow {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="aphorism">Загрузка афоризмов...</div>
+
+  <script src="../js/aphorisms.js"></script>
+</body>
+</html>
