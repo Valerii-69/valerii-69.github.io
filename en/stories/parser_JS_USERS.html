@@ -38,21 +38,60 @@ button { padding: 6px 12px; font-size:14px; margin:5px 0; }
 
 <p>Example working code:</p>
 <pre>
+// 0. Running rectangle
 (function(canvas){
   const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   let x = 0;
   function animate(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle='red';
-    ctx.fillRect(x,50,50,30);
+    ctx.fillRect(x,90,50,30);
     x = (x + 2) % canvas.width;
     requestAnimationFrame(animate);
   }
   animate();
 })(canvas);
+
+// 1. Fractal tree
+(function(canvas){
+const treeCtx = canvas.getContext('2d');
+  treeCtx.clearRect(0, 0, canvas.width, canvas.height);
+function drawTree(x, y, length, angle, depth) {
+  if(depth===0) return;
+  const x1 = x + length * Math.cos(angle);
+  const y1 = y - length * Math.sin(angle);
+  treeCtx.beginPath();
+  treeCtx.moveTo(x, y);
+  treeCtx.lineTo(x1, y1);
+  treeCtx.stroke();
+  drawTree(x1, y1, length*0.7, angle - Math.PI/6, depth-1);
+  drawTree(x1, y1, length*0.7, angle + Math.PI/6, depth-1);
+}
+drawTree(280, 190, 60, Math.PI/2, 8);
+})(canvas);
+
+// 2. Snow Fractal (Koch Curve)
+(function(canvas){
+const kochCtx = canvas.getContext('2d');
+  kochCtx.clearRect(0, 0, canvas.width, canvas.height);
+function kochLine(x1,y1,x2,y2,depth){
+  if(depth===0){kochCtx.beginPath();kochCtx.moveTo(x1,y1);kochCtx.lineTo(x2,y2);kochCtx.stroke();return;}
+  const dx = (x2-x1)/3;
+  const dy = (y2-y1)/3;
+  const xA = x1 + dx, yA = y1 + dy;
+  const xB = 0.5*(x1+x2) - Math.sqrt(3)*(y2-y1)/6, yB = 0.5*(y1+y2) + Math.sqrt(3)*(x2-x1)/6;
+  const xC = x1 + 2*dx, yC = y1 + 2*dy;
+  kochLine(x1,y1,xA,yA,depth-1);
+  kochLine(xA,yA,xB,yB,depth-1);
+  kochLine(xB,yB,xC,yC,depth-1);
+  kochLine(xC,yC,x2,y2,depth-1);
+}
+kochLine(120,50,400,50,3);
+})(canvas);
 </pre>
 
-<p>Paste your JS code here:</p>
+<p>Paste your JS code here (The code can be edited directly in this window.):</p>
 <textarea id="userCode">// paste your code here</textarea>
 <button id="checkCode">Check Code</button>
 <div id="errors"></div>
