@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+<!-- Open Graph / Facebook -->
+<meta property="og:title" content="Занимательная математика с ИИ" />
+<meta property="og:description" content="Исследуем мир математики через увлекательные истории, эксперименты и модели с помощью ИИ." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://valerii-69.github.io/index.html" />
+<meta property="og:image" content="https://valerii-69.github.io/ru/images/og-image.png" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Занимательная математика с ИИ" />
+<meta name="twitter:description" content="Исследуем мир математики через увлекательные истории, эксперименты и модели с помощью ИИ." />
+<meta name="twitter:image" content="https://valerii-69.github.io/ru/images/og-image.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Личное исследование математики и ИИ через истории, эксперименты и моделирование.">
+<meta name="keywords" content="математика, ИИ, история, моделирование, дети, образование, HTML, JavaScript">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Философия и случай — Истории вероятности</title>
+  <link rel="stylesheet" href="../style.css">
+
+</head>
+<body>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+<header>
+  <h2>Занимательная математика с ИИ</h2>
+</header>
+  <h1>Философия и случай — Истории вероятности</h1>
+
+  <label for="storySelect">Выберите историю:</label>
+  <select id="storySelect" onchange="showStory()">
+    <option value="">-- Выберите --</option>
+    <option value="1">Парадокс дней рождения</option>
+    <option value="2">История с подбросом монеты</option>
+    <option value="3">Вероятность выигрыша в лотерею</option>
+    <option value="4">Парадокс лжеца</option>
+    <option value="5">Болле и случайные числа</option>
+  </select>
+
+  <div class="story-text" id="storyText"></div>
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfAevXddtJDNp7t0u6FlASm9i5zXWQnq3bNIFscj5ZnxTC9YQ/viewform?embedded=true" width="640" height="907" frameborder="0" marginheight="0" marginwidth="0">Загрузка…</iframe>
+
+
+  <div id="responseMsg"></div>
+
+  <script>
+    const stories = {
+      1: `Парадокс дней рождения:\n\nВ группе из всего 23 человек вероятность того, что хотя бы у двоих совпадет день рождения, превышает 50%. Это удивительно, ведь 23 — небольшое число по сравнению с 365!`,
+      2: `История с подбросом монеты:\n\nЕсли подбрасывать монету много раз подряд, кажется, что результат должен распределяться равномерно. Но после серии из нескольких орлов люди часто начинают думать, что скоро выпадет решка — это называется ошибкой игрока.`,
+      3: `Вероятность выигрыша в лотерею:\n\nШансы выиграть крупный джекпот могут быть как 1 к миллионам. Тем не менее миллионы людей продолжают играть, надеясь на удачу. Интересно, что многие не осознают, насколько малы эти шансы.`,
+      4: `Парадокс лжеца:\n\nЧеловек говорит: "Все утверждения, которые я делаю, ложны." Если это правда, значит, он лжёт. Если ложь — значит, он говорит правду. Этот парадокс касается логики и вероятности истинности утверждений.`,
+      5: `Болле и случайные числа:\n\nФизик Болле изучал случайные числа и обнаружил, что они часто подчиняются определенным распределениям, что удивительно, учитывая кажущуюся хаотичность событий.`
+    };
+
+    function showStory() {
+      const select = document.getElementById('storySelect');
+      const storyText = document.getElementById('storyText');
+      const val = select.value;
+      if (val && stories[val]) {
+        storyText.textContent = stories[val];
+      } else {
+        storyText.textContent = '';
+      }
+      document.getElementById('responseMsg').textContent = '';
+    }
+
+    function submitComment() {
+      const email = document.getElementById('emailInput').value.trim();
+      const comment = document.getElementById('commentInput').value.trim();
+      const storyId = document.getElementById('storySelect').value;
+
+      if (!storyId) {
+        alert('Пожалуйста, выберите историю.');
+        return;
+      }
+      if (!comment) {
+        alert('Пожалуйста, введите комментарий.');
+        return;
+      }
+      if (!email || !validateEmail(email)) {
+        alert('Пожалуйста, введите корректный email.');
+        return;
+      }
+
+      // Отправка комментария (здесь пример fetch к Apps Script)
+      fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+        method: 'POST',
+        body: JSON.stringify({
+          storyId,
+          comment,
+          email
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          document.getElementById('responseMsg').textContent = 'Спасибо! Ваш комментарий отправлен.';
+          document.getElementById('commentInput').value = '';
+          document.getElementById('emailInput').value = '';
+        } else {
+          document.getElementById('responseMsg').textContent = 'Ошибка при отправке.';
+        }
+      })
+      .catch(() => {
+        document.getElementById('responseMsg').textContent = 'Ошибка при отправке.';
+      });
+    }
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+  </script>
+<footer>
+  © 2025 Занимательная математика с ИИ
+</footer>
+  <a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>
+
+</body>
+</html>
