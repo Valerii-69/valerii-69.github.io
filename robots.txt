@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://valerii-69.github.io/sitemap.xml
+Sitemap: https://valerii-69.github.io/Sitemap.xml
+
