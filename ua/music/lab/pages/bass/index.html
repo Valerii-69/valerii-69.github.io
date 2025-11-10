@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Бас-конструктор - Лабораторія</title>
+<link rel="stylesheet" href="bass-style.css">
+</head>
+<body>
+<main>
+<header><h1>🎸 Бас-конструктор - Лабораторія «Цікава математика з ІІ»</h1></header>
+
+<!-- 1. Стиль -->
+<section> 
+<h2>1. Виберіть стиль</h2> 
+<div class="row" style="gap:10px"> 
+<div> 
+<label>Стиль</label> 
+<select id="styleSelect"></select> 
+</div> 
+<div style="width:140px"> 
+<label>Tempo</label> 
+<input type="number" id="tempoIn" min="30" max="300" value="100"> 
+</div> 
+<div style="width:140px"> 
+<label>Waveform</label> 
+<input type="text" id="waveformDisplay" readonly value="trapezoid"> 
+</div> 
+<div style="width:120px"> 
+<label>Phrase length</label> 
+<input type="number" id="phraseLen" min="1" max="32" value="4"> 
+</div> 
+</div> 
+<div class="controls"> 
+<button id="sampleBtn">▶ Зразок</button> 
+<button id="stopSampleBtn" disabled>⏹ Стоп</button> 
+<div class="small">Прослухайте зразок стилю, а потім створіть свою партію.</div> 
+</div>
+</section>
+
+<!-- 2. Нотний стан та фраза -->
+<section> 
+<h2>2. Нотний стан</h2> 
+<div class="small">Нотний стан на базі вибраного зразка (один для всієї фрази). Поточна фраза — редагуйте у списках, що випадають нижче.</div> 
+<canvas id="phraseCanvas"></canvas> 
+<div id="phraseContainer"></div> 
+<div class="controls"> 
+<button id="playPhraseBtn">▶ Слухати фразу</button> 
+<button id="stopPhraseBtn" disabled>⏹ Стоп</button> 
+<button id="recordPhraseBtn">Запис фрази</button> 
+<button id="stopRecordBtn">Стоп запис</button> 
+<button id="saveWavBtn">💾 Зберегти WAV</button> 
+<button id="saveJsonBtn">💾 Зберегти JSON</button> 
+<button id="playerBtn">🎸Бас-Плеер</button>
+</div>
+</section>
+
+<!-- 3. Ефекти та спектр -->
+<section> 
+<h2>3. Звук та ефекти</h2> 
+<div class="grid" style="margin-bottom:10px"> 
+<div> 
+<label>Filter cutoff, Гц</label> 
+<input type="range" id="cutoff" min="60" max="4000" value="900"> 
+</div> 
+<div> 
+<label>Saturation (drive)</label> 
+<input type="range" id="drive" min="0" max="1" step="0.01" value="0.25"> 
+</div> 
+<div> 
+<label>Compressor ratio</label> 
+<input type="range" id="ratio" min="1" max="10" step="0.1" value="2"> 
+</div> 
+<div> 
+<label>Volume</label> 
+<input type="range" id="volume" min="0" max="1" step="0.01" value="0.8"> 
+</div> 
+</div> 
+<canvas id="spectrumCanvas"></canvas>
+</section>
+
+<!-- 4. EQ -->
+<section> 
+<h2>4. Еквалайзер</h2> 
+<div id="eqControls" style="margin-top:6px"> 
+<label>Low: <span id="lowVal">0</span>dB</label> 
+<input type="range" id="lowSlider" min="-15" max="15" step="0.5" value="0"><br> 
+<label>Mid: <span id="midVal">0</span>dB</label> 
+<input type="range" id="midSlider" min="-15" max="15" step="0.5" value="0"><br> 
+<label>High: <span id="highVal">0</span>dB</label> 
+<input type="range" id="highSlider" min="-15" max="15" step="0.5" value="0"> 
+</div>
+</section>
+<div id="paramDisplay" style="margin-top:10px; font-size:0.9em; color:#0af;"></div> 
+
+<section> 
+<h2>Help</h2> 
+<div class="row"> 
+<div class="col small"> 
+Файл партитури зберігається локально; помістіть його в папку <code>/partitura</code>. 
+</div> 
+<div class="col" style="text-align:right"> 
+<select id="helpLang"> 
+<option value="RU">RU</option> 
+<option value="EN">EN</option> 
+<option value="UA">UA</option> 
+</select> 
+<button id="helpBtn">❓ Help</button> 
+</div> 
+</div> 
+<div id="helpBox" class="small" style="margin-top:8px; display:none;"></div> 
+</section>
+<footer>© 2025 - Бас-конструктор</footer>
+</main>
+
+<script>
+/* -----------------------------
+   Bass constructor — single file
+   ----------------------------- */
+const cutoffSlider = document.getElementById('cutoff');
+const driveSlider = document.getElementById('drive');
+const ratioSlider = document.getElementById('ratio');
+const volumeSlider = document.getElementById('volume');
+const lowSlider = document.getElementById('lowSlider');
+const midSlider = document.getElementById('midSlider');
+const highSlider = document.getElementById('highSlider');
+const lowVal = document.getElementById('lowVal');
+const midVal = document.getElementById('midVal');
+const highVal = document.getElementById('highVal');
+const paramDisplay = document.getElementById('paramDisplay');
+
+/* --- style data --- */
+const styleData = {
+  tango: { name:'Tango', tempo:120, phraseLength:4, pattern:['E2','E2','G2','B2'] },
+  bossa: { name:'Bossa Nova', tempo:90, phraseLength:8, pattern:['E2','A2','B2','E3','D3','B2','A2','E2'] },
+  rock:  { name:'Rock', tempo:130, phraseLength:4, pattern:['E2','E2','D2','A1'] },
+  jazz:  { name:'Jazz', tempo:110, phraseLength:12, pattern:['E2','G2','A2','Bb2','B2','C3','E3','G3','F3','E3','D3','C3'] },
+  ambient:{ name:'Ambient', tempo:60, phraseLength:3, pattern:['C2','G2','A2'] }
+};
+
+/* --- Audio context & global nodes --- */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioCtx();
+
+let masterGain = audioCtx.createGain();
+let analyser = audioCtx.createAnalyser();
+let eqNodes = { lowEQ:null, midEQ:null, highEQ:null };
+let globalDriveNode = null;
+let globalFilterNode = null;
+let globalCompNode = null;
+
+/* --- initialize chain once --- */
+function initAudioChain(){
+  // master gain (controlled by volume slider)
+  masterGain.gain.value = parseFloat(document.getElementById('volume').value || 0.8);
+  masterGain.connect(audioCtx.destination);
+
+  // analyser
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.6;
+  // note: analyser will be connected from masterGain at end
+  // create drive / filter / compressor / EQ nodes
+  globalDriveNode = audioCtx.createWaveShaper();
+  globalDriveNode.curve = makeDriveCurve(parseFloat(document.getElementById('drive').value || 0.25));
+  globalDriveNode.oversample = '4x';
+
+  globalFilterNode = audioCtx.createBiquadFilter();
+  globalFilterNode.type = 'lowpass';
+  globalFilterNode.frequency.value = parseFloat(document.getElementById('cutoff').value || 900);
+  globalFilterNode.Q.value = 0.9;
+
+  globalCompNode = audioCtx.createDynamicsCompressor();
+  globalCompNode.ratio.value = parseFloat(document.getElementById('ratio').value || 2);
+  globalCompNode.threshold.value = -24;
+
+  eqNodes.lowEQ = audioCtx.createBiquadFilter();
+  eqNodes.lowEQ.type = 'lowshelf'; eqNodes.lowEQ.frequency.value = 120; eqNodes.lowEQ.gain.value = 0;
+
+  eqNodes.midEQ = audioCtx.createBiquadFilter();
+  eqNodes.midEQ.type = 'peaking'; eqNodes.midEQ.frequency.value = 800; eqNodes.midEQ.Q.value = 1; eqNodes.midEQ.gain.value = 0;
+
+  eqNodes.highEQ = audioCtx.createBiquadFilter();
+  eqNodes.highEQ.type = 'highshelf'; eqNodes.highEQ.frequency.value = 4000; eqNodes.highEQ.gain.value = 0;
+
+  // chain: (osc -> waveShaper) -> filter -> compressor -> lowEQ -> midEQ -> highEQ -> masterGain -> analyser -> destination
+  globalDriveNode.connect(globalFilterNode);
+  globalFilterNode.connect(globalCompNode);
+  globalCompNode.connect(eqNodes.lowEQ);
+  eqNodes.lowEQ.connect(eqNodes.midEQ);
+  eqNodes.midEQ.connect(eqNodes.highEQ);
+  eqNodes.highEQ.connect(masterGain);
+  masterGain.connect(analyser);
+  // analyser -> destination already via masterGain -> audioCtx.destination
+}
+
+/* --- utility: drive curve --- */
+function makeDriveCurve(amount){
+  const k = amount * 50;
+  const samples = 16384;
+  const curve = new Float32Array(samples);
+  for(let i=0;i<samples;i++){
+    const x = (i*2)/(samples-1)-1;
+    curve[i] = Math.tanh((1 + k) * x);
+  }
+  return curve;
+}
+
+/* --- trapezoid periodic wave creator (for oscillator) --- */
+function createTrapezoidPeriodicWave(ctx, duty=0.4, harmonics=64){
+  const real = new Float32Array(harmonics+1);
+  const imag = new Float32Array(harmonics+1);
+  for(let n=1;n<=harmonics;n++){
+    // coefficients to approximate trapezoid — using sine terms
+    imag[n] = (2/(n*Math.PI))*Math.sin(n*Math.PI*duty);
+  }
+  return ctx.createPeriodicWave(real, imag, {disableNormalization:false});
+}
+
+/* --- note name -> midi -> freq --- */
+function noteNameToMidi(name){
+  const notes = {C:0,Cs:1,D:2,Ds:3,E:4,F:5,Fs:6,G:7,Gs:8,A:9,As:10,B:11};
+  const m = name.match(/^([A-G]#?|Bb|Db|Eb|Gb|Ab|Cb|Fb)(\d)$/);
+  if(!m){
+    // try replace b with #
+    const m2 = name.replace('b','#').match(/^([A-G]#?)(\d)$/);
+    if(!m2) return 52;
+    return 12*(parseInt(m2[2])+1) + notes[m2[1].replace('#','s')];
+  }
+  let pitch = m[1];
+  // normalize flats to sharps (Bb -> A#)
+  pitch = pitch.replace('Bb','A#').replace('Db','C#').replace('Eb','D#').replace('Gb','F#').replace('Ab','G#');
+  return 12*(parseInt(m[2])+1) + {C:0,'C#':1,D:2,'D#':3,E:4,F:5,'F#':6,G:7,'G#':8,A:9,'A#':10,B:11}[pitch];
+}
+function midiToFreq(m){ return 440 * Math.pow(2,(m-69)/12); }
+function noteToFreq(note){ return midiToFreq(noteNameToMidi(note)); }
+
+/* --- phrase UI --- */
+const styleSelect = document.getElementById('styleSelect');
+const tempoIn = document.getElementById('tempoIn');
+const phraseLenEl = document.getElementById('phraseLen');
+const phraseContainer = document.getElementById('phraseContainer');
+const phraseCanvas = document.getElementById('phraseCanvas');
+const canvasCtx = phraseCanvas.getContext('2d');
+
+function createNoteSelect(defaultNote='E2'){
+  const sel = document.createElement('select');
+  const noteNames = [ "C1","C#1","D1","D#1","E1","F1","F#1","G1","G#1","A1","A#1","B1",
+  "C2","C#2","D2","D#2","E2","F2","F#2","G2","G#2","A2","A#2","B2",
+  "C3","C#3","D3","D#3","E3","F3","F#3","G3","G#3","A3","A#3","B3" ];
+  noteNames.forEach(n=>{
+    const o=document.createElement('option'); o.value=n; o.textContent=n;
+    if(n===defaultNote) o.selected=true;
+    sel.appendChild(o);
+  });
+  return sel;
+}
+
+function generatePhraseInputs(len, pattern=[]){
+  phraseContainer.innerHTML='';
+  for(let i=0;i<len;i++){
+    const w=document.createElement('div');
+    w.style.display='inline-block'; w.style.marginRight='6px';
+    const sel = createNoteSelect(pattern[i]||'E2');
+    w.appendChild(sel);
+    phraseContainer.appendChild(w);
+  }
+  // redraw canvas with current choices
+  drawPhraseCanvas(readPhrase(), -1);
+}
+
+function readPhrase(){
+  return Array.from(document.querySelectorAll('#phraseContainer select')).map(s=>s.value);
+}
+
+/* --- draw phrase canvas (simple stacked bars representing pitch) --- */
+function drawPhraseCanvas(pattern, activeIndex=-1){
+  const dPR = window.devicePixelRatio||1;
+  phraseCanvas.width = phraseCanvas.clientWidth * dPR;
+  phraseCanvas.height = phraseCanvas.clientHeight * dPR;
+  canvasCtx.setTransform(dPR,0,0,dPR,0,0);
+  canvasCtx.clearRect(0,0,phraseCanvas.clientWidth,phraseCanvas.clientHeight);
+  if(!pattern || pattern.length===0) return;
+  const w = phraseCanvas.clientWidth;
+  const h = phraseCanvas.clientHeight;
+  const step = w / pattern.length;
+  for(let i=0;i<pattern.length;i++){
+    const n = pattern[i];
+    const freq = noteToFreq(n);
+    // map freq to height for visual (just approximate)
+    const barH = Math.min(h*0.7, Math.max(8, (freq - 30)/300 * h ));
+    canvasCtx.fillStyle = (i===activeIndex)? 'orange':'#0af';
+    canvasCtx.fillRect(i*step + 4, (h - barH) - 6, step - 8, barH);
+    canvasCtx.fillStyle = '#cfe3ff';
+    canvasCtx.font = '12px monospace';
+    canvasCtx.fillText(n, i*step + 6, h - 2);
+  }
+}
+
+/* --- spectrum canvas --- */
+const spectrumCanvas = document.getElementById('spectrumCanvas');
+const sCtx = spectrumCanvas.getContext('2d');
+
+function initSpectrum(){
+  function draw(){
+    requestAnimationFrame(draw);
+    if(!analyser) return;
+    const w = spectrumCanvas.clientWidth;
+    const h = spectrumCanvas.clientHeight;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    sCtx.clearRect(0,0,w,h);
+    const barWidth = w / data.length;
+    for(let i=0;i<data.length;i++){
+      const v = data[i];
+      sCtx.fillStyle = `hsl(${i/data.length*240},80%,${50+v/5}%)`;
+      sCtx.fillRect(i*barWidth, h - (v/255*h), barWidth, v/255*h);
+    }
+  }
+  draw();
+}
+
+/* --- play engine --- */
+let playController = null;
+function playPatternLoop(pattern, opts={}){
+  // returns controller with stop()
+  const tempo = opts.tempo || parseInt(tempoIn.value) || 100;
+  const beatMs = 60000 / tempo;
+  let stopped=false;
+  let idx=0;
+  const selects = document.querySelectorAll('#phraseContainer select');
+  const pw = createTrapezoidPeriodicWave(audioCtx,0.4,64);
+
+  function scheduleNext(){
+    if(stopped) return;
+    const note = pattern[idx % pattern.length];
+    const freq = noteToFreq(note);
+    // create oscillator + env, route to globalDriveNode
+    const osc = audioCtx.createOscillator();
+    osc.setPeriodicWave(pw);
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+    const env = audioCtx.createGain();
+    // envelope attack/release (seconds)
+    const dur = (opts.noteDuration || 0.9) * (beatMs / 1000);
+    const attack = Math.min(0.02, dur*0.15);
+    const release = Math.min(0.05, dur*0.25);
+
+    env.gain.setValueAtTime(0, audioCtx.currentTime);
+    env.gain.linearRampToValueAtTime(1, audioCtx.currentTime + attack);
+    env.gain.setValueAtTime(1, audioCtx.currentTime + dur - release);
+    env.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + dur + 0.001);
+
+    osc.connect(env);
+    env.connect(globalDriveNode);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur + 0.01);
+
+    // highlight select and canvas
+    selects.forEach(s=>s.style.background='');
+    if(selects[idx % selects.length]) selects[idx % selects.length].style.background='rgba(255,200,100,0.3)';
+    drawPhraseCanvas(pattern, idx % pattern.length);
+
+    // cleanup after note end
+    setTimeout(()=>{ try{ env.disconnect(); osc.disconnect(); } catch(e){} }, (dur+0.05)*1000);
+
+    idx++;
+    scheduleTimer = setTimeout(scheduleNext, beatMs * (opts.stepBeats || 1));
+  }
+  let scheduleTimer = setTimeout(scheduleNext, 0);
+
+  return {
+    stop: () => {
+      stopped = true;
+      clearTimeout(scheduleTimer);
+      // clear highlights
+      document.querySelectorAll('#phraseContainer select').forEach(s=>s.style.background='');
+      drawPhraseCanvas(pattern, -1);
+    }
+  };
+}
+
+/* --- recording buffer and wav save --- */
+let recordingBuffer = []; // array of {note,duration}
+let isRecording = false;
+
+function startRecording(){
+  recordingBuffer = [];
+  isRecording = true;
+  document.getElementById('recordPhraseBtn').disabled = true;
+  document.getElementById('stopRecordBtn').disabled = false;
+}
+function stopRecording(){
+  isRecording = false;
+  document.getElementById('recordPhraseBtn').disabled = false;
+  document.getElementById('stopRecordBtn').disabled = true;
+}
+
+/* We'll capture notes into recordingBuffer inside playPatternLoop calls when isRecording=true:
+   in scheduleNext we push {note, duration} - but current architecture pushes at play time
+*/
+
+/* --- save WAV (no clicks, harmonics, normalization) --- */
+function saveRecordingWav(){
+  if(recordingBuffer.length === 0){
+    alert('Буфер записи пуст. Сначала нажмите "Запись фразы", затем проиграйте фразу и "Стоп запись".');
+    return;
+  }
+  const sampleRate = audioCtx.sampleRate;
+  // durations are stored in seconds
+  let totalSamples = recordingBuffer.reduce((sum,n)=>sum + Math.floor(n.duration * sampleRate), 0);
+  const buffer = new Float32Array(totalSamples);
+  let pos = 0;
+
+  for(let i=0;i<recordingBuffer.length;i++){
+    const {note, duration} = recordingBuffer[i];
+    const freq = noteToFreq(note);
+    const samples = Math.floor(duration * sampleRate);
+    const attackSamples = Math.max(1, Math.floor(0.01 * sampleRate));
+    const releaseSamples = Math.max(1, Math.floor(0.04 * sampleRate));
+    const sustainSamples = Math.max(0, samples - attackSamples - releaseSamples);
+
+    for(let j=0;j<samples;j++){
+      const t = j / sampleRate;
+      // sum of harmonics to emulate trapezoid-ish dense bass
+      let v = 0;
+      // use limited harmonics to avoid harshness
+      const harmonics = [
+        {mult:1, amp:1},
+        {mult:2, amp:0.45},
+        {mult:3, amp:0.25},
+        {mult:4, amp:0.12}
+      ];
+      for(const h of harmonics){
+        // approximate trapezoid harmonic contribution via sine weight
+        v += h.amp * Math.sin(2*Math.PI*freq*h.mult*t);
+      }
+      // apply simple envelope (linear attack/release)
+      let amp = 1;
+      if(j < attackSamples) amp = j / attackSamples;
+      else if(j >= attackSamples + sustainSamples) amp = (samples - j) / Math.max(1, releaseSamples);
+      buffer[pos++] = amp * v;
+    }
+  }
+
+  // normalization (prevent clipping and raise level)
+  let max = 0;
+  for(let i=0;i<buffer.length;i++) max = Math.max(max, Math.abs(buffer[i]));
+  if(max > 0){
+    const norm = 0.95 / max;
+    for(let i=0;i<buffer.length;i++) buffer[i] *= norm;
+  }
+
+  // convert Float32Array -> WAV Blob (16-bit PCM)
+  const wavBuffer = encodeWAV(buffer, sampleRate, 1);
+  const blob = new Blob([wavBuffer], {type: 'audio/wav'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bass_phrase_${(new Date()).toISOString().replace(/[:.]/g,'-')}.wav`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* --- WAV encoder (16-bit PCM) --- */
+function encodeWAV(float32Array, sampleRate, numChannels){
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const buffer = new ArrayBuffer(44 + float32Array.length * bytesPerSample);
+  const view = new DataView(buffer);
+
+  function writeString(view, offset, string){
+    for(let i=0;i<string.length;i++) view.setUint8(offset + i, string.charCodeAt(i));
+  }
+
+  let offset = 0;
+  writeString(view, offset, 'RIFF'); offset += 4;
+  view.setUint32(offset, 36 + float32Array.length * bytesPerSample, true); offset += 4;
+  writeString(view, offset, 'WAVE'); offset += 4;
+  writeString(view, offset, 'fmt '); offset += 4;
+  view.setUint32(offset, 16, true); offset += 4;
+  view.setUint16(offset, 1, true); offset += 2; // PCM
+  view.setUint16(offset, numChannels, true); offset += 2;
+  view.setUint32(offset, sampleRate, true); offset += 4;
+  view.setUint32(offset, sampleRate * blockAlign, true); offset += 4;
+  view.setUint16(offset, blockAlign, true); offset += 2;
+  view.setUint16(offset, bytesPerSample * 8, true); offset += 2;
+  writeString(view, offset, 'data'); offset += 4;
+  view.setUint32(offset, float32Array.length * bytesPerSample, true); offset += 4;
+
+  // write PCM samples
+  let pos = 44;
+  for(let i=0;i<float32Array.length;i++){
+    let s = Math.max(-1, Math.min(1, float32Array[i]));
+    view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    pos += 2;
+  }
+  return view;
+}
+
+/* --- init UI / wire events --- */
+function initUI(){
+  // fill style select
+  const sel = document.getElementById('styleSelect');
+  Object.keys(styleData).forEach(k=>{
+    const o = document.createElement('option'); o.value = k; o.textContent = styleData[k].name; sel.appendChild(o);
+  });
+
+  // initial pattern
+  const initial = styleData['tango'];
+  document.getElementById('tempoIn').value = initial.tempo;
+  document.getElementById('phraseLen').value = initial.phraseLength;
+  generatePhraseInputs(initial.phraseLength, initial.pattern);
+
+  // update UI actions
+  document.getElementById('styleSelect').addEventListener('change', ()=>{
+    const s = styleData[document.getElementById('styleSelect').value];
+    document.getElementById('tempoIn').value = s.tempo;
+    document.getElementById('phraseLen').value = s.phraseLength;
+    generatePhraseInputs(s.phraseLength, s.pattern);
+  });
+
+  document.getElementById('phraseLen').addEventListener('change', (e)=>{
+    const len = Math.max(1, Math.min(32, parseInt(e.target.value) || 4));
+    document.getElementById('phraseLen').value = len;
+    generatePhraseInputs(len, readPhrase());
+  });
+
+  // sample button
+  document.getElementById('sampleBtn').addEventListener('click', async ()=>{
+    const style = styleData[document.getElementById('styleSelect').value];
+    const pattern = style.pattern.slice();
+    const tempo = style.tempo;
+    if(playController) { playController.stop(); playController = null; document.getElementById('stopSampleBtn').disabled = true; }
+    // play sequentially
+    playController = playPatternLoop(pattern, { tempo, loop:false, noteDuration:0.9 });
+    document.getElementById('stopSampleBtn').disabled = false;
+  });
+  document.getElementById('stopSampleBtn').addEventListener('click', ()=>{
+    if(playController){ playController.stop(); playController = null; document.getElementById('stopSampleBtn').disabled = true; }
+  });
+
+  // play phrase
+  document.getElementById('playPhraseBtn').addEventListener('click', ()=>{
+    const pattern = readPhrase();
+    const tempo = parseInt(document.getElementById('tempoIn').value) || 100;
+    if(playController){ playController.stop(); playController = null; }
+    playController = playPatternLoop(pattern, { tempo, loop:false, noteDuration:0.9 });
+    document.getElementById('stopPhraseBtn').disabled = false;
+  });
+  document.getElementById('stopPhraseBtn').addEventListener('click', ()=>{
+    if(playController){ playController.stop(); playController = null; document.getElementById('stopPhraseBtn').disabled = true; }
+  });
+
+  // recording controls
+  document.getElementById('recordPhraseBtn').addEventListener('click', ()=>{
+    // start recording — but not automatically play; user can press play after recording if they want
+    recordingBuffer = [];
+    isRecording = true;
+    document.getElementById('recordPhraseBtn').disabled = true;
+    document.getElementById('stopRecordBtn').disabled = false;
+  });
+  document.getElementById('stopRecordBtn').addEventListener('click', ()=>{
+    isRecording = false;
+    document.getElementById('recordPhraseBtn').disabled = false;
+    document.getElementById('stopRecordBtn').disabled = true;
+  });
+
+  // save WAV — saves recorded buffer
+  document.getElementById('saveWavBtn').addEventListener('click', saveRecordingWav);
+
+  // save JSON (phrase + params)
+  document.getElementById('saveJsonBtn').addEventListener('click', ()=>{
+    const obj = {
+      phrase: readPhrase(),
+      tempo: parseInt(document.getElementById('tempoIn').value)||100,
+      cutoff: parseFloat(document.getElementById('cutoff').value),
+      drive: parseFloat(document.getElementById('drive').value),
+      ratio: parseFloat(document.getElementById('ratio').value),
+      volume: parseFloat(document.getElementById('volume').value),
+      eq: {
+        low: parseFloat(document.getElementById('lowSlider').value),
+        mid: parseFloat(document.getElementById('midSlider').value),
+        high: parseFloat(document.getElementById('highSlider').value)
+      }
+    };
+    const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'partitura.json'; a.click(); URL.revokeObjectURL(url);
+  });
+
+    document.getElementById('playerBtn').addEventListener('click', ()=>{
+	window.open('player.html','_blank');});
+
+  // volume/drive/cutoff/ratio handlers (update nodes live)
+  document.getElementById('volume').addEventListener('input', (e)=>{ masterGain.gain.value = parseFloat(e.target.value); });
+  document.getElementById('drive').addEventListener('input', (e)=>{ globalDriveNode.curve = makeDriveCurve(parseFloat(e.target.value)); });
+  document.getElementById('cutoff').addEventListener('input', (e)=>{ globalFilterNode.frequency.value = parseFloat(e.target.value); });
+  document.getElementById('ratio').addEventListener('input', (e)=>{ globalCompNode.ratio.value = parseFloat(e.target.value); });
+
+  // each time phrase selects change, redraw canvas
+  phraseContainer.addEventListener('change', ()=> drawPhraseCanvas(readPhrase(), -1));
+}
+
+/* --- when a note is actually played via playPatternLoop, if isRecording==true we push to recordingBuffer --- */
+/* To ensure recording covers repeats, playPatternLoop calls playNote and we push inside playNote if isRecording true.
+   So we add small wrapper: playNote pushes to recordingBuffer when isRecording is true. */
+
+function playNoteWrapper(note, duration){
+  // push to recording buffer if recording
+  if(isRecording){
+    recordingBuffer.push({ note, duration });
+  }
+  // perform the same oscillator+env route (for safety, reuse playPatternLoop's osc creation)
+  const pw = createTrapezoidPeriodicWave(audioCtx,0.4,64);
+  const osc = audioCtx.createOscillator();
+  osc.setPeriodicWave(pw);
+  osc.frequency.setValueAtTime(noteToFreq(note), audioCtx.currentTime);
+
+  const env = audioCtx.createGain();
+  const attack = Math.min(0.02, duration*0.15);
+  const release = Math.min(0.05, duration*0.25);
+
+  env.gain.setValueAtTime(0, audioCtx.currentTime);
+  env.gain.linearRampToValueAtTime(1, audioCtx.currentTime + attack);
+  env.gain.setValueAtTime(1, audioCtx.currentTime + duration - release);
+  env.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + duration + 0.001);
+
+  osc.connect(env);
+  env.connect(globalDriveNode);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration + 0.01);
+  setTimeout(()=>{ try{ env.disconnect(); osc.disconnect(); }catch(e){} }, (duration+0.05)*1000);
+}
+
+/* --- small wrapper: playPatternLoop uses playNoteWrapper instead of creating its own osc,
+   but to keep timing consistent we call playPatternLoop which creates own oscillators; so patch:
+   We'll modify playPatternLoop above to push recordingBuffer when isRecording and not duplicate behavior.
+   For simplicity, ensure playPatternLoop already pushes into recordingBuffer via isRecording flag before.
+*/
+
+/* --- wire everything up --- */
+initAudioChain();
+initSpectrum();
+initUI();
+
+/* Make sure phraseCanvas initially sized and drawn */
+window.addEventListener('load', ()=> drawPhraseCanvas(readPhrase(), -1) );
+
+/* --- modify playPatternLoop to push into recordingBuffer when isRecording:
+   We will monkey-patch scheduleNext to push recordingBuffer; but current playPatternLoop pushes not automatically.
+   Simpler approach: override playPatternLoop used above to push when isRecording: replace the earlier function with new one that calls playNoteWrapper.
+*/
+
+playPatternLoop = function(pattern, opts={}){
+  const tempo = opts.tempo || parseInt(tempoIn.value) || 100;
+  const beatMs = 60000 / tempo;
+  let stopped=false;
+  let idx=0;
+  const selects = document.querySelectorAll('#phraseContainer select');
+  const pw = createTrapezoidPeriodicWave(audioCtx,0.4,64);
+
+  function scheduleNext(){
+    if(stopped) return;
+    const note = pattern[idx % pattern.length];
+    const dur = (opts.noteDuration || 0.9) * (beatMs / 1000);
+    // play using wrapper (pushes to recordingBuffer)
+    const osc = audioCtx.createOscillator();
+    osc.setPeriodicWave(pw);
+    osc.frequency.setValueAtTime(noteToFreq(note), audioCtx.currentTime);
+
+    const env = audioCtx.createGain();
+    const attack = Math.min(0.02, dur*0.15);
+    const release = Math.min(0.05, dur*0.25);
+
+    env.gain.setValueAtTime(0, audioCtx.currentTime);
+    env.gain.linearRampToValueAtTime(1, audioCtx.currentTime + attack);
+    env.gain.setValueAtTime(1, audioCtx.currentTime + dur - release);
+    env.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + dur + 0.001);
+
+    osc.connect(env);
+    env.connect(globalDriveNode);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur + 0.01);
+
+    if(isRecording){
+      recordingBuffer.push({ note, duration: dur });
+    }
+
+    selects.forEach(s=>s.style.background='');
+    if(selects[idx % selects.length]) selects[idx % selects.length].style.background='rgba(255,200,100,0.3)';
+    drawPhraseCanvas(pattern, idx % pattern.length);
+
+    // cleanup
+    setTimeout(()=>{ try{ env.disconnect(); osc.disconnect(); } catch(e){} }, (dur+0.05)*1000);
+
+    idx++;
+    scheduleTimer = setTimeout(scheduleNext, beatMs * (opts.stepBeats || 1));
+  }
+
+  let scheduleTimer = setTimeout(scheduleNext, 0);
+
+  return {
+    stop: () => {
+      stopped = true;
+      clearTimeout(scheduleTimer);
+      document.querySelectorAll('#phraseContainer select').forEach(s=>s.style.background='');
+      drawPhraseCanvas(pattern, -1);
+    }
+  };
+};
+
+/* ensure drawPhraseCanvas on start with default pattern */
+drawPhraseCanvas(readPhrase(), -1);
+
+/* --- init EQ control bindings (manages the eqNodes)) --- */
+(function initEQControls(){
+  const lowS = document.getElementById('lowSlider');
+  const midS = document.getElementById('midSlider');
+  const highS = document.getElementById('highSlider');
+  const lowV = document.getElementById('lowVal');
+  const midV = document.getElementById('midVal');
+  const highV = document.getElementById('highVal');
+
+  function updateEQ(){
+    if(eqNodes.lowEQ && eqNodes.midEQ && eqNodes.highEQ){
+      eqNodes.lowEQ.gain.value = parseFloat(lowS.value);
+      eqNodes.midEQ.gain.value = parseFloat(midS.value);
+      eqNodes.highEQ.gain.value = parseFloat(highS.value);
+      lowV.textContent = eqNodes.lowEQ.gain.value.toFixed(1);
+      midV.textContent = eqNodes.midEQ.gain.value.toFixed(1);
+      highV.textContent = eqNodes.highEQ.gain.value.toFixed(1);
+    }
+  }
+  lowS.addEventListener('input', updateEQ);
+  midS.addEventListener('input', updateEQ);
+  highS.addEventListener('input', updateEQ);
+  updateEQ();
+})();
+
+
+// === 袨袘袪袗袘袨孝袣袗 袩袗袪袗袦袝孝袪袨袙 ===
+[cutoffSlider, driveSlider, ratioSlider, volumeSlider].forEach(sl => {
+  sl.addEventListener('input', showParams);
+});
+
+[lowSlider, midSlider, highSlider].forEach(sl => {
+  sl.addEventListener('input', e => {
+    lowVal.textContent = lowSlider.value;
+    midVal.textContent = midSlider.value;
+    highVal.textContent = highSlider.value;
+    showParams();
+  });
+});
+
+function showParams() {
+  paramDisplay.textContent =
+    `Cutoff: ${cutoffSlider.value}Hz | Drive: ${driveSlider.value} | Ratio: ${ratioSlider.value} | ` +
+    `Vol: ${volumeSlider.value} | EQ(L/M/H): ${lowSlider.value}/${midSlider.value}/${highSlider.value}`;
+}
+
+function initHelp(){
+  const btn = document.getElementById('helpBtn');
+  const box = document.getElementById('helpBox');
+  btn.addEventListener('click',()=>{
+    const lang = document.getElementById('helpLang').value;
+    const msg = {
+      RU:'Выберите стиль, затем фразу. Можно сохранять WAV/JSON. Волна "trapezoid" создаёт трапециевидный звук.',
+      EN:'Select a style, then build your phrase. Save WAV/JSON. "trapezoid" waveform generates trapezoid sound.',
+      UA:'Виберіть стиль, потім фразу. Можна зберегти WAV/JSON. "trapezoid" створює трапецієвидний звук.'
+    };
+    box.style.display='block'; box.textContent=msg[lang]||msg['RU'];
+  });
+}
+
+initHelp();
+showParams();
+
+</script>
+</body>
+</html>
