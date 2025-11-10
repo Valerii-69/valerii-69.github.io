@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гід: Генератор - Хаос та мелодія</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  body {
+    font-family: "Inter", Arial, sans-serif;
+    background: radial-gradient(circle at 40% 40%, #060b14, #0b1220, #020408);
+    color: #e6eef8;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    color: #9bf8d6;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  main {
+    max-width: 880px;
+    margin: auto;
+    padding: 1.5rem;
+  }
+  section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  }
+  h2 {
+    color: #7ee1ff;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+  }
+  pre {
+    background: rgba(0,0,0,0.6);
+    color: #7ee1ff;
+    padding: 1rem;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  code { font-family: "Courier New", monospace; }
+  button {
+    background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0.5rem;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    transform: scale(1.05);
+  }
+  footer {
+    text-align: center;
+    color: #aaa;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<header>🎶 Підручник: «Генератор - Хаос та мелодія»</header>
+<main>
+
+<section> 
+<h2>1. Ідея генератора</h2> 
+<p> 
+Цей генератор створює короткі мелодійні фрази, де хаотична випадковість 
+підпорядковується простому правилу: кроки обмежені набором нот (наприклад, пентатонікою) та усуненням ±1. 
+</p> 
+<p> 
+Таким чином, незважаючи на випадковість, послідовність залишається гармонійною та музичною. 
+</p>
+</section>
+
+<section> 
+<h2>2. Генерація послідовності</h2> 
+<pre><code>const scale = [0,2,4,7,9]; // Пентатоніка
+let seq = [];
+let cur = 0;
+for(let i=0;i<12;i++){ 
+const step = (Math.random()*3|0) - 1; //-1,0, +1 
+cur = Math.max(0, Math.min(scale.length-1, cur + step)); 
+seq.push(scale[cur]);
+}</code></pre> 
+<p> 
+Алгоритм: кожен наступний крок зсувається на -1, 0 або +1 усередині масиву допустимих нот. 
+Результат — хаотична, але мелодійно осмислена фраза. 
+</p>
+</section>
+
+<section> 
+<h2>3. Відтворення через Web Audio API</h2> 
+<p> 
+Для кожної ноти створюється осцилятор і невеликий ADSR-огинальний сигнал. 
+</p> 
+<pre><code>const ctx = new (window.AudioContext||window.webkitAudioContext)();
+let t = ctx.currentTime;
+for(let s of seq) { 
+const o = ctx.createOscillator(); 
+const g = ctx.createGain(); 
+o.type='sine'; 
+o.frequency.value = 440*Math.pow(2,(60 + s -69)/12); 
+o.connect(g); 
+g.connect(ctx.destination); 
+g.gain.value=0.0001; 
+o.start(t); 
+g.gain.linearRampToValueAtTime(0.14, t+0.01); 
+g.gain.exponentialRampToValueAtTime(0.0001, t+0.22); 
+o.stop(t+0.28); 
+t += 0.32;
+}</code></pre> 
+<p> 
+Тут кожна нота «вистрілює» з плавним наростанням і згасанням — виходить музична фраза. 
+</p>
+</section>
+
+<section> 
+<h2>4. Експерименти з хаосом</h2> 
+<p> 
+Можна змінювати кроки, довжину послідовності, набір нот (наприклад, додати хроматику). 
+Експериментуючи з обмеженнями, ви керуєтеся хаосом та отримуєте унікальні мелодії. 
+</p>
+</section>
+
+<div style="text-align:center;"> 
+<button onclick="window.close()">⬅ Повернутися до Лабораторії</button>
+</div>
+
+</main>
+<footer>© 2025 Цікава математика з ІІ — Генератор: Хаос та мелодія</footer></body>
+	   
+</html>

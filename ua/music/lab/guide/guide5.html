@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гід: Семпли - Завантаження локально</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  body {
+    font-family: "Inter", Arial, sans-serif;
+    background: radial-gradient(circle at 40% 40%, #060b14, #0b1220, #020408);
+    color: #e6eef8;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    color: #a0e3ff;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  main {
+    max-width: 880px;
+    margin: auto;
+    padding: 1.5rem;
+  }
+  section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+  }
+  section:hover { transform: scale(1.02); }
+  h2 {
+    color: #9bf8d6;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+  }
+  pre {
+    background: rgba(0,0,0,0.6);
+    color: #7ee1ff;
+    padding: 1rem;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  code { font-family: "Courier New", monospace; }
+  footer {
+    text-align: center;
+    color: #aaa;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+  button {
+    background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    margin: 1.5rem auto 0;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+<header>🎧 Підручник: «Семпли - Завантаження локально»</header>
+<main>
+
+<section> 
+<h2>1. Призначення експерименту</h2> 
+<p> 
+Ця лабораторна сторінка дозволяє підвантажувати власні аудіофайли прямо з пристрою. 
+чи це окремі звуки, семпли або цілі колекції з папки <code>/samples</code>. 
+</p> 
+<p> 
+Браузер не має доступу до файлової системи безпосередньо: ви дозволяєте читати 
+тільки файли, які виберете вручну через <code>&lt;input type="file"&gt;</code>. 
+Це обмеження вбудоване в систему безпеки, щоб веб-сторінки не могли заглядати в особисті каталоги. 
+</p>
+</section>
+
+<section> 
+<h2>2. Як працює завантаження </h2> 
+<p> 
+Після вибору файлів елемент <code>input</code> передає масив <code>FileList</code>. 
+Код обходить його, створює візуальний список та кнопку "Play" для кожного файлу. 
+</p> 
+<pre><code>fileEl.addEventListener('change', async(e) => { 
+const files = Array.from(e.target.files); 
+list.innerHTML = ''; 
+for (const f of files) { 
+const el = document.createElement('div'); 
+el.className = 'sample'; 
+el.textContent = f.name; 
+const play = document.createElement('button'); 
+play.textContent = 'Play'; 
+el.appendChild(play); 
+list.appendChild(el); 
+}
+});</code></pre> 
+<p> 
+Так створюється динамічна галерея маленький каталог ваших звуків. 
+</p>
+</section>
+
+<section> 
+<h2>3. Відтворення через Web Audio API</h2> 
+<p> 
+Для кожного файлу при натисканні кнопки створюється об'єкт <code>AudioContext</code>, 
+в якому звук декодується та програється як буфер. 
+</p> 
+<pre><code>play.addEventListener('click', async() => { 
+if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+const arr = await f.arrayBuffer(); 
+const buf = await ctx.decodeAudioData(arr.slice(0)); 
+const s = ctx.createBufferSource(); 
+s.buffer = buf; 
+s.connect(ctx.destination); 
+s.start();
+});</code></pre> 
+<p> 
+Тут браузер перетворює байти файлу на цифрову хвилю. 
+Звук не стримується, а завантажується повністю, щоб програвач міг точно контролювати його початок та кінець. 
+</p>
+</section>
+
+<section> 
+<h2>4. Можливості розширення</h2> 
+<p> 
+- Додай візуалізацію частот за допомогою <code>AnalyserNode</code> - вийде живий спектр. 
+— Або задай кожному семплу власну гучність, панораму, фільтр. 
+— Можна об'єднувати кілька буферів в один мікс та будувати багатошарові колажі. 
+</p> 
+<p> 
+Так просте завантаження перетворюється на перший крок до власної цифрової студії. 
+</p>
+</section>
+
+<section> 
+<h2>5. Чому «локально»?</h2> 
+<p> 
+Тому що це нагадує старі аналогові експерименти: все поряд, під рукою. 
+Звук стає особистим матеріалом, а не завантаженим із хмари. 
+Кожен WAV це фрагмент пам'яті, і лабораторія дає можливість слухати їх як частини акустичної біографії. 
+</p>
+</section>
+
+<div style="text-align:center;"> 
+<button onclick="window.close()">⬅ Повернутися до Лабораторії</button>
+</div>
+
+</main>
+<footer>© 2025 Цікава математика з ІІ - Семплы: Завантаження локально</footer></body>
+	   
+</html>

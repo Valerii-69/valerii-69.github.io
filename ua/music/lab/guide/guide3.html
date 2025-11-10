@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Гід: Підручник JavaScript</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at center, #0f2027, #203a43, #2c5364);
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    background: rgba(0,0,0,0.3);
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 1.8rem;
+    color: #80ffd4;
+    letter-spacing: 1px;
+  }
+  main {
+    max-width: 900px;
+    margin: auto;
+    padding: 2rem;
+  }
+  section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+  }
+  section:hover {
+    transform: scale(1.02);
+  }
+  h2 {
+    color: #76e5b1;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 0.5rem;
+  }
+  pre {
+    background: rgba(0,0,0,0.6);
+    color: #00e0ff;
+    padding: 1rem;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  code {
+    font-family: "Courier New", monospace;
+  }
+  button {
+    background: linear-gradient(135deg, #009688, #00695c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #00796b);
+    transform: scale(1.05);
+  }
+  footer {
+    text-align: center;
+    color: #aaa;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<header>🧭 Гід JavaScript — Лабораторія читача</header> 
+<main> 
+<section> 
+<h2>1. Змінні та типи даних</h2> 
+<p>У JavaScript можна зберігати дані різних типів: числа, рядки, логічні значення, об'єкти та багато іншого.</p> 
+<pre><code>// Приклади змінних
+let ім'я = "Валерій";
+let вік = 72;
+let активний = true;
+
+console.log("Привіт", ім'я);
+console.log("Вік:", вік);
+</code></pre> 
+<p>Для оголошення змінних використовуються <code>let</code> та <code>const</code>. Різниця в тому, що <code>const</code> не можна змінити.</p> 
+</section> 
+
+<section> 
+<h2>2. Функції та взаємодія</h2> 
+<p>Функції дозволяють збирати логіку у зручні блоки коду. Наприклад, створимо просту функцію привітання:</p> 
+<pre><code>function привітання(ім'я) { 
+return "Привіт, "+ ім'я +"!";
+}
+
+console.log(вітання("читач"));
+</code></pre> 
+<p>Функції можна передавати як значення, зберігати в змінних і навіть повертати з інших функцій — це дає неймовірну гнучкість.</p> 
+</section> 
+
+<section> 
+<h2>3. Маніпуляції з HTML</h2> 
+<p>JavaScript може змінювати вміст сторінки на льоту. Ось приклад динамічної зміни тексту:</p> 
+<pre><code>&lt;button onclick="змінитиТекст()"&gt;Натисніть мене&lt;/button&gt;
+&lt;p id="demo"&gt;Привіт!&lt;/p&gt;
+
+&lt;script&gt;
+function змінитиТекст() { 
+document.getElementById("demo").innerText = "Ти змінив текст!";
+}
+&lt;/script&gt;
+</code></pre> 
+<p>Так можна створювати інтерактивні елементи прямо всередині сторінки лабораторії.</p> 
+</section> 
+
+<div style="text-align:center;"> 
+<button onclick="window.close()">⬅ Повернутися до Лабораторії</button> 
+</div> 
+</main> 
+<footer>© 2025 Цікава математика з ІІ - підручник JavaScript</footer></body>
+	   
+</html>

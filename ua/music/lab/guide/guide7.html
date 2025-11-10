@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гід: Пограємо з ІІ - безпечний висновок коду</title>
+
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: radial-gradient(circle at 30% 30%, #060b14, #0b1220, #020408);
+  color: #e6eef8;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  color: #9bf8d6;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+main {
+  max-width: 880px;
+  margin: auto;
+  padding: 1.5rem;
+}
+section {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+h2 {
+  color: #7ee1ff;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+pre {
+  background: rgba(0,0,0,0.5);
+  border-radius: 10px;
+  overflow-x: auto;
+  margin-top: 0.8rem;
+  font-size: 0.95rem;
+}
+code {
+  font-family: "Fira Code", monospace;
+}
+footer {
+  text-align: center;
+  color: #aaa;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+button {
+  background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.8rem;
+  transition: background 0.3s, transform 0.3s;
+}
+button:hover {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+<header>🎹 Підручник: «Пограємо з ІІ»</header>
+
+<main>
+
+<section> 
+<h2>1. Ідея генератора</h2> 
+<p> 
+Ми створюємо просту мелодійну ідею, що базується на детермінованій випадковості. 
+Це означає, що одна й та сама тема дає той самий результат, ніби у нас «ІІ з пам'яттю». 
+</p>
+</section>
+
+<section> 
+<h2>2. Перетворення тексту на число</h2> 
+<p> 
+УВАГА ДОВІДКА: Щоб браузер не зіпсував код (переплутавши кутові дужки з HTML-тегами), ми екрануємо символи 
+<code>&lt;</code>, <code>&gt;</code> та <code>&amp;</code>. Потім бібліотека 
+<b>highlight.js</b> розфарбовує синтаксис. Це і є безпечне виведення коду. 
+<pre><code> 
+&lt;!-- Підключаємо стилі та двигун підсвічування highlight.js --&gt;
+&lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;hljs.highlightAll();&lt;/script&gt; 
+</code></pre> 
+</p> 
+
+<pre><code class="language-javascript">
+function hashSeed(s) { 
+let h = 0; 
+for (let i = 0; i < s.length; i++) { 
+h = (h * 31 + s.charCodeAt(i)) | 0; 
+} 
+return Math.abs(h);
+} 
+</code></pre> 
+
+<p> 
+Кожен символ тексту впливає на число <se>seed</i>, що задає послідовність «випадкових» чисел. 
+</p>
+</section>
+
+<section> 
+<h2>3. Генерація мелодії</h2> 
+<pre><code class="language-javascript">
+const base = 60 + (seed % 12); // Базова нота
+const scale = [0, 2, 3, 5, 7, 9, 10]; //діатоніка
+const seq = [];
+
+for (let i = 0; i < 8; i++) { 
+const r = Math.floor(rng() * scale.length); 
+seq.push(scale[r]);
+} 
+</code></pre> 
+
+<p> 
+Масив інтервалів <code>scale</code> задає структуру ладів, а генератор <code>rng()</code> вибирає 
+випадкові ноти щодо базової. Результат буде однаковий за однакового seed. 
+</p>
+</section>
+
+<section> 
+<h2>4. Емуляція ІІ через детерміновану випадковість</h2> 
+<p> 
+Ми не використовуємо нейромережі, але відтворюємо ілюзію розуму за рахунок передбачуваної випадковості. 
+Алгоритм лінійної конгруенції (LCG) генерує однакові послідовності при тому самому seed. 
+</p>
+</section>
+
+<div style="text-align:center;"> 
+<button onclick="window.close()">⬅ Повернутися до Лабораторії</button>
+</div>
+
+</main>
+
+<footer>© 2025 Цікава математика з ІІ — Пограємося з ІІ</footer>
+
+</body>
+</html>

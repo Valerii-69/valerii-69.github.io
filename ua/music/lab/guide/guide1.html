@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Підручник: Інтро - Подорож Лабораторією</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+body {
+  background: #071022;
+  color: #e6eef8;
+  font-family: Inter, Arial, sans-serif;
+  margin: 0;
+  padding: 24px;
+}
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+h1 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #7c3aed, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+h2 {
+  margin-top: 24px;
+  font-size: 18px;
+  color: #a5b4fc;
+}
+p {
+  margin: 8px 0;
+  color: #d7e6ff;
+}
+code, pre {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #c0d4ff;
+}
+blockquote {
+  border-left: 3px solid #7c3aed;
+  margin: 12px 0;
+  padding-left: 12px;
+  color: #bcd7ff;
+}
+.example {
+  background: rgba(255,255,255,0.03);
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+.pulse {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed33, #06b6d433);
+  box-shadow: 0 6px 18px rgba(12,17,34,0.6);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+.pulse:active { transform: scale(0.95); }
+  button {
+    background: linear-gradient(135deg, #009688, #00695c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #00796b);
+    transform: scale(1.05);
+  }
+
+footer {
+  margin-top: 30px;
+  font-size: 13px;
+  color: rgba(230,238,248,0.6);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Підручник до лабораторної роботи<br>«Інтро: Подорож Лабораторією»</h1> 
+<p>Цей навчальний модуль пояснює, як працює перша сторінка Лабораторії. Тут ви познайомитеся з основами Web Audio API і створите своє перше «коло», що «звучить».</p> 
+
+<h2>1. Ідея експерименту</h2> 
+<p>Головна мета інтро — показати, що кожен осередок Лабораторії може оживати, перетворюючись на музичний елемент. Вся магія будується на трьох речах:</p> 
+<ul> 
+<li><strong>AudioContext</strong> — створює звуковий простір браузера;</li> 
+<li><strong>OscillatorNode</strong> — генерує звук певної частоти;</li> 
+<li><strong>ConvolverNode</strong> — створює ефект відлуння або реверберації.</li> 
+</ul> 
+
+<h2>2. Ключовий фрагмент коду</h2> 
+<pre><code>const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+const reverb = ctx.createConvolver();
+
+// створюємо коротку "імпульсну характеристику" - луна
+const len ​​= ctx.sampleRate * 1.2;
+const impulse = ctx.createBuffer(2, len, ctx.sampleRate);
+for (let ch = 0; ch &lt; 2; ch++) { 
+const data = impulse.getChannelData(ch); 
+for (let i = 0; i &lt; len; i++) { 
+data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5); 
+}
+}
+reverb.buffer = impulse;
+
+// Підключаємо вузли
+osc.connect(gain);
+gain.connect(reverb);
+reverb.connect(ctx.destination);
+</code></pre> 
+
+<blockquote>Тут створюється проста модель "залу", де звук поступово згасає. 
+При кожному натисканні частота трохи змінюється — начебто ви робите крок новою кімнатою лабіринту.</blockquote> 
+
+<h2>3. Спробуйте самі</h2> 
+<div class="example"> 
+<p>Натисніть на гурток нижче — він згенерує випадковий тон та м'яку луну. 
+Цей код використовує той самий принцип, що й оригінальна сторінка Інтро.</p> 
+<div style="height:16px"></div> 
+<div class="pulse" id="pulse">Натиснути</div> 
+</div> 
+
+<h2>4. Що відбувається під капотом</h2> 
+<p>Кожен раз, коли ви натискаєте кнопку, скрипт:</p> 
+<ol> 
+<li>створює новий <code>AudioContext</code>,</li> 
+<li>вибирає випадкову ноту поряд з ля (A4 = 440 Гц),</li> 
+<li>плавно збільшує гучність, а потім зменшує її,</li> 
+<li>додає легкий реверб, щоб звук “жив” трохи довше.</li> 
+</ol> 
+
+<h2>5. Експеримент для читача</h2> 
+<p>Спробуйте змінити параметри коду: 
+<code>freq = baseFreq * Math.pow(2, randSemitone / 12)</code> 
+- Це формула, що переводить інтервали в герці. Якщо замінити <code>12</code> на <code>24</code>, 
+крок між тонами стане вдвічі меншим, і звуки будуть ближче один до одного.</p>
+<div style="text-align:center;"> 
+<button onclick="window.close()">⬅ Повернутися до Лабораторії</button>
+</div> 
+<footer>© Лабораторія читача · Розділ «Інтро: Подорож Лабораторією»</footer></div>
+	  
+
+<script>
+// Демонстрация звука прямо в учебнике
+const pulse = document.getElementById('pulse');
+pulse.addEventListener('click', async () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const baseFreq = 440;
+    const randSemitone = Math.floor(Math.random() * 12) - 6;
+    const freq = baseFreq * Math.pow(2, randSemitone / 12);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const reverb = ctx.createConvolver();
+    const len = ctx.sampleRate * 1.2;
+    const impulse = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = impulse.getChannelData(ch);
+      for (let i = 0; i < len; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+      }
+    }
+    reverb.buffer = impulse;
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(reverb);
+    reverb.connect(ctx.destination);
+    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 1300);
+    pulse.animate([{transform:"scale(1.0)"},{transform:"scale(1.15)"},{transform:"scale(1.0)"}],
+                  {duration:600,easing:"ease-out"});
+  } catch (e) {
+    console.warn("Audio error:", e);
+  }
+});
+</script>
+</body>
+</html>

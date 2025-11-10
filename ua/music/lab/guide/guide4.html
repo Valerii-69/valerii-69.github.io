@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гід: Плаваючі бульбашки - візуалізація та звук</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  body {
+    font-family: "Inter", Arial, sans-serif;
+    background: radial-gradient(circle at 30% 30%, #060b14, #0b1220, #020408);
+    color: #e6eef8;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    color: #80eaff;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  main {
+    max-width: 880px;
+    margin: auto;
+    padding: 1.5rem;
+  }
+  section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+  }
+  section:hover { transform: scale(1.02); }
+  h2 {
+    color: #9bf8d6;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+  }
+  pre {
+    background: rgba(0,0,0,0.6);
+    color: #7ee1ff;
+    padding: 1rem;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  code { font-family: "Courier New", monospace; }
+  footer {
+    text-align: center;
+    color: #aaa;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+  button {
+    background: linear-gradient(135deg, #009688, #00796b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    margin: 1.5rem auto 0;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #009688);
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+<header>🫧 Підручник: «Плаваючі бульбашки»</header>
+<main> 
+<section> 
+<h2>1. Що робить візуалізація?</h2> 
+<p> 
+Ця сторінка створює анімований фон, де кожен міхур - не просто графічна точка, 
+а мініатюрний музичний інструмент. Він піднімається вгору, поступово розчиняючись у просторі, 
+і за своєю появою породжує акорд. 
+</p> 
+<p> 
+При активації медитації інтерфейс зникає, залишаючи тільки рух і звук. 
+Це режим споглядання – екран стає музичною водою, у якій народжуються гармонії. 
+</p> 
+</section> 
+
+<section> 
+<h2>2. Як народжуються бульбашки</h2> 
+<p> 
+Кожна бульбашка - це об'єкт з координатами <code>x, y</code>, радіусом <code>r</code>, швидкістю <code>vy</code>, 
+прозорістю та колірним відтінком, що залежить від його частоти. 
+Код створює їх так: 
+</p> 
+<pre><code>function spawn(x, y) { 
+const r = 8 + Math.random() * 28; 
+const bubble = { 
+x: x || Math.random() * W, 
+y: y || H + 20, 
+r, 
+vy: -1 - Math.random() * 2, 
+alpha: 0.9, 
+hue: 220 + (r / 36) * 100, 
+pulse: 0 
+}; 
+bubbles.push(bubble); 
+playPolyphonicPhrase(bubble);
+}</code></pre> 
+<p> 
+Чим менший радіус — тим вища частота і світліший колір. 
+В результаті звук і світло поєднуються в одну систему відчуттів. 
+</p> 
+</section> 
+
+<section> 
+<h2>3. Музичний синтез бульбашок</h2> 
+<p> 
+Для кожного міхура створюється три осцилятори (звукові генератори), що утворюють акорд. 
+інтервали 1: 5/4: 3/2 відповідають основному тону, терції та квінті. 
+</p> 
+<pre><code>function playPolyphonicPhrase(b) { 
+const baseFreq = 65.4; 
+const octave = b.r < 18? 2 + Math.random() : 1 + Math.random(); 
+const root = baseFreq * Math.pow (2, octave); 
+const intervals = [1, 5/4, 3/2]; 
+intervals.forEach((ratio, i) => { 
+const freq = root * ratio; 
+const osc = audioCtx.createOscillator(); 
+const gain = audioCtx.createGain(); 
+const pan = audioCtx.createStereoPanner(); 
+osc.type = ["sine","triangle","sine"][i%3]; 
+osc.frequency.value = freq; 
+pan.pan.value = (b.x / W) * 2 - 1; 
+osc.connect(gain).connect(pan).connect(synthMasterGain); 
+osc.start(); 
+osc.stop(audioCtx.currentTime + 2); 
+});
+}</code></pre> 
+<p> 
+Так міхур «співає» свій короткий акорд. Панорама залежить від позиції міхура по осі X — 
+лівий міхур звучить лівіше, правий - правіше. 
+</p> 
+</section> 
+
+<section> 
+<h2>4. Візуальна алхімія: як малюється тло</h2> 
+<p> 
+Кожен кадр цикл <code>draw()</code> очищає екран м'яким кольором і малює всі бульбашки напівпрозорими 
+градієнтами, що поступово зникають. 
+</p> 
+<pre><code>function draw() { 
+ctx.fillStyle = `hsl(${globalHue}, 40%, 6%)`; 
+ctx.fillRect(0, 0, W, H); 
+for (let b of bubbles) { 
+b.y + = b.vy; 
+b.alpha *= 0.998; 
+const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * 1.6); 
+grad.addColorStop(0, `hsla(${b.hue},90%,75%,${b.alpha})`); 
+grad.addColorStop(1, `hsla(${b.hue+40},90%,20%,0)`); 
+ctx.fillStyle = grad; 
+ctx.beginPath(); 
+ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); 
+ctx.fill(); 
+} 
+requestAnimationFrame(draw);
+}</code></pre> 
+<p> 
+Тут немає випадкових мазків – це візуальна акустика, де кожен піксель світиться у ритмі звуку. 
+</p> 
+</section> 
+
+<section> 
+<h2>5. Медитація та управління</h2> 
+<p> 
+Значок ☯ включає режим медитації - інтерфейс приховується, залишається лише рух та звук. 
+Клавіша <kbd>Esc</kbd> повертає елементи керування. 
+Такий підхід допомагає створити чисту атмосферу для спостереження за музичними формами. 
+</p> 
+</section> 
+
+<div style="text-align:center;"> 
+<button onclick="window.close()">⬅ Повернутися до Лабораторії</button> 
+</div>
+</main>
+<footer>© 2025 Цікава математика з ІІ — Візуалізація: Плаваючі бульбашки</footer></body>
+	   
+</html>
