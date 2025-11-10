@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Генератор пентатонічних снів</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    background: radial-gradient(circle at center, #101020, #050509);
+    color: #e0e0f0;
+  }
+  h1 { font-weight: 400; }
+  canvas { border: 1px solid #444; width: 90%; height: 200px; margin-top: 1em; }
+  input[type=range] { width: 200px; }
+  label { display: inline-block; width: 180px; text-align: right; margin-right: .5em; }
+  .controls { margin: 1em auto; width: fit-content; text-align: left; }
+  button {
+    margin: 1em;
+    padding: 0.5em 1.2em;
+    font-size: 1rem;
+    background: #223;
+    color: #ddd;
+    border: 1px solid #556;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: #334; }
+</style>
+</head>
+<body>
+<h1>🎵 Генератор пентатонічних снів</h1>
+
+<div class="controls"> 
+<div><label>Кількість снів:</label> <input id="numDreams" type="range" min="2" max="10" value="5"><span id="numDreamsVal">5</span></div> 
+<div><label>Тривалість сну:</label> <input id="dreamLength" type="range" min="1" max="10" value="3"><span id="dreamLengthVal">3</span></div> 
+<div><label>Сила ревербу:</label> <input id="reverbAmount" type="range" min="0" max="1" step="0.05" value="0.3"><span id="reverbAmountVal">0.3</span></div> 
+<div><label>Швидкість кросфейду (сек):</label> <input id="crossfadeTime" type="range" min="0.1" max="2" step="0.1" value="0.5"><span id="crossfadeTimeVal">0.5</sub>
+</div>
+
+<button id="generateBtn">🎧 Згенерувати та програти</button>
+<canvas id="visualizer" width="800" height="200"></canvas>
+
+<script>
+const sampleRate = 44100;
+
+// Пентатонические тональности
+const pentatonicScales = [
+  [0, 2, 4, 7, 9],  // C
+  [2, 4, 7, 9, 11], // D
+  [4, 7, 9, 11, 2], // E
+  [7, 9, 11, 2, 4], // G
+  [9, 11, 2, 4, 7]  // A
+];
+
+// === Утилита: генерация WAV ===
+function floatTo16BitPCM(output, offset, input){
+  for (let i = 0; i < input.length; i++, offset += 2){
+    let s = Math.max(-1, Math.min(1, input[i]));
+    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+}
+function writeString(view, offset, string){
+  for (let i = 0; i < string.length; i++){
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
+function encodeWAV(samples, sampleRate){
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(view, 8, 'WAVE');
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(view, 36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+  floatTo16BitPCM(view, 44, samples);
+  return new Blob([view], {type: 'audio/wav'});
+}
+
+// === Реверберация ===
+function addReverb(signal, amount){
+  const delay = Math.floor(0.15 * sampleRate);
+  const out = new Float32Array(signal.length);
+  for (let i=0; i<signal.length; i++){
+    out[i] = signal[i];
+    if (i >= delay) out[i] += amount * out[i - delay];
+  }
+  return out;
+}
+
+// === Один сон ===
+function generateDream(freqBase, scale, duration){
+  const length = Math.floor(duration * sampleRate);
+  const data = new Float32Array(length);
+  const notes = scale.map(x => freqBase * Math.pow(2, x / 12));
+  const noteDur = Math.floor(sampleRate * 0.3);
+  let idx = 0;
+  while (idx < length){
+    const f = notes[Math.floor(Math.random() * notes.length)];
+    for (let j = 0; j < noteDur && idx < length; j++, idx++){
+      data[idx] = Math.sin(2 * Math.PI * f * (idx / sampleRate)) * 0.3;
+    }
+  }
+  return data;
+}
+
+// === Кроссфейд ===
+function mergeDreams(dreams, crossfadeTime){
+  const fadeSamples = Math.floor(crossfadeTime * sampleRate);
+  let totalLength = dreams.reduce((a,b)=>a+b.length, 0) - (dreams.length-1)*fadeSamples;
+  const out = new Float32Array(totalLength);
+  let pos = 0;
+  for (let i=0;i<dreams.length;i++){
+    let d = dreams[i];
+    if (i>0){
+      for (let j=0;j<fadeSamples;j++){
+        const t = j/fadeSamples;
+        out[pos - fadeSamples + j] = out[pos - fadeSamples + j]*(1-t) + d[j]*t;
+      }
+      out.set(d.slice(fadeSamples), pos);
+      pos += d.length - fadeSamples;
+    } else {
+      out.set(d, pos);
+      pos += d.length;
+    }
+  }
+  return out;
+}
+
+// === Визуализация ===
+function visualize(canvas, buffer){
+  const ctx = canvas.getContext('2d');
+  let step = Math.floor(buffer.length / canvas.width);
+  let pos = 0;
+  function draw(){
+    ctx.fillStyle = '#101020';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.beginPath();
+    ctx.strokeStyle = '#77f';
+    ctx.lineWidth = 1.5;
+    let center = canvas.height/2;
+    ctx.moveTo(0, center);
+    for(let x=0;x<canvas.width;x++){
+      const y = center + buffer[pos + x*step]*center;
+      ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    pos += step*5;
+    if (pos + canvas.width*step < buffer.length){
+      requestAnimationFrame(draw);
+    }
+  }
+  draw();
+}
+
+// === Элементы управления ===
+const numDreamsEl = document.getElementById('numDreams');
+const dreamLengthEl = document.getElementById('dreamLength');
+const reverbAmountEl = document.getElementById('reverbAmount');
+const crossfadeTimeEl = document.getElementById('crossfadeTime');
+const vis = document.getElementById('visualizer');
+const btn = document.getElementById('generateBtn');
+
+const controls = ['numDreams','dreamLength','reverbAmount','crossfadeTime'];
+for(let id of controls){
+  const el=document.getElementById(id);
+  const span=document.getElementById(id+'Val');
+  el.oninput=()=>span.textContent=el.value;
+}
+
+// === Основной процесс ===
+btn.onclick = async ()=>{
+  const numDreams = +numDreamsEl.value;
+  const dreamLength = +dreamLengthEl.value;
+  const reverbAmount = +reverbAmountEl.value;
+  const crossfadeTime = +crossfadeTimeEl.value;
+
+  const dreams = [];
+  for(let i=0;i<numDreams;i++){
+    const baseFreq = 220 + Math.random()*110;
+    const scale = pentatonicScales[Math.floor(Math.random()*pentatonicScales.length)];
+    let dream = generateDream(baseFreq, scale, dreamLength);
+    dream = addReverb(dream, reverbAmount);
+    dreams.push(dream);
+  }
+  const combined = mergeDreams(dreams, crossfadeTime);
+  visualize(vis, combined);
+
+  // Проигрывание
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const buffer = audioCtx.createBuffer(1, combined.length, sampleRate);
+  buffer.copyToChannel(combined, 0);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+  src.connect(audioCtx.destination);
+  src.start();
+
+  // Экспорт в WAV
+  const blob = encodeWAV(combined, sampleRate);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dreams_pentatonic.wav';
+  a.textContent = '💾 Завантажити WAV';
+  a.style.display = 'block';
+  document.body.appendChild(a);
+};
+</script>
+</body>
+</html>

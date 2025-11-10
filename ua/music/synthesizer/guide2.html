@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide — Ноти та ADSR</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/dracula.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem;
+      max-width: 800px;
+      margin-inline: auto;
+    }
+    h1, h2 {
+      color: #93c5fd;
+      text-align: center;
+    }
+    p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
+    pre {
+      background: #1e293b;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    code {
+      font-size: 0.9rem;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #334155;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+<h1>🎧 Guide 2 — Ноти та ADSR</h1> 
+
+<h2>Що робить цей синтезатор</h2> 
+<p> 
+Цей синтезатор дозволяє почути, як із простої форми хвилі народжується нота з динамічною огинаючою. 
+При кожному натисканні кнопки <em>«Програти ноту»</em> генерується вибрана частота (наприклад, A4 = 440 Гц) 
+і формується звукова хвиля заданого типу - синус, квадрат, пилка, трикутник або трапеція. 
+</p> 
+<p> 
+Основна ідея – дослідити, як параметри ADSR (Attack, Decay, Sustain, Release) 
+формують характер звучання. Це модель розвитку гучності у часі: від м'якого початку 
+до згасання після відпускання ноти. 
+</p> 
+
+<h2>Що можна почути та налаштувати</h2> 
+<p> 
+Виберіть ноту (A2–A5), змінюйте тип хвилі та параметри ADSR. 
+Спробуйте короткий <strong>Attack</strong> і довгий <strong>Release</strong> 
+звук стане більш «співучим». 
+Збільште <strong>Decay</strong> та зменшіть <strong>Sustain</strong> — 
+отримайте характерний "удар" клавішного інструменту. 
+</p> 
+
+<hr> 
+
+<h2>Ключові фрагменти коду</h2> 
+
+<p><strong>1. Ініціалізація та підготовка аудіоконтексту</strong></p> 
+<pre><code class="language-javascript">
+let audioCtx;
+
+function ensureAudio() { 
+if (!audioCtx) { 
+audioCtx = new (window.AudioContext | | window.webkitAudioContext) (); 
+}
+} 
+</code></pre> 
+
+<p><strong>2. Формування огинаючої ADSR</strong></p> 
+<pre><code class="language-javascript">
+const now = audioCtx.currentTime;
+gain.gain.cancelScheduledValues(now);
+gain.gain.setValueAtTime(0, now);
+gain.gain.linearRampToValueAtTime(0.8, now + a); // Attack
+gain.gain.linearRampToValueAtTime(s, now + a + d); // Decay → Sustain
+gain.gain.setValueAtTime(s, now + a + d + 0.2);
+gain.gain.linearRampToValueAtTime(0, now + a + d + 0.2 + r); // Release 
+</code></pre> 
+
+<p><strong>3. Вибір форми хвилі</strong></p> 
+<pre><code class="language-javascript">
+if (waveType === 'custom') { 
+const real = new Float32Array([0, 1, 0.5, 0.25, 0.1]); 
+const imag = новий Float32Array(real.length); 
+osc.setPeriodicWave(audioCtx.createPeriodicWave(real, imag));
+} else { 
+osc.type = waveType;
+} 
+</code></pre> 
+
+<p><strong>4. Відображення огинаючої ADSR</strong></p> 
+<pre><code class="language-javascript">
+function drawEnvelope(a, d, s, r) { 
+const width=envCanvas.width; 
+const height = envCanvas.height; 
+const total = a + d + r + 0.2; 
+
+ectx.beginPath(); 
+ectx.moveTo(0, height); 
+ectx.lineTo(width*(a/total), 0); 
+ectx.lineTo(width*((a+d)/total), height*(1 - s)); 
+ectx.lineTo(width*((a+d+0.2)/total), height*(1 - s)); 
+ectx.lineTo(width, height); 
+ectx.stroke();
+} 
+</code></pre> 
+
+<hr> 
+
+<h2>Підсумок</h2> 
+<p> 
+Цей синтезатор є простою лабораторією для вивчення динаміки звуку. 
+Тут можна спостерігати, як геометрія форми хвилі поєднується з часовою структурою ADSR. 
+Ідеально підходить для експериментів із сприйняттям атаки, згасання та післязвучання.
+  </p>
+</body>
+</html>

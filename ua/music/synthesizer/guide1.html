@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Guide - Музичний лабіринт: підручник до синтезатора #1</title>
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+  :root{--bg:#071022;--muted:#9fb4d6;--text:#e6eef8;--panel:rgba(255,255,255,0.03)}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;padding:28px;}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 8px;background:linear-gradient(90deg,#7c3aed,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  p{margin:10px 0;line-height:1.5;color:#d7eafc}
+  h2{margin-top:20px;color:#a5b4fc}
+  .note{background:var(--panel);padding:14px;border-radius:10px;margin:12px 0;color:var(--muted)}
+  pre{border-radius:8px;padding:12px;overflow:auto;background:rgba(0,0,0,0.5);font-size:13px}
+  code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+  ul{margin:8px 0 8px 20px}
+  .footer{margin-top:28px;color:rgba(230,238,248,0.6);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Підручник - Синтезатор «Музичний лабіринт» (guide1)</h1> 
+
+<p>Коротко: цей синтезатор — сітка 7×7 осередків, кожен осередок несе свою групу гармонік. 
+При торканні (або кліку) осередку або програється семпл, або генерується комбінація осциляторів 
+(режим <code>synth</code>). Є транспозер, регулювання загасання та кількість повторів (стак ефектів).</p> 
+
+<h2>Що ви почуєте</h2> 
+<ul> 
+<li>У режимі <strong>synth</strong> — багате «пилкоподібне» звучання (sawtooth), де кожен осередок запускає набір гармонік.</li> 
+<li>У режимі <strong>sample</strong> — завантажені вами аудіофайли відтворюються з накладанням повторів та плавним спадом гучності.</li> 
+<li>Транспозиція (<code>transpose</code>) зрушує всі активні ноти в реальному часі – можна отримати ефект хорового зміщення.</li> 
+<li>Параметри <code>repeats</code> та <code>release</code> керують щільністю шарів і довжиною згасання відповідно.</li> 
+</ul> 
+
+<h2>Що можна налаштувати та досліджувати</h2> 
+<div class="note"> 
+<strong>Практичні ідеї:</strong> 
+<ul> 
+<li>Збільште <code>repeats</code> і зменшіть <code>release</code> — отримайте звукову стяжку, як ритмічний патерн.</li> 
+<li>Поставте <code>mode</code> у <code>sample</code> і завантажте короткі ударні семпли — сітка перетвориться на драм-машину.</li> 
+<li>Експериментуйте з транспозером: плавний рух слайдера створює глісандо у всіх активних осциляторів.</li> 
+<li>Змініть форму осцилятора (sine/square/triangle) у коді <code>playSynth</code> — тембр різко зміниться.</li> 
+</ul> 
+</div> 
+
+<h2>Ключові моменти в коді (готове до копіювання)</h2> 
+
+<h3>1) Ініціалізація AudioContext та базові структури</h3> 
+<pre><code class="language-javascript">// створюємо AudioContext та сховища
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const size = 7;
+const cells = [];
+const cellHarmonics = new Map();
+let buffers = []; // Array&lt;AudioBuffer&gt; для режиму sample
+let activeOscillators = new Map(); // відстежуємо запущені осцилятори 
+</code></pre> 
+
+<h3>2) Створення сітки 7×7 (DOM)</h3> 
+<pre><code class="language-javascript">// додаємо комірки в контейнер gridEl
+for (let y = 0; y &lt; size; y++) { 
+for (let x = 0; x &lt; size; x++) { 
+const cell = document.createElement('span'); 
+cell.className = 'cell'; 
+cell.dataset.x = x; 
+cell.dataset.y = y; 
+gridEl.appendChild(cell); 
+cells.push(cell); 
+// cellHarmonics.set(cell, [...]) - задаємо пізніше 
+}
+} 
+</code></pre> 
+
+<h3>3) Відтворення синтезу (playSynth)</h3> 
+<pre><code class="language-javascript">function playSynth(idx, cell) { 
+const repeat = Number(repeatsSlider.value) || 1; 
+const release = Number(releaseSlider.value) || 20; 
+const trans = Number(transposeSlider.value) || 0; 
+const baseFreq = 261.63; // C4 
+const harmonics = cellHarmonics.get(cell) || [1]; 
+
+harmonics.forEach(mult => { 
+for (let i = 0; i &lt; repeat; i++) { 
+const osc = audioCtx.createOscillator(); 
+osc.type = 'sawtooth'; // спробуйте 'sine', 'square', 'triangle' 
+const freq = baseFreq * mult * Math.pow (2, (idx + trans) / 12); 
+osc.frequency.value = freq; 
+
+const gain = audioCtx.createGain(); 
+gain.gain.setValueAtTime(0.5 / repeat, audioCtx.currentTime + i * 0.05); 
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.05 + release * 0.05); 
+
+osc.connect(gain).connect(audioCtx.destination); 
+osc.start(audioCtx.currentTime + i * 0.05); 
+osc.stop(audioCtx.currentTime + i * 0.05 + release * 0.05); 
+
+activeOscillators.set(osc, {idx, gain}); 
+osc.onended = () = gt; activeOscillators.delete(osc); 
+} 
+});
+} 
+</code></pre> 
+
+<h3>4) Відтворення семплів (playSample)</h3> 
+<pre><code class="language-javascript">async function playSample(idx) { 
+if (!buffers.length) return; 
+const repeat = Number(repeatsSlider.value) || 1; 
+const release = Number(releaseSlider.value) || 20; 
+const buffer = buffers[idx % buffers.length]; 
+
+for (let i = 0; i &lt; repeat; i++) { 
+const src = audioCtx.createBufferSource(); 
+src.buffer = buffer; 
+const gain = audioCtx.createGain(); 
+gain.gain.setValueAtTime(1, audioCtx.currentTime + i * 0.05); 
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.05 + release * 0.05); 
+src.connect(gain).connect(audioCtx.destination); 
+src.start(audioCtx.currentTime + i * 0.05); 
+}
+}</code></pre> 
+
+<h3>5) Завантаження файлів у buffers (input[type=file])</h3> 
+<pre><code class="language-javascript">sampleInput.addEventListener('change', async(e) =&gt; { 
+const files = Array.from(e.target.files); 
+buffers = []; 
+for (let f of files) { 
+const ab = await f.arrayBuffer(); 
+const buf = await audioCtx.decodeAudioData(ab); 
+buffers.push(buf); 
+} 
+sampleStatus.textContent = `${buffers.length} файлів`;
+});</code></pre> 
+
+<h3>6) Транспозиція у реальному часі</h3> 
+<pre><code class="language-javascript">transposeSlider.addEventListener('input', () =&gt; { 
+transposeValue.textContent = transposeSlider.value; 
+const trans = Number(transposeSlider.value); 
+//Змінюємо частоту всіх активних осциляторів 
+activeOscillators.forEach(({ idx }, osc) =&gt; { 
+const freq = 261.63 * Math.pow (2, (idx + trans) / 12); 
+osc.frequency.setValueAtTime(freq, audioCtx.currentTime); 
+});
+});</code></pre> 
+
+<h2>Рекомендації та поради</h2> 
+<ul> 
+<li>Якщо браузер блокує звук — викличте <code>audioCtx.resume()</code> у відповідь на клік/торкання користувача.</li> 
+<li>Для меншого завантаження CPU замініть фрактальну візуалізацію на простий canvas-паттерн або відключіть її зовсім.</li> 
+<li>Щоб керувати тоном музичніше, зберігайте для кожного осередку не індекс <code>idx</code>, а заздалегідь обчислені частоти (у герцах).</li> 
+<li>Додайте <code>BiquadFilterNode</code> перед виходом у <code>destination</code>, щоб пом'якшувати високий спектр sawtooth.</li> 
+</ul> 
+
+<h2>Короткий чек-лист для тестування</h2> 
+<div class="note"> 
+<ul> 
+<li>Натисніть New — сітка отримала гармоніки (кольори також).</li> 
+<li>Натисніть на комірку в режимі <code>synth</code> — має пролунати тон.</li> 
+<li>Перемкніть у <code>sample</code>, завантажте хоча б один файл — при дотику повинен грати запис.</li> 
+<li>Покрутіть транспозер — активні осцилятори змінюють висоту.</li> 
+<li>Натисніть Stop — усі осцилятори повинні зупинитися.</li>    </ul>
+  </div>
+</div>
+</body>
+</html>

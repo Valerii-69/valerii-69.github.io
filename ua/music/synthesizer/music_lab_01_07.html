@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Музичний лабіринт – базовий каркас</title>
+<style>
+html,body{
+  height:100%;
+  margin:0;
+  background:#111;
+  color:#eaeaea;
+  font-family:Inter,Arial,sans-serif;
+  touch-action:none;
+  user-select:none;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 10px;
+  background:linear-gradient(90deg,#202020,#181818);
+  border-bottom:1px solid #2a2a2a;
+}
+header span, .controls span{display:flex;align-items:center;gap:6px}
+.small{font-size:13px;color:#cfc}
+button{
+  background:#222;
+  color:#dfffe0;
+  border:1px solid #333;
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:14px;
+}
+.controls{display:flex;gap:8px;align-items:center}
+.controls-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  margin:8px auto;
+  max-width:800px;
+  font-size:13px;
+}
+label input[type="range"]{vertical-align:middle;margin:0 3px}
+input[type="file"]{font-size:12px}
+select{
+  background:#111;
+  color:#cff;
+  border:1px solid #333;
+  border-radius:4px;
+}
+.grid{
+  margin:10px auto;
+  width:min(96vw,900px);
+  height:min(96vw,900px);
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  grid-template-rows:repeat(7,1fr);
+  gap:2px;
+  border-radius:8px;
+  overflow:hidden;
+  background:#000;
+  box-shadow:0 6px 24px rgba(0,0,0,0.6);
+}
+.cell{
+  background:#222;
+  border-radius:6px;
+  transition:filter 0.2s,transform 0.18s;
+}
+.transpose-container{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  color:#ccc;
+}
+.transpose-label{
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  margin-bottom:8px;
+  font-size:12px;
+  opacity:0.8;
+}
+input[type="range"].vertical{
+  -webkit-appearance:slider-vertical;
+  width:24px;
+  height:min(560px,76vh);
+  background:transparent;
+}
+.footer{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 10px;
+  font-size:12px;
+  color:#ccc;
+  opacity:0.9;
+}
+@media(max-width:700px){
+  .grid{width:96vw;height:96vw}
+}
+#fractalCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+.grid { position: relative; z-index: 1; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <span>
+<span style="font-weight:700">Музичний лабіринт</span> 
+<span class="small">Складання кроків</span> 
+</span> 
+<span class="controls"> 
+<button id="newBtn">New</button> 
+<button id="stopAllBtn">Stop</button> 
+</span>
+</header>
+
+<span class="controls-row"> 
+<span> 
+<label>Завантажити семпли з локальної папки /sammples на комп'ютері: 
+<input type="file" id="sampleInput" webkitdirectory directory accept="audio/*" multiple> 
+</label> 
+<span id="sampleStatus" class="small">немає файлів</span> 
+</span> 
+<span> 
+<label>Згасання: 
+<input id="release" type="range" min="1" max="5000" step="1" value="200"> 
+<span id="releaseVal">5000</span> 
+</label> 
+</span> 
+<span> 
+<label>Повтори: 
+<input id="repeats" type="range" min="1" max="10" step="1" value="3"> 
+<span id="repeatsVal">20</span> 
+</label> 
+</span> 
+<span> 
+<label>Режим: 
+<select id="mode"> 
+<option value="synth">Синтез</option> 
+<option value="sample">Семпл</option> 
+</select> 
+</label> 
+</span>
+</span>
+
+<span style="display:flex;gap:12px;align-items:flex-start;justify-content:center;"> 
+<span class="grid" id="grid"></span> 
+<canvas id="fractalCanvas"></canvas> 
+<span class="transpose-container"> 
+<span class="transpose-label">Транспозиція</span> 
+<input type="range" id="transposeSlider" class="vertical" min="-12" max="12" value="0" step="0.01"> 
+<span id="transposeValue" class="small">0</span> 
+</span>
+</span>
+
+<span class="footer"> 
+<span class="small">Multi-touch та візуалізація включаться після додавання JS.</span> 
+<span id="touchInfo" class="small">Touches: 0</span>
+</span>
+
+<script>
+const gridEl = document.getElementById("grid");
+const transposeSlider = document.getElementById("transposeSlider");
+const transposeValue = document.getElementById("transposeValue");
+const touchInfo = document.getElementById("touchInfo");
+const releaseSlider = document.getElementById("release");
+const repeatsSlider = document.getElementById("repeats");
+const modeSelect = document.getElementById("mode");
+const newBtn = document.getElementById("newBtn");
+const stopBtn = document.getElementById("stopAllBtn");
+const sampleInput = document.getElementById("sampleInput");
+const sampleStatus = document.getElementById("sampleStatus");
+
+// =====================
+// Основные параметры
+// =====================
+const size = 7;
+const cells = [];
+const activeTouches = new Map();
+const cellStates = new Map();
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let buffers = [];
+let activeOscillators = new Map(); // для динамического транспозера
+const cellHarmonics = new Map();
+
+// =====================
+// Создаем сетку
+// =====================
+for(let y=0;y<size;y++){
+  for(let x=0;x<size;x++){
+    const cell = document.createElement("span");
+    cell.className="cell";
+    cell.dataset.x=x;
+    cell.dataset.y=y;
+    gridEl.appendChild(cell);
+    cells.push(cell);
+    cellStates.set(cell,0);
+  }
+}
+
+// =====================
+// Визуализация
+// =====================
+function highlightCell(cell,strength=1){
+  cellStates.set(cell,1);
+  const hue = parseInt(cell.dataset.hue||0);
+  cell.dataset.hue=hue;
+}
+function resetCell(cell){
+  cellStates.set(cell,0);
+  cell.style.transform="scale(1)";
+  cell.style.filter="brightness(1)";
+  cell.style.background="#222";
+}
+function animationLoop(){
+  cells.forEach(cell=>{
+    let s = cellStates.get(cell);
+    if(s>0){
+      s -= 0.02;
+      if(s<0) s=0;
+      cellStates.set(cell,s);
+      const scale=1+0.15*s;
+      const brightness=1+0.3*s;
+      const hue = parseInt(cell.dataset.hue||0);
+      cell.style.transform=`scale(${scale})`;
+      cell.style.filter=`brightness(${brightness})`;
+      cell.style.background=`radial-gradient(circle at 50% 50%, hsl(${hue},80%,${50+10*s}%), #222 80%)`;
+    }
+  });
+  requestAnimationFrame(animationLoop);
+}
+requestAnimationFrame(animationLoop);
+
+// =====================
+// Функции звука
+// =====================
+function playSample(idx){
+  if(!buffers.length) return;
+  const repeat = Number(repeatsSlider.value)||1;
+  const release = Number(releaseSlider.value)||20;
+  const buffer = buffers[idx%buffers.length];
+  for(let i=0;i<repeat;i++){
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(1,audioCtx.currentTime+i*0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+i*0.05+release*0.05);
+    src.connect(gain).connect(audioCtx.destination);
+    src.start(audioCtx.currentTime+i*0.05);
+  }
+}
+
+function playSynth(idx, cell){
+  const repeat = Number(repeatsSlider.value)||1;
+  const release = Number(releaseSlider.value)||20;
+  const trans = Number(transposeSlider.value)||0;
+  const baseFreq = 261.63;
+  const harmonics = cellHarmonics.get(cell) || [1];
+
+  harmonics.forEach(mult=>{
+    for(let i=0;i<repeat;i++){
+      const osc = audioCtx.createOscillator();
+      osc.type = "sawtooth";
+      const freq = baseFreq * mult * Math.pow(2,(idx+trans)/12);
+      osc.frequency.value = freq;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.5/repeat, audioCtx.currentTime+i*0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+i*0.05+release*0.05);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime+i*0.05);
+      osc.stop(audioCtx.currentTime+i*0.05+release*0.05);
+      activeOscillators.set(osc,{idx,gain});
+      osc.onended = ()=> activeOscillators.delete(osc);
+    }
+  });
+}
+
+// =====================
+// Динамический транспозер
+// =====================
+transposeSlider.addEventListener('input', ()=>{
+  transposeValue.textContent = transposeSlider.value;
+  const trans = Number(transposeSlider.value);
+  activeOscillators.forEach(({idx, gain}, osc)=>{
+    const freq = 261.63 * Math.pow(2,(idx+trans)/12);
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  });
+});
+
+// =====================
+// Вызов при касании
+// =====================
+function triggerCell(cell){
+  const x=parseInt(cell.dataset.x);
+  const y=parseInt(cell.dataset.y);
+  const idx=y*size+x;
+  if(modeSelect.value==="sample" && buffers.length>0) playSample(idx);
+  else playSynth(idx,cell);
+  highlightCell(cell);
+}
+
+// =====================
+// Обработка касаний и мыши
+// =====================
+function getCellFromPoint(x,y){
+  const el=document.elementFromPoint(x,y);
+  return el && el.classList.contains("cell") ? el : null;
+}
+
+gridEl.addEventListener("touchstart",e=>{
+  e.preventDefault();
+  for(let t of e.changedTouches){
+    const c=getCellFromPoint(t.clientX,t.clientY);
+    if(c) activeTouches.set(t.identifier,c);
+    if(c) triggerCell(c);
+  }
+  touchInfo.textContent="Touches: "+activeTouches.size;
+});
+gridEl.addEventListener("touchmove",e=>{
+  e.preventDefault();
+  for(let t of e.changedTouches){
+    const prev = activeTouches.get(t.identifier);
+    const c = getCellFromPoint(t.clientX,t.clientY);
+    if(c && c!==prev){
+      if(prev) resetCell(prev);
+      activeTouches.set(t.identifier,c);
+      triggerCell(c);
+    }
+  }
+});
+gridEl.addEventListener("touchend",e=>{
+  e.preventDefault();
+  for(let t of e.changedTouches){
+    const c=activeTouches.get(t.identifier);
+    if(c) resetCell(c);
+    activeTouches.delete(t.identifier);
+  }
+  touchInfo.textContent="Touches: "+activeTouches.size;
+});
+
+let mouseDown=false;
+gridEl.addEventListener("mousedown",e=>{
+  mouseDown=true;
+  const c=getCellFromPoint(e.clientX,e.clientY);
+  if(c) triggerCell(c);
+});
+gridEl.addEventListener("mousemove",e=>{
+  if(!mouseDown) return;
+  const c=getCellFromPoint(e.clientX,e.clientY);
+  if(c) triggerCell(c);
+});
+document.addEventListener("mouseup",()=>{
+  mouseDown=false;
+  cells.forEach(resetCell);
+  activeTouches.clear();
+});
+
+// =====================
+// Загрузка сэмплов
+// =====================
+sampleInput.addEventListener("change",async e=>{
+  const files = Array.from(e.target.files);
+  buffers=[];
+  for(let f of files){
+    const ab=await f.arrayBuffer();
+    const buf=await audioCtx.decodeAudioData(ab);
+    buffers.push(buf);
+  }
+  sampleStatus.textContent=`${buffers.length} файлов`;
+});
+
+// =====================
+// Новый лабиринт с гармониками
+// =====================
+function randomizeGrid(){
+  cells.forEach(cell=>{
+    const hue=Math.floor(Math.random()*360);
+    cell.dataset.hue=hue;
+    cell.style.background=`hsl(${hue},30%,20%)`;
+    cell.style.transform="scale(1)";
+    // новые гармоники
+    const harmonics=[];
+    const nHarmonics = 3+Math.floor(Math.random()*3);
+    for(let i=0;i<nHarmonics;i++){
+      harmonics.push(Math.pow(2,i)*(0.5+Math.random()/2));
+    }
+    cellHarmonics.set(cell,harmonics);
+  });
+}
+newBtn.addEventListener("click",randomizeGrid);
+
+// =====================
+// Stop All
+// =====================
+stopBtn.addEventListener("click",()=>{
+  activeOscillators.forEach((v, osc)=>{
+    osc.stop();
+    osc.disconnect?.();
+  });
+  activeOscillators.clear();
+  cells.forEach(resetCell);
+  activeTouches.clear();
+  touchInfo.textContent="Touches: 0";
+});
+
+// =====================
+// Фрактал реагирующий на касания
+// =====================
+(function(){
+  const canvas = document.getElementById('fractalCanvas');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  window.addEventListener('resize',resize); resize();
+  const w=canvas.width, h=canvas.height; let t=0;
+  const activePoints = [];
+  function addActivePoint(x,y,strength=1){ activePoints.push({x,y,strength,age:0}); }
+  function handleCellInteraction(cell){
+    const rect = cell.getBoundingClientRect();
+    const x=rect.left+rect.width/2;
+    const y=rect.top+rect.height/2;
+    addActivePoint(x,y,1);
+  }
+  gridEl.addEventListener('touchstart',(e)=>{for(let t of e.changedTouches){const c=getCellFromPoint(t.clientX,t.clientY);if(c) handleCellInteraction(c)}})
+  gridEl.addEventListener('touchmove',(e)=>{for(let t of e.changedTouches){const c=getCellFromPoint(t.clientX,t.clientY);if(c) handleCellInteraction(c)}})
+  gridEl.addEventListener('mousedown',(e)=>{const c=getCellFromPoint(e.clientX,e.clientY);if(c) handleCellInteraction(c)})
+  function draw(){
+    const imgData=ctx.createImageData(w,h); const data=imgData.data;
+    for(let y=0;y<h;y++){for(let x=0;x<w;x++){
+      const idx=(y*w+x)*4;
+      let r=Math.floor(128+128*Math.sin((x+y+t)/50));
+      let g=Math.floor(128+128*Math.sin((x*0.5+y*0.5+t)/60));
+      let b=Math.floor(128+128*Math.sin((x*0.3+y*0.7+t)/70));
+      for(let pt of activePoints){
+        const dx=x-pt.x, dy=y-pt.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<150){const factor=(150-dist)/150*pt.strength;r=Math.min(255,r+factor*100);g=Math.min(255,g+factor*100);b=Math.min(255,b+factor*100);}
+      }
+      data[idx]=r; data[idx+1]=g; data[idx+2]=b; data[idx+3]=60;
+    }}
+    ctx.putImageData(imgData,0,0);
+    for(let i=activePoints.length-1;i>=0;i--){
+      activePoints[i].age+=1; activePoints[i].strength*=0.95;
+      if(activePoints[i].strength<0.05) activePoints.splice(i,1);
+    }
+    t+=1; requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+</body>
+</html>

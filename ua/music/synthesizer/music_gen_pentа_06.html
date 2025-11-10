@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Тризвучний пентатонічний сон</title>
+<style>
+  body {
+    background: radial-gradient(ellipse at center, #001018 0%, #000010 100%);
+    color: #aeeaff;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    overflow: hidden;
+  }
+  h1 { margin: 10px; font-size: 20px; }
+  canvas {
+    width: 90%;
+    height: 300px;
+    margin: 20px auto;
+    display: block;
+    background: rgba(0,0,30,0.6);
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0,150,255,0.3);
+  }
+  button, input {
+    margin: 5px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<h1>🌙 Тризвучний пентатонічний сон</h1>
+<input id="dreamName" value="Зоряний пил" style="width:300px">
+<button id="genBtn">Згенерувати сон</button>
+<button id="wavBtn">Записати WAV</button><br>
+<canvas id="visual" width="900" height="300"></canvas>
+<div id="toneDisplay">Тональність: [—]</div>
+<script>
+const ctx = new (window.AudioContext||window.webkitAudioContext)();
+const sampleRate = ctx.sampleRate;
+
+// --- Случайность из строки ---
+function stringToSeed(str){
+  let seed=0; for(let c of str) seed=(seed*31+c.charCodeAt(0))>>>0; return seed;
+}
+function seededRandom(seed){
+  return function(){
+    seed ^= seed<<13; seed ^= seed>>>17; seed ^= seed<<5;
+    return ((seed>>>0)%10000)/10000;
+  };
+}
+
+// --- Разбор названия сна ---
+function parseDreamName(name){
+  const n=name.trim().toLowerCase();
+  const vowels=(n.match(/[аеёиоуыэюяйaeiouy]/g)||[]).length;
+  const letters=n.length||1;
+  const mood=vowels/letters;
+  const seed=stringToSeed(n);
+  const rand=seededRandom(seed);
+  let octaveShift=0;
+  if(n.match(/звёз|небо|свет|высок|лет|зір|неб|світ|вис|літ/)) octaveShift=1;
+  if(n.match(/земл|ноч|тень|сон|тих|зем|ніч|тінь|сон|тих/)) octaveShift=-1;
+  const baseFreq=220*Math.pow(2,octaveShift);
+  const numDreams=3+(letters%5);
+  const dreamLength=4+Math.min(12,vowels);
+  const reverbAmount=0.2+0.6*mood;
+  const crossfadeTime=0.3+0.02*letters;
+  return {seed,rand,baseFreq,numDreams,dreamLength,reverbAmount,crossfadeTime};
+}
+
+// --- Генерация трёхзвучного пентатонического сна ---
+function generateDream(freqBase, scale, duration, rand){
+  const length=Math.floor(duration*sampleRate);
+  const left=new Float32Array(length);
+  const right=new Float32Array(length);
+  const notes=scale.map(x=>freqBase*Math.pow(2,x/12));
+  const noteDur=Math.floor(sampleRate*0.6);
+  let idx=0, t=0;
+  while(idx<length){
+    const f1=notes[Math.floor(rand()*notes.length)];
+    const f2=notes[Math.floor(rand()*notes.length)];
+    const f3=notes[Math.floor(rand()*notes.length)];
+    for(let j=0;j<noteDur && idx<length;j++,idx++,t++){
+      const env=attackReleaseEnv(j/noteDur);
+      const pan=Math.sin(t*0.0002)*0.5; // дыхание панорамы
+      const tone=(Math.sin(2*Math.PI*f1*(idx/sampleRate))
+                +Math.sin(2*Math.PI*f2*(idx/sampleRate))
+                +Math.sin(2*Math.PI*f3*(idx/sampleRate)))/3;
+      const l=tone*(1-pan)*env;
+      const r=tone*(1+pan)*env;
+      left[idx]+=l*0.3;
+      right[idx]+=r*0.3;
+    }
+  }
+  return [left,right];
+}
+
+// --- Плавная атака/затухание ---
+function attackReleaseEnv(x){
+  const attack=0.1, release=0.9;
+  if(x<attack) return x/attack;
+  if(x>release) return 1-(x-release)/(1-release);
+  return 1;
+}
+
+// --- Реверберация ---
+function addReverb(stereo, amount){
+  const delay=Math.floor(0.2*sampleRate);
+  const outL=new Float32Array(stereo[0].length);
+  const outR=new Float32Array(stereo[1].length);
+  for(let i=0;i<stereo[0].length;i++){
+    outL[i]=stereo[0][i];
+    outR[i]=stereo[1][i];
+    if(i>=delay){
+      outL[i]+=amount*outL[i-delay];
+      outR[i]+=amount*outR[i-delay];
+    }
+  }
+  return [outL,outR];
+}
+
+// --- Кроссфейд ---
+function mergeDreams(dreams, crossfadeTime){
+  const fadeSamples=Math.floor(crossfadeTime*sampleRate);
+  let totalLength=dreams.reduce((a,b)=>a+b[0].length,0)-(dreams.length-1)*fadeSamples;
+  const left=new Float32Array(totalLength);
+  const right=new Float32Array(totalLength);
+  let pos=0;
+  for(let i=0;i<dreams.length;i++){
+    const [l,r]=dreams[i];
+    if(i>0){
+      for(let j=0;j<fadeSamples;j++){
+        const t=j/fadeSamples;
+        left[pos-fadeSamples+j]=left[pos-fadeSamples+j]*(1-t)+l[j]*t;
+        right[pos-fadeSamples+j]=right[pos-fadeSamples+j]*(1-t)+r[j]*t;
+      }
+      left.set(l.slice(fadeSamples),pos);
+      right.set(r.slice(fadeSamples),pos);
+      pos+=l.length-fadeSamples;
+    } else {
+      left.set(l,pos); right.set(r,pos); pos+=l.length;
+    }
+  }
+  return [left,right];
+}
+
+// --- Воспроизведение ---
+function playBuffer(stereo){
+  const buf=ctx.createBuffer(2, stereo[0].length, sampleRate);
+  buf.getChannelData(0).set(stereo[0]);
+  buf.getChannelData(1).set(stereo[1]);
+  const src=ctx.createBufferSource();
+  src.buffer=buf;
+  src.connect(ctx.destination);
+  src.start();
+}
+
+// --- Запись WAV ---
+function exportWav(stereo){
+  function floatTo16BitPCM(output, offset, input){
+    for(let i=0;i<input.length;i++,offset+=2){
+      let s=Math.max(-1,Math.min(1,input[i]));
+      output.setInt16(offset,s<0?s*0x8000:s*0x7FFF,true);
+    }
+  }
+  const interleaved=new Float32Array(stereo[0].length*2);
+  for(let i=0;i<stereo[0].length;i++){
+    interleaved[i*2]=stereo[0][i];
+    interleaved[i*2+1]=stereo[1][i];
+  }
+  const buffer=new ArrayBuffer(44+interleaved.length*2);
+  const view=new DataView(buffer);
+  const writeString=(v,o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  writeString(view,0,'RIFF');
+  view.setUint32(4,36+interleaved.length*2,true);
+  writeString(view,8,'WAVE');
+  writeString(view,12,'fmt ');
+  view.setUint32(16,16,true); view.setUint16(20,1,true);
+  view.setUint16(22,2,true); view.setUint32(24,sampleRate,true);
+  view.setUint32(28,sampleRate*4,true); view.setUint16(32,4,true);
+  view.setUint16(34,16,true);
+  writeString(view,36,'data');
+  view.setUint32(40,interleaved.length*2,true);
+  floatTo16BitPCM(view,44,interleaved);
+  const blob=new Blob([view],{type:'audio/wav'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='dream.wav'; a.click();
+}
+
+// --- Визуализация ---
+const canvas=document.getElementById('visual');
+const vctx=canvas.getContext('2d');
+function visualize(data){
+  let i=0;
+  const len=data[0].length;
+  function draw(){
+    vctx.clearRect(0,0,canvas.width,canvas.height);
+    const slice=3000;
+    const step=Math.floor(len/canvas.width);
+    vctx.beginPath();
+    const amp=Math.sin(i*0.01)*0.5+0.5;
+    const glow=Math.floor(amp*100);
+    vctx.strokeStyle=`hsl(${200+glow},100%,${40+glow/2}%)`;
+    vctx.shadowColor=`hsl(${200+glow},100%,${60+glow/2}%)`;
+    vctx.shadowBlur=40;
+    for(let x=0;x<canvas.width;x++){
+      const y=canvas.height/2+data[0][(i+x*step)%len]*100;
+      if(x===0)vctx.moveTo(x,y); else vctx.lineTo(x,y);
+    }
+    vctx.stroke();
+    document.body.style.background=`radial-gradient(circle at center, hsl(${180+glow},70%,10%) 0%, #000010 100%)`;
+    i+=slice;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// --- Основная логика ---
+let currentDream=null;
+document.getElementById('genBtn').onclick=()=>{
+  const name=document.getElementById('dreamName').value;
+  const {rand,baseFreq,numDreams,dreamLength,reverbAmount,crossfadeTime}=parseDreamName(name);
+  const scale=[0,3,5,7,10]; // пентатоника
+  const dreams=[];
+  for(let i=0;i<numDreams;i++){
+    const d=generateDream(baseFreq,scale,dreamLength,rand);
+    dreams.push(addReverb(d,reverbAmount));
+  }
+  const merged=mergeDreams(dreams,crossfadeTime);
+  playBuffer(merged);
+  visualize(merged);
+  currentDream=merged;
+  document.getElementById('toneDisplay').textContent=`Тональність: [${baseFreq.toFixed(1)} Hz]`;
+};
+document.getElementById('wavBtn').onclick=()=>{
+  if(currentDream) exportWav(currentDream);
+};
+</script>
+</body>
+</html>
