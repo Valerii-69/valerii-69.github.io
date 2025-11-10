@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Installation tips</title>
+<style>
+ body{background:#071022;color:#e6eef8;font-family:Inter,Arial;margin:0;padding:18px}
+ .wrap{max-width:900px;margin:0 auto}
+ ul{line-height:1.6}
+  button {
+    background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0.5rem;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+<h1>Editing Tips</h1>
+<ul>
+<li>Folder structure: /lab/index.html (main), /lab/pages/*.html (embedded pages), /lab/assets/ (samples, fonts).</li>
+<li>Check CORS when attempting to load local files via fetch; it's best to use input type=file for samples.</li>
+<li>For mobile: reduce the initial sound volume and canvas size, use requestAnimationFrame sparingly.</li>
+<li>Save the matrix state in sessionStorage or localStorage with the version – this will simplify rollback.</li>
+<li>If you need to share pages, package the selected set of pages in JSON and offer "Export."</li>    </ul>
+  </div>
+</body>
+</html>

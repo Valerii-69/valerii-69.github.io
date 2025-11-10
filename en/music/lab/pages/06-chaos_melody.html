@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Generator: Chaos and Melody</title>
+<style>
+ body{background:#071022;color:#e6eef8;font-family:Inter,Arial;margin:0;padding:18px}
+ .wrap{max-width:900px;margin:0 auto}
+ button{padding:8px 10px;border-radius:8px;border:0;background:#7c3aed;color:white}
+</style>
+</head>
+<body>
+  <div class="wrap">
+<h1>Generator: Chaos and Melody</h1>
+<div>Click "Generate" to get a short melodic phrase where chaotic randomness obeys a simple rule (for example, a limited set of notes and step shifts).</div>
+<div style="margin-top:10px"><button id="gen">Generate</button> <button id="play">Play</button></div>    <pre id="out" style="margin-top:12px;color:#d7e6ff"></pre>
+  </div>
+<script>
+  const genBtn = document.getElementById('gen'); const playBtn = document.getElementById('play'); const out = document.getElementById('out'); let seq = [];
+  const scale = [0,2,4,7,9]; // пентатоника
+  genBtn.addEventListener('click', ()=>{
+    seq = []; let cur = 0; for(let i=0;i<12;i++){ const step = (Math.random()*3|0) - 1; cur = Math.max(0, Math.min(scale.length-1, cur + step)); seq.push(scale[cur]); }
+    out.textContent = seq.join(', ');
+  });
+  playBtn.addEventListener('click', async ()=>{
+    if(!seq.length) return; const ctx = new (window.AudioContext||window.webkitAudioContext)(); let t = ctx.currentTime; for(let s of seq){ const o = ctx.createOscillator(); const g = ctx.createGain(); o.type='sine'; o.frequency.value = 440*Math.pow(2,(60 + s -69)/12); o.connect(g); g.connect(ctx.destination); g.gain.value=0.0001; o.start(t); g.gain.linearRampToValueAtTime(0.14, t+0.01); g.gain.exponentialRampToValueAtTime(0.0001, t+0.22); o.stop(t+0.28); t += 0.32; }});
+</script>
+</body>
+</html>
