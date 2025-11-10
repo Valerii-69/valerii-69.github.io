@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Поради щодо монтажу</title>
+<style>
+ body{background:#071022;color:#e6eef8;font-family:Inter,Arial;margin:0;padding:18px}
+ .wrap{max-width:900px;margin:0 auto}
+ ul{line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="wrap">
+<h1>Поради з монтажу</h1> 
+<ul> 
+<li>Структура папок: /lab/index.html (головна), /lab/pages/*.html (вбудовані сторінки), /lab/assets/ (семпли, шрифти).</li> 
+<li>Перевіряй CORS при спробі завантажувати локальні файли через fetch; краще використовувати input type=file для семплів.</li> 
+<li>Для мобільних: зменшуй початковий об'єм звуків та розмір полотна, використовуйте requestAnimationFrame економно.</li> 
+<li>Зберігай стан матриці в sessionStorage або localStorage з версією - це спростить відкат.</li> 
+<li>Якщо потрібно ділитися сторінками — упаковуй вибраний набір сторінок у JSON та пропонуй «Експорт».</li>    </ul>
+  </div>
+</body>
+</html>

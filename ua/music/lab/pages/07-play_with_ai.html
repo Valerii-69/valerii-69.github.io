@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Пограємо з ІІ</title>
+<style>
+ body{background:#071022;color:#e6eef8;font-family:Inter,Arial;margin:0;padding:18px}
+ .wrap{max-width:900px;margin:0 auto}
+ textarea{width:100%;height:90px;border-radius:8px;padding:8px;border:0;background:rgba(255,255,255,0.03);color:inherit}
+ button{padding:8px 10px;border-radius:8px;border:0;background:#7c3aed;color:white;margin-top:8px}
+ pre{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+<h1>Пограємо з ІІ</h1> 
+<div>Введи тему і сторінка видасть просту мелодійну ідею (локально, без реального ІІ — емуляція на основі слів).</div> 
+<textarea id="prompt" placeholder="Наприклад: поле, дощ, старий поїзд..."></textarea> 
+<button id="go">Згенерувати мелодію</button>    <pre id="out"></pre>
+  </div>
+<script>
+  const go = document.getElementById('go'); const out = document.getElementById('out');
+  function hashSeed(s){ let h=0; for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i))|0; } return Math.abs(h); }
+  go.addEventListener('click', ()=>{
+    const text = document.getElementById('prompt').value.trim(); if(!text){ alert('Введи тему'); return; }
+    const seed = hashSeed(text);
+    const rng = x=>{ seedHolder = (seedHolder*1664525 + 1013904223)|0; return Math.abs(seedHolder)/0x7fffffff; };
+    // простой LCG с замыканием
+    let seedHolder = seed;
+    const base = 60 + (seed % 12);
+    const scale = [0,2,3,5,7,9,10];
+    const seq = [];
+    for(let i=0;i<8;i++){ const r = Math.floor(rng()*scale.length); seq.push(scale[r]); }
+    out.textContent = `Базовая нота (MIDI): ${base}\nМелодия (интервалы): ` + seq.join(', ');
+  });
+</script>
+</body>
+</html>
