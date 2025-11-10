@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tutorial: Intro - Journey through the Lab</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+body {
+  background: #071022;
+  color: #e6eef8;
+  font-family: Inter, Arial, sans-serif;
+  margin: 0;
+  padding: 24px;
+}
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+h1 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #7c3aed, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+h2 {
+  margin-top: 24px;
+  font-size: 18px;
+  color: #a5b4fc;
+}
+p {
+  margin: 8px 0;
+  color: #d7e6ff;
+}
+code, pre {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #c0d4ff;
+}
+blockquote {
+  border-left: 3px solid #7c3aed;
+  margin: 12px 0;
+  padding-left: 12px;
+  color: #bcd7ff;
+}
+.example {
+  background: rgba(255,255,255,0.03);
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+.pulse {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed33, #06b6d433);
+  box-shadow: 0 6px 18px rgba(12,17,34,0.6);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+.pulse:active { transform: scale(0.95); }
+  button {
+    background: linear-gradient(135deg, #009688, #00695c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #00796b);
+    transform: scale(1.05);
+  }
+
+footer {
+  margin-top: 30px;
+  font-size: 13px;
+  color: rgba(230,238,248,0.6);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Lab Tutorial<br>"Intro: A Journey Through the Lab"</h1>
+<p>This tutorial explains how the first page of the Lab works. Here you'll learn the basics of the Web Audio API and create your first "sounding circle."</p>
+
+<h2>1. Experiment Idea</h2>
+<p>The main goal of the intro is to show that each cell in the Lab can come to life, turning into a musical element. All the magic is built on three things:</p>
+<ul>
+<li><strong>AudioContext</strong> — creates the browser's sound space;</li>
+<li><strong>OscillatorNode</strong> — generates sound of a specific frequency;</li>
+<li><strong>ConvolverNode</strong> — creates an echo or reverberation effect.</li>
+</ul>
+
+<h2>2. Key Code Snippet</h2>
+<pre><code>const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+const reverb = ctx.createConvolver();
+
+// создаём короткую "импульсную характеристику" — эхо
+const len = ctx.sampleRate * 1.2;
+const impulse = ctx.createBuffer(2, len, ctx.sampleRate);
+for (let ch = 0; ch &lt; 2; ch++) {
+  const data = impulse.getChannelData(ch);
+  for (let i = 0; i &lt; len; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+  }
+}
+reverb.buffer = impulse;
+
+// подключаем узлы
+osc.connect(gain);
+gain.connect(reverb);
+reverb.connect(ctx.destination);
+</code></pre>
+
+<blockquote>Here we create a simple "hall" model where the sound gradually fades out.
+
+Each click changes the frequency slightly—as if you were taking a step into a new room of a maze.</blockquote>
+
+<h2>3. Try it yourself</h2>
+<div class="example">
+<p>Click the circle below—it will generate a random tone and a soft echo.
+
+This code uses the same principle as the original "Intro" page.</p>
+<div style="height:16px"></div>
+<div class="pulse" id="pulse">Click</div>
+</div>
+
+<h2>4. What's going on under the hood?</h2>
+<p>Every time you press a button, the script:</p>
+<ol>
+<li>creates a new <code>AudioContext</code>,</li>
+<li>chooses a random note near A (A4 = 440 Hz),</li>
+<li>gradually increases the volume, then decreases it,</li>
+<li>adds a slight reverb to make the sound last a little longer.</li>
+</ol>
+
+<h2>5. An Experiment for the Reader</h2>
+<p>Try changing the parameters in the code:
+<code>freq = baseFreq * Math.pow(2, randSemitone / 12)</code>
+— this is the formula that converts intervals to hertz. If you replace <code>12</code> with <code>24</code>,
+the pitch between tones will be halved, and the sounds will be closer together.</p>
+<div style="text-align:center;">
+<button onclick="window.close()">⬅ Return to the Lab</button>
+</div>
+<footer>© Reader's Lab · Section "Intro: Journey through the Lab"</footer></div>
+
+<script>
+// Демонстрация звука прямо в учебнике
+const pulse = document.getElementById('pulse');
+pulse.addEventListener('click', async () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const baseFreq = 440;
+    const randSemitone = Math.floor(Math.random() * 12) - 6;
+    const freq = baseFreq * Math.pow(2, randSemitone / 12);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const reverb = ctx.createConvolver();
+    const len = ctx.sampleRate * 1.2;
+    const impulse = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = impulse.getChannelData(ch);
+      for (let i = 0; i < len; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+      }
+    }
+    reverb.buffer = impulse;
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(reverb);
+    reverb.connect(ctx.destination);
+    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 1300);
+    pulse.animate([{transform:"scale(1.0)"},{transform:"scale(1.15)"},{transform:"scale(1.0)"}],
+                  {duration:600,easing:"ease-out"});
+  } catch (e) {
+    console.warn("Audio error:", e);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guide: Playing with AI – Safe Code Inference</title>
+
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: radial-gradient(circle at 30% 30%, #060b14, #0b1220, #020408);
+  color: #e6eef8;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  color: #9bf8d6;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+main {
+  max-width: 880px;
+  margin: auto;
+  padding: 1.5rem;
+}
+section {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+h2 {
+  color: #7ee1ff;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+pre {
+  background: rgba(0,0,0,0.5);
+  border-radius: 10px;
+  overflow-x: auto;
+  margin-top: 0.8rem;
+  font-size: 0.95rem;
+}
+code {
+  font-family: "Fira Code", monospace;
+}
+footer {
+  text-align: center;
+  color: #aaa;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+button {
+  background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.8rem;
+  transition: background 0.3s, transform 0.3s;
+}
+button:hover {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+<header>🎹 Tutorial: "Playing with AI"</header>
+
+<main>
+
+<section>
+<h2>1. The Generator Idea</h2>
+<p>
+We're creating a simple melodic idea based on deterministic randomness.
+
+This means that the same theme produces the same result, as if we had "AI with memory."
+</p>
+</section>
+
+<section>
+<h2>2. Converting Text to Number</h2>
+<p>
+ATTENTION: To prevent the browser from corrupting the code (by confusing angle brackets with HTML tags), we escape the characters
+<code>&lt;</code>, <code>&gt;</code>, and <code>&amp;</code>. Then the
+<b>highlight.js</b> library highlights the syntax. This is what makes the code safe.
+<pre><code> 
+&lt;!-- Connecting styles and the highlight.js highlight engine --&gt;
+&lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;hljs.highlightAll();&lt;/script&gt; 
+</code></pre> 
+</p> 
+
+<pre><code class="language-javascript">
+function hashSeed(s) { 
+let h = 0; 
+for (let i = 0; i < s.length; i++) {
+h = (h * 31 + s.charCodeAt(i)) | 0;
+}
+return Math.abs(h);
+}
+</code></pre>
+
+<p>
+Each character of the text affects a number — <i>seed</i>, which defines a sequence of "random" numbers.
+</p>
+</section>
+
+<section>
+<h2>3. Melody Generation</h2>
+<pre><code class="language-javascript">
+const base = 60 + (seed % 12); // base note
+const scale = [0, 2, 3, 5, 7, 9, 10]; // diatonic
+const seq = [];
+
+for (let i = 0; i < 8; i++) {
+const r = Math.floor(rng() * scale.length);
+seq.push(scale[r]);
+}
+</code></pre>
+
+<p>
+The interval array <code>scale</code> defines the scale structure, and the generator <code>rng()</code> selects
+random notes relative to the base note. The result will be the same with the same seed.
+</p>
+</section>
+
+<section>
+<h2>4. Emulating AI through Deterministic Randomness</h2>
+<p>
+We don't use neural networks, but we reproduce the illusion of "intelligence" through predictable randomness.
+The Linear Congruence Group (LCG) algorithm generates identical sequences with the same seed.
+</p>
+</section>
+
+<div style="text-align:center;">
+<button onclick="window.close()">⬅ Return to the Lab</button>
+</div>
+
+</main>
+
+<footer>© 2025 Fun Math with AI - Let's Play with AI</footer>
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Textbook: Pentatonic Laboratory</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+:root {
+  --bg: #071022;
+  --panel: #0f1724;
+  --accent: #7c3aed;
+  --muted: #bcd7ff;
+}
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Inter, system-ui, Arial;
+  background: linear-gradient(180deg, #071022 0%, #061427 100%);
+  color: var(--muted);
+}
+h1, h2, h3 {
+  color: white;
+}
+a { color: var(--accent); }
+.card {
+  background: linear-gradient(180deg, #0f1728, #081022);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.7);
+  margin-bottom: 18px;
+}
+code {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 90%;
+}
+pre {
+  background: rgba(255,255,255,0.06);
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+  button {
+    background: linear-gradient(135deg, #009688, #00695c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #00796b);
+    transform: scale(1.05);
+  }
+footer {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 30px;
+}
+</style>
+</head>
+<body>
+<h1>Textbook: Pentatonic Lab</h1>
+<div class="card">
+<h2>Purpose of the Experiment</h2>
+<p>
+The Lab allows you to explore the sound of the pentatonic scale — a set of five notes that form harmonic harmonies without semitones.
+
+Here you can control the timbre, intervals, and polyphony, and view a live oscillogram of the sound.
+</p>
+</div>
+
+<div class="card">
+<h2>Main Modules</h2>
+<h3>1. Matrix</h3>
+<p>
+Generates a pentatonic scale from a selected base note.
+
+The note buttons activate the corresponding frequencies, built according to the selected model (12-TET, Pythagorean, etc.).
+</p>
+
+<h3>2. AudioEngine</h3>
+<p>
+Uses <code>AudioContext</code> and Web Audio API oscillators.
+
+Each voice is created with <code>osc.type</code> (waveform) and <code>gain</code> (volume) parameters.
+Audio is processed via <code>AnalyserNode</code> and reverb.
+</p>
+
+<h3>3. Transposer</h3>
+<p>
+Responsible for intervals and polyphony – adding thirds, fifths, triads, and splitting them into multiple voices.
+The following interval presets are used:
+<code>{note:[0], third:[0.4], fifth:[0.7], triad:[0.4.7]}</code>.
+</p>
+
+<h3>4. Oscilloscope</h3>
+<p>
+Implemented via Canvas. Displays a real-time waveform using data from <code>AnalyserNode.getByteTimeDomainData()</code>.
+The line is visualized with a gradient—purple, turquoise, and lilac.
+</p>
+</div>
+
+<div class="card">
+<h2>Mathematical Frequency Models</h2>
+<p>
+Choosing a mathematical model allows you to compare different musical scales.
+</p>
+<ul>
+<li><strong>12-TET</strong> — equal temperament, the standard for pianos and synthesizers.</li>
+<li><strong>Pythagorean</strong> — intervals are built on perfect fifths 3:2.</li>
+<li><strong>Pure intonation</strong> — frequencies are expressed as simple fractions m/n.</li>
+<li><strong>Harmonic series</strong> — each note = the k-th harmonic of the base frequency.</li>
+</ul>
+<p>
+Example formula for 12-TET: <code>f = f0 * 2^((n - n0)/12)</code>
+</p>
+</div>
+
+<div class="card">
+<h2>Interactive example</h2>
+<p>Try changing the base note and click "Play series." The oscilloscope will change in real time.</p>
+<pre><code>
+// Example code for playing a sequence
+function playRowSequential() {
+const pent = generatePentSet(currentBaseIndex);
+let t = 0;
+for (const n of pent) {
+setTimeout(() => playChord([n]), t * 1000);
+t += 0.5;
+}
+}
+</code></pre>
+</div>
+
+<div class="card">
+<h2>How Polyphony Works</h2>
+<p>
+For each note, several oscillators are created, slightly detuned from each other (by ±6 cents)
+and panned left and right. This creates a spatial sound effect.
+</p>
+</div>
+<div class="card">
+<h2>Tips for Experimentation</h2>
+<ul>
+<li>Listen through headphones – it will better convey the spatial panorama.</li>
+<li>Try alternating waves: <em>triangle</em> for softness, <em>sawtooth</em> for richness.</li>
+<li>Compare the harmonic series with equal temperament and feel the difference.</li>
+</ul>
+</div>
+<div style="text-align:center;">
+<button onclick="window.close()">⬅ Return to the Lab</button>
+</div>
+<footer>
+Pentatonic Lab Textbook – Version 1.0 | "Entertaining Mathematics with AI" Website
+</footer>
+</body>
+</html>
