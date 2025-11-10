@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мелодия 4 — Путь эфира</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:system-ui;background:#f5fbff;color:#07344e;padding:14px}
+.card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.06)}
+button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+.play{background:#0b6cff;color:#fff}
+.stop{background:#cfe0ff;color:#07344e}
+.controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+label{font-size:13px;color:#234}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Мелодия 4 — Путь эфира</h2>
+  <p>Эфирный резонанс: два детюненных осциллятора + фильтр + feedback-delay.</p>
+
+  <div class="controls">
+    <button id="play" class="play">▶ Проиграть</button>
+    <button id="stop" class="stop">■ Стоп</button>
+    <label>BPM <input id="bpm" type="number" value="70" min="30" max="240" style="width:72px;"></label>
+  </div>
+</div>
+
+<script>
+(function(){
+  const seq = [1,2,3,5,4,3,2,1]; // pattern in degrees relative to base
+  const playBtn = document.getElementById('play'), stopBtn = document.getElementById('stop'), bpmInput = document.getElementById('bpm');
+  let ctx = null, activeNodes = [];
+
+  function valToMidi(base, step){ return base + (step-1); }
+  function midiToFreq(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+
+  async function play(){
+    if (!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state === 'suspended') await ctx.resume();
+    const tempo = Number(bpmInput.value) || 70;
+    const beat = 60/tempo;
+    const now = ctx.currentTime + 0.05;
+    const baseMidi = 60; // C4
+
+    // create delay / feedback
+    const feedback = ctx.createGain(); feedback.gain.value = 0.36;
+    const delay = ctx.createDelay(); delay.delayTime.value = 0.28;
+    delay.connect(feedback); feedback.connect(delay);
+
+    // master filter
+    const masterFilter = ctx.createBiquadFilter();
+    masterFilter.type = 'lowpass'; masterFilter.frequency.value = 3500;
+    delay.connect(masterFilter); masterFilter.connect(ctx.destination);
+
+    // schedule notes
+    seq.forEach((v,i)=>{
+      const t = now + i*beat;
+      // two slightly detuned oscillators for shimmer
+      const o1 = ctx.createOscillator();
+      const o2 = ctx.createOscillator();
+      const g = ctx.createGain();
+      const detune = (i%2===0)? -6 : 6; // cents-ish detune representation via frequency multiplier
+      const midi = valToMidi(baseMidi, v);
+      o1.type = 'sine'; o2.type = 'sine';
+      o1.frequency.value = midiToFreq(midi) * 1.0;
+      o2.frequency.value = midiToFreq(midi) * 1.003;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.28, t+0.02);
+      g.gain.linearRampToValueAtTime(0.14, t+beat*0.6);
+      g.gain.linearRampToValueAtTime(0, t+beat);
+      o1.connect(g); o2.connect(g);
+      // route through small filter to shape
+      const flt = ctx.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value = 400 + i*40;
+      g.connect(flt);
+      // split: dry to destination, wet to delay/feedback chain
+      flt.connect(ctx.destination);
+      flt.connect(delay);
+      o1.start(t); o2.start(t);
+      o1.stop(t + beat + 0.05); o2.stop(t + beat + 0.05);
+      activeNodes.push(o1, o2);
+    });
+
+    // small ambient pad (sustained)
+    const padOsc = ctx.createOscillator(); padOsc.type='triangle'; padOsc.frequency.value = 110;
+    const padGain = ctx.createGain(); padGain.gain.setValueAtTime(0.0, now);
+    padGain.gain.linearRampToValueAtTime(0.08, now+0.5);
+    padOsc.connect(padGain); padGain.connect(delay);
+    padOsc.start(now); padOsc.stop(now + seq.length * beat + 1.2);
+    activeNodes.push(padOsc);
+
+    // cleanup after estimated end
+    const totalMs = (seq.length * beat + 0.5) * 1000;
+    setTimeout(()=>{ try{ feedback.disconnect(); delay.disconnect(); masterFilter.disconnect(); }catch(e){} }, totalMs + 2000);
+  }
+
+  playBtn.addEventListener('click', ()=>{ play(); });
+  stopBtn.addEventListener('click', ()=>{
+    if (ctx){
+      try{
+        // try to stop oscillators gracefully
+        activeNodes.forEach(n => { try{ n.stop(); } catch(e){} });
+      } catch(e){}
+      activeNodes = [];
+    }
+  });
+})();
+</script>
+</body>
+</html>

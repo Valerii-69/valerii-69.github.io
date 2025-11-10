@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Путь огня — волна пила — Занимательная математика с ИИ</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:system-ui, -apple-system, "Segoe UI", Roboto; padding:16px; background:#fff7f3; color:#25110a}
+  .container{max-width:980px;margin:0 auto}
+  h1{color:#b33000}
+  .row{display:flex; gap:18px; flex-wrap:wrap}
+  .col{flex:1 1 320px; background:#fff; padding:12px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+  canvas{width:100%; height:200px; border-radius:8px; display:block; background:#fff7f3}
+  iframe{width:100%; height:420px; border:0; margin-top:12px; border-radius:8px}
+  pre.calc{background:#2b2b2b; color:#ffd8b3; padding:10px; border-radius:8px; overflow:auto}
+  .controls{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap}
+  button{padding:8px 10px; border-radius:8px; border:none; cursor:pointer}
+  .play{background:#b33000; color:white}
+  .stop{background:#aaa; color:#222}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="container">
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+  <h1>Путь огня — волна пила</h1>
+
+  <div class="row">
+    <div class="col">
+      <h2>Литературное эссе</h2>
+      <p>Огонь не течёт плавно: он режет, кусает, вспыхивает. Волна-пила похожа на язык пламени — она устремляется вверх, достигает острого пика и обнуляется, как искра, перерождаемая ветром. Эта форма — резкая, ясная и музыкальная; в ней — агрессия и ритм одновременно.</p>
+      <h3>Пожелание читателю</h3>
+      <p>Пусть твои идеи будут как искры — быстрые, ясные и готовые зажечь что-то новое.</p>
+    </div>
+
+    <div class="col">
+      <h2>Математическая модель — пилоподобная волна</h2>
+      <p>Пила (периодическая функция с линейным ростом и резким сбросом) может быть записана как:</p>
+      <pre class="calc">s(t) = 2 * ( t/T - floor(1/2 + t/T) )</pre>
+      <p>где <strong>T</strong> — период. Альтернативно, пилообразную волну можно представить как ряд Фурье (синусы с убывающими амплитудами):</p>
+      <pre class="calc">s(t) = (2/π) * Σ_{n=1..∞} ( (-1)^{n+1} / n ) * sin(2π n f t)</pre>
+      <p>Мы даём пользователю управление: период (T), амплитуда (A), плотность зубцов (число гармоник для визуализации).</p>
+    </div>
+  </div>
+
+  <div style="margin-top:14px" class="row">
+    <div class="col" style="flex:2 1 620px">
+      <h2>Canvas: пила + огненный градиент</h2>
+      <canvas id="sawCanvas" width="880" height="200"></canvas>
+      <div class="controls">
+        <label>Амплитуда A: <input id="A" type="range" min="10" max="120" value="40"></label>
+        <label>Период T (ms): <input id="T" type="range" min="80" max="1000" value="240"></label>
+        <label>Гармоник: <input id="H" type="range" min="1" max="15" value="6"></label>
+        <button id="startBtn" class="play">▶ Анимация</button>
+        <button id="stopBtn" class="stop">■ Стоп</button>
+      </div>
+      <p style="margin-top:8px">Анимация показывает пилу (основную форму) и добавляет декоративный «огненный» градиент внизу.</p>
+    </div>
+
+    <div class="col">
+      <h2>Встраиваемая мелодия</h2>
+      <iframe id="melFrame" src="melody2_ru.html" title="Мелодия 2 — Путь огня">Загрузка…</iframe>
+      <p style="font-size:13px; color:#444; margin-top:8px">Мелодия использует Sawtooth-осциллятор для резкого тембра, соответствующего теме.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Canvas: пилообразная визуализация с набором гармоник для декоративной «шумовой» текстуры
+const canvas = document.getElementById('sawCanvas');
+const ctx = canvas.getContext('2d');
+const A_el = document.getElementById('A'), T_el = document.getElementById('T'), H_el = document.getElementById('H');
+const startBtn = document.getElementById('startBtn'), stopBtn = document.getElementById('stopBtn');
+let anim = null, startTime = null;
+
+function sawBase(t, T) {
+  const x = (t % T) / T; // 0..1
+  return 2 * (x - Math.floor(0.5 + x));
+}
+
+// Fourier partials for saw-like composite (for visualization)
+function sawFourier(t, f, H) {
+  let s = 0;
+  for (let n = 1; n <= H; n++) {
+    s += ((-1)**(n+1) / n) * Math.sin(2 * Math.PI * n * f * t);
+  }
+  return (2/Math.PI) * s;
+}
+
+function drawFrame(ts) {
+  if (!startTime) startTime = ts;
+  const elapsed = ts - startTime;
+  const A = Number(A_el.value);
+  const T = Number(T_el.value);
+  const H = Number(H_el.value);
+  const f = 1000 / T; // Hz-like in ms units (visual)
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // background subtle
+  ctx.fillStyle = '#fff7f3';
+  ctx.fillRect(0,0,w,h);
+
+  // draw saw using Fourier partials + moving time
+  ctx.beginPath();
+  for (let x = 0; x < w; x++) {
+    const t = (elapsed + x) / 1000.0; // seconds
+    const val = sawFourier(t, f, H); // -1..1 approx
+    const y = h/2 - val * A;
+    if (x === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = '#b33000';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // fiery glow at bottom
+  const grad = ctx.createLinearGradient(0,h,0,h - 80);
+  grad.addColorStop(0, 'rgba(255,180,30,0.95)');
+  grad.addColorStop(0.4, 'rgba(255,100,20,0.6)');
+  grad.addColorStop(1, 'rgba(255,40,10,0.12)');
+  ctx.fillStyle = grad;
+  const glowHeight = 40 + 12 * Math.sin(elapsed * 0.02);
+  ctx.fillRect(0, h - glowHeight, w, glowHeight);
+
+  // decorative spikes (flame tongues) synced to main saw peaks
+  ctx.beginPath();
+  for (let x = 0; x < w; x += 12) {
+    const t = (elapsed + x) / 1000.0;
+    const val = sawBase((elapsed + x) % T, T);
+    const spike = Math.max(0, val) * (A * 0.6);
+    const px = x, py = h/2 - val * A - spike;
+    ctx.moveTo(px, h - 4);
+    ctx.lineTo(px, h - 4 - spike);
+  }
+  ctx.strokeStyle = 'rgba(255,140,40,0.45)'; ctx.lineWidth = 4; ctx.stroke();
+
+  anim = requestAnimationFrame(drawFrame);
+}
+
+startBtn.addEventListener('click', ()=>{
+  if (!anim) { startTime = null; anim = requestAnimationFrame(drawFrame); startBtn.disabled = true; }
+});
+stopBtn.addEventListener('click', ()=>{
+  if (anim) { cancelAnimationFrame(anim); anim = null; startBtn.disabled = false; }
+});
+</script>
+</body>
+</html>

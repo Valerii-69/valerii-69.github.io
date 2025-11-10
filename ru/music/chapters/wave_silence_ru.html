@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Волна тишины — Занимательная математика с ИИ</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:system-ui, -apple-system, "Segoe UI", Roboto; padding:16px; background:#fbfeff; color:#122;}
+  .container{max-width:980px;margin:0 auto;}
+  h1{color:#0b5aa6}
+  .row{display:flex; gap:18px; flex-wrap:wrap;}
+  .col{flex:1 1 320px; background:#fff; padding:12px; border-radius:10px; box-shadow:0 6px 18px rgba(10,20,30,0.06)}
+  canvas{width:100%; height:180px; border-radius:8px; background:#f7fbff; display:block}
+  label{display:block; margin:8px 0 4px; font-size:14px}
+  input[type=range]{width:100%}
+  pre.calc{background:#0b5aa6; color:#fff; padding:10px; border-radius:8px; overflow:auto}
+  iframe{width:100%; height:420px; border:0; margin-top:12px; border-radius:8px}
+  .meta{font-size:13px; color:#556; margin-top:8px}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="container">
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+  <h1>Волна тишины</h1>
+
+  <div class="row">
+    <div class="col">
+      <h2>Литературное эссе</h2>
+      <p>Тихо. Кажется, звук ускользнул между нитями воздуха, оставив после себя лёгкое покачивание — как волна, бегущая по поверхности воды. В этой тишине рождаются ритмы: не всегда слышимые ухом, но ощутимые телом. Волна тишины — это не отсутствие движения; это движение, столь деликатное, что наше внимание принимает его за покой.</p>
+      <p class="meta">Автор: ИИ и Валерий</p>
+
+      <h2>Пожелание читателю</h2>
+      <p>Пусть эта волна пробудит в тебе интерес к невидимым ритмам мира. Послушай, почувствуй и нарисуй свою собственную волну.</p>
+    </div>
+
+    <div class="col">
+      <h2>Математическая модель — простая волна</h2>
+      <p>Мы моделируем одномерную гармоническую волну:
+      <br><strong>y(x,t) = A · sin(2π (x/λ − f t) + φ)</strong>
+      </p>
+      <p>Здесь <em>A</em> — амплитуда, <em>λ</em> — длина волны, <em>f</em> — частота (Гц), <em>φ</em> — фаза. Скорость распространения v = λ·f.</p>
+
+      <label>Амплитуда A: <span id="A_val">20</span></label>
+      <input id="A" type="range" min="0" max="80" value="20">
+      <label>Длина волны λ (px): <span id="L_val">120</span></label>
+      <input id="L" type="range" min="40" max="400" value="120">
+      <label>Частота f (Гц): <span id="F_val">0.6</span></label>
+      <input id="F" type="range" min="0.1" max="2.0" step="0.05" value="0.6">
+      <label>Фаза φ (рад): <span id="P_val">0</span></label>
+      <input id="P" type="range" min="0" max="6.283" step="0.1" value="0">
+
+      <h3>Быстрый расчёт</h3>
+      <pre class="calc" id="calcBox"></pre>
+    </div>
+  </div>
+
+  <div style="margin-top:14px" class="row">
+    <div class="col" style="flex:2 1 620px">
+      <h2>Визуализация (canvas)</h2>
+      <canvas id="waveCanvas" width="880" height="180"></canvas>
+      <p style="margin-top:8px">Мини-анимация волны. Нажмите «Старт» чтобы проиграть движение волны — и одновременно в iframe включите мелодию.</p>
+      <div style="display:flex; gap:8px; margin-top:6px">
+        <button id="startBtn">Старт</button>
+        <button id="stopBtn">Стоп</button>
+        <button id="resetBtn">Сброс фазы</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2>Встраиваемая мелодия</h2>
+      <iframe id="melFrame" src="melody1_ru.html" title="Мелодия 1 — Волна тишины">Загрузка…</iframe>
+      <p class="meta">Если хочешь авто-запуск при старте анимации — включи вручную в iframe кнопку «▶ Проиграть» (ограничение авто-запуска WebAudio в браузерах).</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Параметры и визуализация
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+const A_el = document.getElementById('A'), L_el = document.getElementById('L'), F_el = document.getElementById('F'), P_el = document.getElementById('P');
+const A_val = document.getElementById('A_val'), L_val = document.getElementById('L_val'), F_val = document.getElementById('F_val'), P_val = document.getElementById('P_val');
+const calcBox = document.getElementById('calcBox');
+let A = +A_el.value, L = +L_el.value, f = +F_el.value, phi = +P_el.value;
+let t0 = 0, raf = null, running=false;
+
+function updateParams(){
+  A = +A_el.value; L = +L_el.value; f = +F_el.value; phi = +P_el.value;
+  A_val.textContent = A; L_val.textContent = L; F_val.textContent = f; P_val.textContent = (+phi).toFixed(2);
+  const v = (L * f).toFixed(2);
+  calcBox.textContent = `y(x,t) = ${A}·sin(2π(x / ${L} - ${f}·t) + ${phi.toFixed(2)})\nСкорость волны v = λ·f = ${L} · ${f} = ${v} (px/s)\nПериод T = 1/f = ${(1/f).toFixed(2)} s\nУгол волнового числа k = 2π/λ = ${(2*Math.PI/L).toFixed(4)} rad/px`;
+}
+
+function draw(t){
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#0077cc';
+  ctx.beginPath();
+  const time = t*0.001; // ms -> s
+  for(let x=0;x<w;x++){
+    const y = h/2 + A * Math.sin(2*Math.PI*(x/L - f*(time + t0)) + phi);
+    if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // спокойная подсветка амплитуды
+  ctx.fillStyle = 'rgba(0,120,200,0.06)';
+  ctx.fillRect(0, h/2 - A, w, A*2);
+  if(running) raf = requestAnimationFrame(draw);
+}
+
+A_el.addEventListener('input',updateParams);
+L_el.addEventListener('input',updateParams);
+F_el.addEventListener('input',updateParams);
+P_el.addEventListener('input',updateParams);
+updateParams();
+draw(0);
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  if(!running){ running=true; raf = requestAnimationFrame(draw); }
+});
+document.getElementById('stopBtn').addEventListener('click',()=>{
+  running=false;
+  if(raf) cancelAnimationFrame(raf);
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  P_el.value = 0; updateParams();
+});
+
+// При загрузке страницы краткий анимированный взмах
+let intro = 0;
+(function introAnim(ts){
+  intro++;
+  const amp = 12 * Math.sin(intro*0.08);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.beginPath();
+  for(let x=0;x<canvas.width;x++){
+    const y = canvas.height/2 + (A*0.6 + amp) * Math.sin(2*Math.PI*(x/L) + phi);
+    if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = '#0077cc'; ctx.lineWidth = 2; ctx.stroke();
+  if(intro<60) requestAnimationFrame(introAnim);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Числа в мелодии — Занимательная математика с ИИ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:system-ui,sans-serif;background:#fff8f0;color:#222;margin:0;padding:1rem;}
+h1{text-align:center;color:#223366;}
+.canvas-container{display:flex;justify-content:center;margin:1rem 0;}
+iframe{border:2px solid #333;border-radius:6px;width:720px;height:480px;display:block;margin:0 auto;}
+.ai-wish{margin-top:1rem;padding:1rem;background:#fff4ee;border-radius:8px;border:1px solid #ffd;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>История 9: Числа в мелодии</h1>
+
+<h2>Литературная версия:</h2>
+<p>Каждое число таит свою мелодию. Простые числа звучат как отдельные ноты, а последовательности чисел создают гармонии и ритмы, которые можно услышать, если прислушаться к закономерностям.</p>
+
+<h2>Математическая модель:</h2>
+<p>Числа n можно мэпировать на ноты через формулу: f = 440 * 2^((n-49)/12), где n — порядковый номер числа. Последовательность чисел создаёт музыкальный ряд с закономерностями, отражающими арифметические структуры.</p>
+
+<div class="canvas-container">
+<canvas id="numbersCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('numbersCanvas');
+const ctx=canvas.getContext('2d');
+const sequence=[2,3,5,7,11,13,17,19,23,29,31];
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  sequence.forEach((n,i)=>{
+    const x=60+i*60;
+    const y=100+Math.sin(t*0.05+n)*50;
+    ctx.beginPath();
+    ctx.arc(x,y,12,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${n*12},70%,50%)`;
+    ctx.fill();
+  });
+  t++;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+<h2>Интерактивная мелодия:</h2>
+<iframe src="melody9_ru.html"></iframe>
+
+<h2>Пожелание читателю от ИИ:</h2>
+<div class="ai-wish">
+Попробуй услышать, как числа создают свои ритмы и гармонии. Поиграй с последовательностями и наблюдай за закономерностями музыки чисел.
+</div>
+
+</body>
+</html>

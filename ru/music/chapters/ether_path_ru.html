@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Путь эфира — гармонические тени</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:system-ui, -apple-system, "Segoe UI", Roboto; background:linear-gradient(#f7fbff,#eef6ff); color:#0b2a3b; padding:18px; max-width:980px; margin:0 auto;}
+  h1{color:#123a5a; text-align:center}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .col{flex:1 1 320px;background:#fff;padding:14px;border-radius:10px;box-shadow:0 8px 26px rgba(15,30,50,0.06)}
+  canvas{display:block;width:100%;height:220px;border-radius:8px;background:#f6fbff}
+  iframe{width:100%;height:420px;border:0;margin-top:12px;border-radius:8px}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  .play{background:#0b6cff;color:white}
+  .stop{background:#cfe0ff;color:#0b2a3b}
+  pre.model{background:#0e2b3f;color:#e6f7ff;padding:10px;border-radius:8px;overflow:auto}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Путь эфира — гармонические тени</h1>
+
+<div class="row">
+  <div class="col">
+    <h2>Литературное эссе</h2>
+    <p>Эфир — не пустота, а тонкая ткань, в которой дрожат гармонии. Тени в нём — это не отсутствие света, а сложные узоры интерференции: тонкие наложения волн, рождающие новые оттенки звучания. В этих гармонических тенях слышно прошлое и предчувствуется будущее.</p>
+
+    <h3>Пожелание читателю</h3>
+    <p>Пусть эти тени подскажут новые созвучия — внимай им, и они откроют неожиданные мелодии.</p>
+  </div>
+
+  <div class="col">
+    <h2>Математическая модель — гармонический ряд и интерференция</h2>
+    <p>Основная идея: любое периодическое движение можно разложить в ряд Фурье — сумму синусоид с частотами n·f₀ и коэффициентами aₙ. Резонанс и тени появляются, когда частоты совпадают или близки.</p>
+    <pre class="model">
+y(x,t) = Σ_{n=1..N} A_n · sin(2π n f₀ t + φ_n)
+Интерференция: y_total = y1 + y2 → усиление / ослабление в зависимости от фазы.
+    </pre>
+    <p>Экран с canvas позволяет менять <em>f₀</em>, число гармоник и относительную фазу, чтобы увидеть узоры интерференции.</p>
+  </div>
+</div>
+
+<div style="margin-top:14px" class="row">
+  <div class="col" style="flex:2 1 640px">
+    <h2>Canvas — интерференция гармоник</h2>
+    <canvas id="etherCanvas" width="860" height="220"></canvas>
+
+    <div class="controls">
+      <label>Базовая частота f₀ (Hz): <input id="f0" type="range" min="0.05" max="1.0" step="0.01" value="0.15"></label>
+      <label>Гармоник N: <input id="N" type="range" min="1" max="20" value="8"></label>
+      <label>Фазовый сдвиг φ: <input id="phi" type="range" min="0" max="6.283" step="0.1" value="0"></label>
+      <button id="startAnim" class="play">▶ Пуск</button>
+      <button id="stopAnim" class="stop">■ Стоп</button>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>Встраиваемая мелодия</h2>
+    <iframe src="melody4_ru.html" title="Мелодия 4 — Путь эфира">Загрузка…</iframe>
+    <p style="margin-top:8px;color:#345">Мелодия использует два детюненных осциллятора, delay и фильтр — чтобы создать эфирный резонанс.</p>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('etherCanvas');
+const ctx = canvas.getContext('2d');
+const f0El = document.getElementById('f0');
+const NEl = document.getElementById('N');
+const phiEl = document.getElementById('phi');
+const startBtn = document.getElementById('startAnim');
+const stopBtn = document.getElementById('stopAnim');
+
+let animId = null, t0 = 0;
+
+function drawFrame(ts){
+  if(!t0) t0 = ts;
+  const elapsed = (ts - t0) / 1000;
+  const f0 = Number(f0El.value);
+  const N = Number(NEl.value);
+  const phi = Number(phiEl.value);
+  const w = canvas.width, h = canvas.height;
+
+  ctx.fillStyle = '#f6fbff';
+  ctx.fillRect(0,0,w,h);
+
+  // draw individual harmonics faintly
+  ctx.lineWidth = 1;
+  for(let n=1;n<=N;n++){
+    ctx.beginPath();
+    for(let x=0;x<w;x++){
+      const time = elapsed + x / 200;
+      const y = 0.9 * Math.sin(2*Math.PI * n * f0 * time + phi * n) * (1/(n)) * (h/3);
+      if(x===0) ctx.moveTo(x, h/2 + y); else ctx.lineTo(x, h/2 + y);
+    }
+    ctx.strokeStyle = `rgba(60,120,180,${0.08})`;
+    ctx.stroke();
+  }
+
+  // total (sum) stronger
+  ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const time = elapsed + x / 200;
+    let sum = 0;
+    for(let n=1;n<=N;n++){
+      const An = 1 / n; // amplitude decay
+      sum += An * Math.sin(2*Math.PI * n * f0 * time + phi * n);
+    }
+    const y = sum * (h/3);
+    if(x===0) ctx.moveTo(x, h/2 + y); else ctx.lineTo(x, h/2 + y);
+  }
+  ctx.strokeStyle = '#0b4f66';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // soft glow
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,'rgba(14,80,120,0.04)');
+  grad.addColorStop(1,'rgba(14,80,120,0.00)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,w,h);
+
+  animId = requestAnimationFrame(drawFrame);
+}
+
+startBtn.addEventListener('click', ()=>{
+  if(!animId){ t0 = 0; animId = requestAnimationFrame(drawFrame); startBtn.disabled = true; }
+});
+stopBtn.addEventListener('click', ()=>{
+  if(animId){ cancelAnimationFrame(animId); animId = null; startBtn.disabled = false; }
+});
+</script>
+</body>
+</html>

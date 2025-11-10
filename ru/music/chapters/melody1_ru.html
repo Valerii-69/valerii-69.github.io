@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мелодия 1 — Волна тишины</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0fbff; --accent:#0077cc}
+  body{background:var(--bg); font-family:system-ui; color:#0b2540; padding:14px}
+  .card{background:#fff; border-radius:10px; padding:12px; box-shadow:0 8px 20px rgba(10,20,30,0.06)}
+  .sequence{display:flex; gap:6px; flex-wrap:wrap; margin:10px 0}
+  .note{padding:6px 8px; border-radius:6px; background:#f2f8ff; font-weight:700; border:1px solid rgba(0,120,200,0.08)}
+  button{background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer}
+  input[type=number]{width:84px; padding:6px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Мелодия 1 — Волна тишины</h2>
+  <p>Последовательность — простая арпеджио-волна: [1,3,5,7,5,3,1].</p>
+  <div class="sequence" id="seq">
+    <div class="note">1</div><div class="note">3</div><div class="note">5</div><div class="note">7</div><div class="note">5</div><div class="note">3</div><div class="note">1</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button id="playBtn">▶ Проиграть</button>
+    <button id="stopBtn">■ Стоп</button>
+    <label style="margin-left:6px">Темп <input id="bpm" type="number" value="90" min="30" max="300"></label>
+  </div>
+  <p style="margin-top:8px; font-size:13px; color:#445">Мэп: v → MIDI C4 + (v-1). Простая синусоида, ADSR огибающая.</p>
+</div>
+
+<script>
+(function(){
+  const seq = [1,3,5,7,5,3,1];
+  const playBtn = document.getElementById('playBtn'), stopBtn = document.getElementById('stopBtn'), bpmInput = document.getElementById('bpm');
+  let audioCtx = null, playingTimers = [], isPlaying=false;
+
+  function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+  function valToMidi(v){ return 60 + (v - 1); }
+
+  function schedule(){
+    const tempo = Number(bpmInput.value) || 90;
+    const beat = 60/tempo;
+    const now = audioCtx.currentTime + 0.05;
+    seq.forEach((v,i)=>{
+      const t = now + i*beat;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = midiToFreq(valToMidi(v));
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.16,t+0.01);
+      g.gain.linearRampToValueAtTime(0.12,t+beat*0.6);
+      g.gain.linearRampToValueAtTime(0,t+beat);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + beat + 0.05);
+      playingTimers.push({osc,g});
+    });
+    // auto unflag after sequence
+    setTimeout(()=>{ isPlaying=false; }, seq.length * beat * 1000 + 200);
+  }
+
+  playBtn.addEventListener('click', async ()=>{
+    if(isPlaying) return;
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') await audioCtx.resume();
+    isPlaying = true;
+    schedule();
+  });
+
+  stopBtn.addEventListener('click', ()=>{
+    playingTimers.forEach(t=>{ try{ t.osc.stop(); }catch(e){}});
+    playingTimers = []; isPlaying=false;
+  });
+
+})();
+</script>
+</body>
+</html>

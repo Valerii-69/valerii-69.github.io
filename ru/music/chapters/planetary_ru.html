@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Ритмы планет</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:system-ui,sans-serif;background:#f0f8ff;color:#222;margin:0;padding:0;}
+.container{max-width:720px;margin:1rem auto;padding:1rem;background:rgba(255,255,255,0.9);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
+h1{color:#3366ff;margin-bottom:0.3rem;}
+section{margin-top:1rem;}
+canvas{display:block;margin:1rem auto;background:#fff8f0;border-radius:12px;}
+iframe{width:100%;height:120px;border:none;margin-top:1rem;}
+footer{margin-top:1rem;font-size:.85rem;opacity:.8;text-align:center;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="container">
+<h1>Ритмы планет</h1>
+
+<section>
+<h2>Литературное эссе</h2>
+<p>Каждая планета движется по своей орбите, создавая ритмы, которые влияют друг на друга. Музыка здесь — отражение космических циклов: медленные витки, быстрые обороты и гармонические соотношения. В каждом звуке слышен отклик небесных тел.</p>
+</section>
+
+<section>
+<h2>Математическая модель</h2>
+<p>Используем круговые орбиты с различными радиусами и скоростями:<br>
+<code>x = cx + R*cos(ω*t + φ)</code><br>
+<code>y = cy + R*sin(ω*t + φ)</code><br>
+где <em>R</em> — радиус орбиты, <em>ω</em> — угловая скорость, <em>φ</em> — начальная фаза. Canvas визуализирует планеты и их ритмы.</p>
+</section>
+
+<section>
+<h2>Canvas-анимация</h2>
+<canvas id="planetCanvas" width="700" height="500"></canvas>
+<script>
+const canvas=document.getElementById('planetCanvas');
+const ctx=canvas.getContext('2d');
+const cx=canvas.width/2,cy=canvas.height/2;
+const planets=[
+  {R:50,ω:0.02,φ:0,color:'red'},
+  {R:90,ω:0.015,φ:1,color:'green'},
+  {R:130,ω:0.01,φ:2,color:'blue'},
+  {R:170,ω:0.008,φ:3,color:'orange'}
+];
+let t=0;
+function drawPlanets(){
+  ctx.fillStyle='rgba(255,255,255,0.05)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  planets.forEach(p=>{
+    const x=cx+p.R*Math.cos(p.ω*t+p.φ);
+    const y=cy+p.R*Math.sin(p.ω*t+p.φ);
+    ctx.beginPath();
+    ctx.arc(x,y,8,0,2*Math.PI);
+    ctx.fillStyle=p.color;
+    ctx.fill();
+  });
+  t++;
+  requestAnimationFrame(drawPlanets);
+}
+drawPlanets();
+</script>
+</section>
+
+<section>
+<h2>Мелодия</h2>
+<iframe src="melody7_ru.html"></iframe>
+</section>
+
+<footer>Валерий & ИИ — музыкальная лаборатория</footer>
+</div>
+</body>
+</html>
