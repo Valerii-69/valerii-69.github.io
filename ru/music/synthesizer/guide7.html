@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Учебник: Генератор пентатонических снов.</title>
+<style>
+body {
+    background: radial-gradient(circle at center, #101020, #050509);
+    color: #e0e0f0;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+h1, h2, h3 {
+    color: #77f;
+}
+ul, ol {
+    text-align: left;
+    display: inline-block;
+    margin-top: 0;
+}
+canvas {
+    border: 1px solid #444;
+    width: 90%;
+    height: 200px;
+    margin: 10px auto;
+    border-radius: 6px;
+}
+label {
+    display: inline-block;
+    width: 180px;
+    text-align: right;
+    margin-right: .5em;
+}
+input[type=range] {
+    width: 200px;
+}
+button {
+    margin: 1em;
+    padding: 0.5em 1.2em;
+    font-size: 1rem;
+    background: #223;
+    color: #ddd;
+    border: 1px solid #556;
+    border-radius: 6px;
+    cursor: pointer;
+}
+button:hover {
+    background: #334;
+}
+span {
+    margin-left: 0.5em;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h1>Учебник: Генератор пентатонических снов</h1>
+
+<h2>Описание синтезатора</h2>
+<p>Синтезатор 7 создаёт несколько пентатонических снов, объединяет их с кроссфейдом, добавляет реверберацию и визуализирует результат на <b>canvas</b>. Каждое воспроизведение создаёт уникальную комбинацию звуков, которые можно сохранить в WAV.</p>
+
+<h2>Элементы интерфейса</h2>
+<ul>
+<li><b>Число снов:</b> количество отдельных мелодий, которые будут объединены.</li>
+<li><b>Длительность сна (сек):</b> длительность каждой мелодии.</li>
+<li><b>Сила реверба:</b> интенсивность эффекта реверберации.</li>
+<li><b>Скорость кроссфейда (сек):</b> плавность перехода между мелодиями.</li>
+<li><b>Сгенерировать и проиграть:</b> создаёт комбинированную мелодию, визуализирует её и проигрывает.</li>
+<li><b>Canvas:</b> отображает визуализацию звуковых волн.</li>
+<li><b>Скачать WAV:</b> появляется ссылка для сохранения комбинированного сна.</li>
+</ul>
+
+<h2>Принцип работы</h2>
+<ol>
+<li>Генерируются случайные базовые частоты для каждой мелодии.</li>
+<li>Выбирается случайная пентатоническая шкала для каждого сна.</li>
+<li>Создаётся аудиобуфер с синусоидными волнами.</li>
+<li>Применяется реверберация для глубины звука.</li>
+<li>Мелодии объединяются с заданным crossfade.</li>
+<li>Производится визуализация на <b>canvas</b>.</li>
+<li>Воспроизводится через <b>AudioContext</b> и предоставляется ссылка для скачивания WAV.</li>
+</ol>
+
+<h2>Советы по экспериментам</h2>
+<ul>
+<li>Увеличьте число снов для более сложной текстуры мелодии.</li>
+<li>Меняйте длительность сна для коротких или длинных фраз.</li>
+<li>Используйте реверберацию для создания пространства и атмосферы.</li>
+<li>Пробуйте разные значения crossfade для более плавного или резкого соединения мелодий.</li>
+<li>Каждое воспроизведение создаёт уникальный сон благодаря случайным базовым частотам и выбору шкалы.</li>
+</ul>
+
+<h2>Пример использования</h2>
+<p>Установите число снов = 5, длительность сна = 3 сек, реверб = 0.3, кроссфейд = 0.5. Нажмите <b>🎧 Сгенерировать и проиграть</b>. После прослушивания появится ссылка <b>💾 Скачать WAV</b>.</p>
+
+<h2>Canvas-визуализация</h2>
+<!--<canvas id="visualizer"></canvas>-->
+
+<h2>Элементы управления</h2>
+<div class="controls">
+<div>
+<label>Число снов:</label>
+<input id="numDreams" type="range" min="2" max="10" value="5">
+<span id="numDreamsVal">5</span>
+</div>
+<div>
+<label>Длительность сна (сек):</label>
+<input id="dreamLength" type="range" min="1" max="10" value="3">
+<span id="dreamLengthVal">3</span>
+</div>
+<div>
+<label>Сила реверба:</label>
+<input id="reverbAmount" type="range" min="0" max="1" step="0.05" value="0.3">
+<span id="reverbAmountVal">0.3</span>
+</div>
+<div>
+<label>Скорость кроссфейда (сек):</label>
+<input id="crossfadeTime" type="range" min="0.1" max="2" step="0.1" value="0.5">
+<span id="crossfadeTimeVal">0.5</span>
+</div>
+</div>
+Q<button id="generateBtn">🎧 Сгенерировать и проиграть (sample)</button>
+
+<h2>Основные функции синтезатора</h2>
+<ul>
+<li><b>generateDream(freqBase, scale, duration):</b> создаёт одну пентатоническую мелодию.</li>
+<li><b>addReverb(signal, amount):</b> применяет простую реверберацию.</li>
+<li><b>mergeDreams(dreams, crossfadeTime):</b> объединяет несколько мелодий с кроссфейдом.</li>
+<li><b>visualize(canvas, buffer):</b> отображает амплитуду звука на <b>canvas</b>.</li>
+<li><b>encodeWAV(samples, sampleRate):</b> преобразует аудиобуфер в WAV для скачивания.</li>
+</ul>
+
+</body>
+</html>

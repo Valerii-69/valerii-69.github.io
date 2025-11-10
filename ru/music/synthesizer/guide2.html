@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide 2 — Ноты и ADSR</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/dracula.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem;
+      max-width: 800px;
+      margin-inline: auto;
+    }
+    h1, h2 {
+      color: #93c5fd;
+      text-align: center;
+    }
+    p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
+    pre {
+      background: #1e293b;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    code {
+      font-size: 0.9rem;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #334155;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎧 Guide 2 — Ноты и ADSR</h1>
+
+  <h2>Что делает этот синтезатор</h2>
+  <p>
+    Этот синтезатор позволяет услышать, как из простой формы волны рождается нота с динамической огибающей.
+    При каждом нажатии кнопки <em>«Проиграть ноту»</em> генерируется выбранная частота (например, A4 = 440 Гц)
+    и формируется звуковая волна заданного типа — синус, квадрат, пила, треугольник или трапеция.
+  </p>
+  <p>
+    Основная идея — исследовать, как параметры ADSR (Attack, Decay, Sustain, Release)
+    формируют характер звучания. Это модель развития громкости во времени: от мягкого начала
+    до затухания после отпускания ноты.
+  </p>
+
+  <h2>Что можно услышать и настроить</h2>
+  <p>
+    Выберите ноту (A2–A5), изменяйте тип волны и параметры ADSR.
+    Попробуйте короткий <strong>Attack</strong> и длинный <strong>Release</strong> —
+    звук станет более «певучим».  
+    Увеличьте <strong>Decay</strong> и уменьшите <strong>Sustain</strong> —
+    получите характерный «удар» клавишного инструмента.
+  </p>
+
+  <hr>
+
+  <h2>Ключевые фрагменты кода</h2>
+
+  <p><strong>1. Инициализация и подготовка аудиоконтекста</strong></p>
+  <pre><code class="language-javascript">
+let audioCtx;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+  </code></pre>
+
+  <p><strong>2. Формирование огибающей ADSR</strong></p>
+  <pre><code class="language-javascript">
+const now = audioCtx.currentTime;
+gain.gain.cancelScheduledValues(now);
+gain.gain.setValueAtTime(0, now);
+gain.gain.linearRampToValueAtTime(0.8, now + a);         // Attack
+gain.gain.linearRampToValueAtTime(s, now + a + d);       // Decay → Sustain
+gain.gain.setValueAtTime(s, now + a + d + 0.2);
+gain.gain.linearRampToValueAtTime(0, now + a + d + 0.2 + r); // Release
+  </code></pre>
+
+  <p><strong>3. Выбор формы волны</strong></p>
+  <pre><code class="language-javascript">
+if (waveType === 'custom') {
+  const real = new Float32Array([0, 1, 0.5, 0.25, 0.1]);
+  const imag = new Float32Array(real.length);
+  osc.setPeriodicWave(audioCtx.createPeriodicWave(real, imag));
+} else {
+  osc.type = waveType;
+}
+  </code></pre>
+
+  <p><strong>4. Отрисовка огибающей ADSR</strong></p>
+  <pre><code class="language-javascript">
+function drawEnvelope(a, d, s, r) {
+  const width = envCanvas.width;
+  const height = envCanvas.height;
+  const total = a + d + r + 0.2;
+
+  ectx.beginPath();
+  ectx.moveTo(0, height);
+  ectx.lineTo(width * (a / total), 0);
+  ectx.lineTo(width * ((a + d) / total), height * (1 - s));
+  ectx.lineTo(width * ((a + d + 0.2) / total), height * (1 - s));
+  ectx.lineTo(width, height);
+  ectx.stroke();
+}
+  </code></pre>
+
+  <hr>
+
+  <h2>Итог</h2>
+  <p>
+    Этот синтезатор — простая лаборатория для изучения динамики звука.
+    Здесь можно наблюдать, как геометрия формы волны сочетается с временной структурой ADSR.
+    Идеально подходит для экспериментов с восприятием атаки, затухания и послезвучия.
+  </p>
+</body>
+</html>

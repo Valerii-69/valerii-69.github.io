@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лаборатория звука — ноты и ADSR</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: radial-gradient(circle at top, #dbeafe, #1e3a8a);
+    color: #f8fafc;
+    margin: 0; padding: 1rem;
+    text-align: center;
+  }
+  h1 { font-size: 1.2rem; margin-bottom: 1rem; }
+  select, button, input[type=range] {
+    width: 90%; max-width: 480px;
+    margin: 0.3rem auto;
+    display: block;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    border: none;
+    font-size: 1rem;
+  }
+  button { background: #4f46e5; color: white; }
+  button:active { background: #3730a3; }
+  canvas { width: 90%; max-width: 480px; height: 150px; margin: 1rem auto; border-radius: 1rem; background: #f1f5f9; display: block;}
+  pre {
+    background: #1e1e2f; color: #cbd5e1;
+    padding: 0.6rem; border-radius: 0.8rem;
+    overflow-x: auto; text-align: left;
+    font-size: 0.8rem;
+    width: 90%; max-width: 480px;
+    margin: 0.5rem auto;
+  }
+  label { display: block; text-align: left; width: 90%; max-width: 480px; margin: 0.3rem auto; }
+</style>
+</head>
+<body>
+
+<h1>🎧 Лаборатория звука — нота</h1>
+
+<label>Нота: 
+<select id="noteSelect">
+  <option value="110">A2</option>
+  <option value="220">A3</option>
+  <option value="440">A4</option>
+  <option value="880">A5</option>
+</select>
+</label>
+
+<select id="waveform">
+  <option value="sine">Синусоида</option>
+  <option value="square">Квадрат</option>
+  <option value="sawtooth">Пила</option>
+  <option value="triangle">Треугольник</option>
+  <option value="custom">Трапеция (Custom)</option>
+</select>
+
+<label>Attack: <input type="range" id="attack" min="0.01" max="1" step="0.01" value="0.1"></label>
+<label>Decay: <input type="range" id="decay" min="0.1" max="1" step="0.01" value="0.3"></label>
+<label>Sustain: <input type="range" id="sustain" min="0.1" max="1" step="0.01" value="0.6"></label>
+<label>Release: <input type="range" id="release" min="0.1" max="2" step="0.1" value="0.8"></label>
+
+<button id="play">Проиграть ноту</button>
+<p id="hint">Тронь экран или нажми для активации звука</p>
+
+<canvas id="waveCanvas" width="480" height="150"></canvas>
+<canvas id="envCanvas" width="480" height="150"></canvas>
+
+<pre id="code"></pre>
+
+<script>
+let audioCtx;
+const waveCanvas = document.getElementById('waveCanvas');
+const envCanvas  = document.getElementById('envCanvas');
+const wctx = waveCanvas.getContext('2d');
+const ectx = envCanvas.getContext('2d');
+const hint = document.getElementById('hint');
+const code = document.getElementById('code');
+
+const noteSelect = document.getElementById('noteSelect');
+const waveform = document.getElementById('waveform');
+const attack = document.getElementById('attack');
+const decay = document.getElementById('decay');
+const sustain = document.getElementById('sustain');
+const release = document.getElementById('release');
+
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    hint.textContent = "✅ Звук активен";
+  }
+}
+
+function drawWaveform(type){
+  const width = waveCanvas.width;
+  const height = waveCanvas.height;
+  wctx.clearRect(0,0,width,height);
+  wctx.beginPath();
+  for(let i=0;i<width;i++){
+    const x = i/width * 2*Math.PI;
+    let y;
+    switch(type){
+      case 'sine': y = Math.sin(x); break;
+      case 'square': y = Math.sign(Math.sin(x)); break;
+      case 'sawtooth': y = 2*(x/Math.PI - Math.floor(0.5 + x/Math.PI)); break;
+      case 'triangle': y = 2*Math.abs(2*(x/(2*Math.PI)-Math.floor(x/(2*Math.PI)+0.5))) - 1; break;
+      case 'custom':
+        y = Math.tanh(2*Math.sin(x)); break;
+    }
+    wctx.lineTo(i, height/2 - y*height/2.2);
+  }
+  wctx.strokeStyle = "#1e3a8a";
+  wctx.lineWidth = 2;
+  wctx.stroke();
+  wctx.fillStyle = "#111";
+  wctx.fillText("Форма волны: " + type, 10, 15);
+}
+
+function drawEnvelope(a,d,s,r){
+  const width = envCanvas.width;
+  const height = envCanvas.height;
+  ectx.clearRect(0,0,width,height);
+  ectx.beginPath();
+  const total = a+d+r+0.2;
+  ectx.moveTo(0,height);
+  ectx.lineTo(width*(a/total),0);
+  ectx.lineTo(width*((a+d)/total), height*(1-s));
+  ectx.lineTo(width*((a+d+0.2)/total), height*(1-s));
+  ectx.lineTo(width, height);
+  ectx.strokeStyle="#9333ea";
+  ectx.lineWidth=3;
+  ectx.stroke();
+  ectx.fillStyle="#111";
+  ectx.fillText("Огибающая ADSR",10,15);
+}
+
+function playNote(){
+  ensureAudio();
+  const freq = parseFloat(noteSelect.value);
+  const waveType = waveform.value;
+  const a = parseFloat(attack.value);
+  const d = parseFloat(decay.value);
+  const s = parseFloat(sustain.value);
+  const r = parseFloat(release.value);
+
+  drawWaveform(waveType);
+  drawEnvelope(a,d,s,r);
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  if (waveType==='custom'){
+    const real = new Float32Array([0,1,0.5,0.25,0.1]);
+    const imag = new Float32Array(real.length);
+    osc.setPeriodicWave(audioCtx.createPeriodicWave(real, imag));
+  } else { osc.type = waveType; }
+
+  osc.frequency.value = freq;
+
+  const now = audioCtx.currentTime;
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.8, now + a);
+  gain.gain.linearRampToValueAtTime(s, now + a + d);
+  gain.gain.setValueAtTime(s, now + a + d + 0.2);
+  gain.gain.linearRampToValueAtTime(0, now + a + d + 0.2 + r);
+
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(now + a + d + 0.2 + r + 0.1);
+
+  code.textContent = `function playNote(){\n  ensureAudio();\n  const freq = ${freq};\n  const waveType = '${waveType}';\n  const a = ${a}, d = ${d}, s = ${s}, r = ${r};\n  // ADSR и воспроизведение\n}`;
+}
+
+// События
+document.getElementById('play').addEventListener('click', playNote);
+[waveform,noteSelect,attack,decay,sustain,release].forEach(el=>{
+  el.addEventListener('input', playNote);
+});
+
+document.body.addEventListener('touchstart', ensureAudio, {once:true});
+document.body.addEventListener('click', ensureAudio, {once:true});
+
+// Инициализация
+drawWaveform('sine');
+drawEnvelope(0.1,0.3,0.6,0.8);
+</script>
+
+</body>
+</html>

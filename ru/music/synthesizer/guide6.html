@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Учебник: Пентатонический сон</title>
+<style>
+body {
+    background: radial-gradient(ellipse at center, #050505 0%, #000010 100%);
+    color: #e0e0ff;
+    font-family: "Trebuchet MS", sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+h1, h2, h3 {
+    color: #a0f0ff;
+}
+ul, ol {
+    text-align: left;
+    display: inline-block;
+    margin-top: 0;
+}
+canvas {
+    width: 100%;
+    height: 200px;
+    background: transparent;
+    display: block;
+    margin: 10px auto;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+.controls input, .controls select, .controls button {
+    width: 100%;
+    padding: 6px;
+    font-size: 1em;
+    border-radius: 6px;
+    border: none;
+    margin: 4px 0;
+}
+button {
+    background: linear-gradient(90deg,#4e9,#29f);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+button:hover {
+    background: linear-gradient(90deg,#6af,#4df);
+}
+</style>
+</head>
+<body>
+
+<h1>Учебник: Пентатонический сон</h1>
+
+<h2>Описание синтезатора</h2>
+<p>Синтезатор создаёт стерео-трёхзвучные мелодии на основе пентатонической шкалы. Он использует название сна для генерации случайных, но повторяемых мелодий с заданной базовой нотой, темпом, панорамой, атакой и затуханием. Можно также сохранить сон в WAV.</p>
+
+<h2>Элементы интерфейса</h2>
+<ul>
+<li><b>Название сна:</b> строка, которая определяет уникальную мелодию.</li>
+<li><b>Базовая нота:</b> выбирается из пентатоники (C, D, E, G, A).</li>
+<li><b>Темп (BPM):</b> скорость проигрывания мелодии.</li>
+<li><b>Crossfade:</b> плавный переход между нотами/фразами.</li>
+<li><b>Атака/Затухание:</b> регулировка огибающей каждой ноты.</li>
+<li><b>Панорама:</b> положение звука в стерео (левая/правая сторона).</li>
+<li><b>Сгенерировать сон:</b> создаёт мелодию и визуализацию на canvas.</li>
+<li><b>Записать WAV:</b> сохраняет текущий сон в WAV-файл.</li>
+<li><b>Canvas:</b> отображает визуализацию звуковых волн с динамическим фоном.</li>
+<li><b>Тональность:</b> показывает базовую ноту и темп.</li>
+</ul>
+
+<h2>Принцип работы</h2>
+<ol>
+<li>Название сна преобразуется в числовой seed для повторяемой генерации случайных чисел.</li>
+<li>Определяется октава на основе соотношения гласных и согласных.</li>
+<li>Создаётся массив частот для пентатонической шкалы.</li>
+<li>Генерируется аудиобуфер с трёхзвучными фразами с огибающей атаки и затухания, панорамой и реверберацией.</li>
+<li>Аудиобуфер воспроизводится через <b>AudioContext</b>, а waveform визуализируется на <b>canvas</b>.</li>
+<li>Можно экспортировать аудиобуфер в WAV-файл.</li>
+</ol>
+
+<h2>Советы по экспериментам</h2>
+<ul>
+<li>Меняйте название сна для создания уникальных мелодий.</li>
+<li>Экспериментируйте с базовой нотой — она меняет тональность всей мелодии.</li>
+<li>Плавно регулируйте атаки и release для более мягкого или резкого звучания.</li>
+<li>Используйте crossfade для создания плавных переходов между фразами.</li>
+<li>Панорама позволяет создавать ощущение движения звука в пространстве.</li>
+<li>Темп влияет на длительность фраз и ритмику.</li>
+<li>Сохраняйте любимые мелодии через WAV для дальнейшего прослушивания или анализа.</li>
+</ul>
+
+<h2>Пример использования</h2>
+<p>Введите название сна: <i>Ночной ветер</i>, выберите базовую ноту: <b>E</b>, темп 100 BPM. Нажмите <b>Сгенерировать сон</b>. После прослушивания нажмите <b>Записать WAV</b> для сохранения файла.</p>
+
+<h2>Canvas-визуализация</h2>
+<canvas id="dreamCanvas"></canvas>
+
+<h2>Элементы управления</h2>
+<div class="controls">
+<input id="dreamName" placeholder="Введите название сна">
+<label>Базовая нота (пентатоника):
+<select id="baseNote">
+<option value="C">C</option>
+<option value="D">D</option>
+<option value="E">E</option>
+<option value="G">G</option>
+<option value="A">A</option>
+</select>
+</label>
+<label>Темп (BPM): <input type="range" id="tempo" min="40" max="180" value="90"></label>
+<label>Crossfade: <input type="range" id="crossfade" min="0.05" max="1" step="0.05" value="0.3"></label>
+<label>Атака: <input type="range" id="attack" min="0.01" max="0.3" step="0.01" value="0.08"></label>
+<label>Затухание: <input type="range" id="release" min="0.05" max="0.5" step="0.01" value="0.15"></label>
+<label>Панорама: <input type="range" id="pan" min="-1" max="1" step="0.1" value="0"></label>
+<button id="generate">Сгенерировать сон</button>
+<button id="saveWav">Записать WAV</button>
+<div id="toneDisplay">Тональность: —</div>
+</div>
+
+<h2>Основные функции</h2>
+<ul>
+<li><b>stringToSeed(str):</b> преобразует название сна в числовой seed для генератора случайных чисел.</li>
+<li><b>seededRandom(seed):</b> возвращает функцию повторяемой генерации псевдослучайных чисел.</li>
+<li><b>parseDreamName(name):</b> анализирует название сна, определяет октаву, реверберацию, длину фраз и crossfade.</li>
+<li><b>noteToFreq(note, octave):</b> преобразует ноту и октаву в частоту.</li>
+<li><b>generateDreamAudio(params):</b> создаёт аудиобуфер с трёхзвучными фразами.</li>
+<li><b>playDream(buffer):</b> воспроизводит аудиобуфер с визуализацией на canvas.</li>
+<li><b>exportWav(buffer):</b> сохраняет текущий сон в WAV-файл.</li>
+</ul>
+
+</body>
+</html>

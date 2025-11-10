@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Guide1 — Музыкальный лабиринт: учебник к синтезатору #1</title>
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+  :root{--bg:#071022;--muted:#9fb4d6;--text:#e6eef8;--panel:rgba(255,255,255,0.03)}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;padding:28px;}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 8px;background:linear-gradient(90deg,#7c3aed,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  p{margin:10px 0;line-height:1.5;color:#d7eafc}
+  h2{margin-top:20px;color:#a5b4fc}
+  .note{background:var(--panel);padding:14px;border-radius:10px;margin:12px 0;color:var(--muted)}
+  pre{border-radius:8px;padding:12px;overflow:auto;background:rgba(0,0,0,0.5);font-size:13px}
+  code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+  ul{margin:8px 0 8px 20px}
+  .footer{margin-top:28px;color:rgba(230,238,248,0.6);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Учебник — Синтезатор «Музыкальный лабиринт» (guide1)</h1>
+
+  <p>Кратко: этот синтезатор — сетка 7×7 ячеек, каждая ячейка несёт свою группу гармоник.
+  При касании (или клике) ячейки либо проигрывается сэмпл, либо генерируется комбинация осцилляторов
+  (режим <code>synth</code>). Есть транспозер, регулировка затухания и число повторов (стак эффектов).</p>
+
+  <h2>Что вы услышите</h2>
+  <ul>
+    <li>В режиме <strong>synth</strong> — богатое «пилообразное» звучание (sawtooth), где каждая ячейка запускает набор гармоник.</li>
+    <li>В режиме <strong>sample</strong> — загруженные вами аудиофайлы воспроизводятся с наложением повторов и плавным спадом громкости.</li>
+    <li>Транспозиция (<code>transpose</code>) сдвигает все активные ноты в реальном времени — можно получить эффект хорового смещения.</li>
+    <li>Параметры <code>repeats</code> и <code>release</code> управляют плотностью слоёв и длиной затухания соответственно.</li>
+  </ul>
+
+  <h2>Что можно настроить и исследовать</h2>
+  <div class="note">
+    <strong>Практические идеи:</strong>
+    <ul>
+      <li>Увеличьте <code>repeats</code> и уменьшите <code>release</code> — получите звуковую «стяжку», как ритмический паттерн.</li>
+      <li>Поставьте <code>mode</code> в <code>sample</code> и загрузите короткие ударные сэмплы — сетка превратится в драм-машину.</li>
+      <li>Экспериментируйте с транспозером: плавное движение слайдера создаёт глиссандо у всех активных осцилляторов.</li>
+      <li>Измените форму осциллятора (sine/square/triangle) в коде <code>playSynth</code> — тембр резко поменяется.</li>
+    </ul>
+  </div>
+
+  <h2>Ключевые моменты в коде (готово к копированию)</h2>
+
+  <h3>1) Инициализация AudioContext и базовые структуры</h3>
+  <pre><code class="language-javascript">// создаём AudioContext и хранилища
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const size = 7;
+const cells = [];
+const cellHarmonics = new Map();
+let buffers = [];               // Array&lt;AudioBuffer&gt; для режима sample
+let activeOscillators = new Map(); // отслеживаем запущенные осцилляторы
+  </code></pre>
+
+  <h3>2) Создание сетки 7×7 (DOM)</h3>
+  <pre><code class="language-javascript">// добавляем ячейки в контейнер gridEl
+for (let y = 0; y &lt; size; y++) {
+  for (let x = 0; x &lt; size; x++) {
+    const cell = document.createElement('span');
+    cell.className = 'cell';
+    cell.dataset.x = x;
+    cell.dataset.y = y;
+    gridEl.appendChild(cell);
+    cells.push(cell);
+    // cellHarmonics.set(cell, [...]) — задаём позже
+  }
+}
+  </code></pre>
+
+  <h3>3) Воспроизведение синтеза (playSynth)</h3>
+  <pre><code class="language-javascript">function playSynth(idx, cell) {
+  const repeat = Number(repeatsSlider.value) || 1;
+  const release = Number(releaseSlider.value) || 20;
+  const trans = Number(transposeSlider.value) || 0;
+  const baseFreq = 261.63; // C4
+  const harmonics = cellHarmonics.get(cell) || [1];
+
+  harmonics.forEach(mult => {
+    for (let i = 0; i &lt; repeat; i++) {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sawtooth'; // попробуйте 'sine','square','triangle'
+      const freq = baseFreq * mult * Math.pow(2, (idx + trans) / 12);
+      osc.frequency.value = freq;
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.5 / repeat, audioCtx.currentTime + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.05 + release * 0.05);
+
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime + i * 0.05);
+      osc.stop(audioCtx.currentTime + i * 0.05 + release * 0.05);
+
+      activeOscillators.set(osc, { idx, gain });
+      osc.onended = () =&gt; activeOscillators.delete(osc);
+    }
+  });
+}
+  </code></pre>
+
+  <h3>4) Воспроизведение сэмплов (playSample)</h3>
+  <pre><code class="language-javascript">async function playSample(idx) {
+  if (!buffers.length) return;
+  const repeat = Number(repeatsSlider.value) || 1;
+  const release = Number(releaseSlider.value) || 20;
+  const buffer = buffers[idx % buffers.length];
+
+  for (let i = 0; i &lt; repeat; i++) {
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(1, audioCtx.currentTime + i * 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.05 + release * 0.05);
+    src.connect(gain).connect(audioCtx.destination);
+    src.start(audioCtx.currentTime + i * 0.05);
+  }
+}</code></pre>
+
+  <h3>5) Загрузка файлов в buffers (input[type=file])</h3>
+  <pre><code class="language-javascript">sampleInput.addEventListener('change', async (e) =&gt; {
+  const files = Array.from(e.target.files);
+  buffers = [];
+  for (let f of files) {
+    const ab = await f.arrayBuffer();
+    const buf = await audioCtx.decodeAudioData(ab);
+    buffers.push(buf);
+  }
+  sampleStatus.textContent = `${buffers.length} файлов`;
+});</code></pre>
+
+  <h3>6) Транспозиция в реальном времени</h3>
+  <pre><code class="language-javascript">transposeSlider.addEventListener('input', () =&gt; {
+  transposeValue.textContent = transposeSlider.value;
+  const trans = Number(transposeSlider.value);
+  // меняем частоту всех активных осцилляторов
+  activeOscillators.forEach(({ idx }, osc) =&gt; {
+    const freq = 261.63 * Math.pow(2, (idx + trans) / 12);
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  });
+});</code></pre>
+
+  <h2>Рекомендации и советы</h2>
+  <ul>
+    <li>Если браузер блокирует звук — вызовите <code>audioCtx.resume()</code> в ответ на пользовательский клик/касание.</li>
+    <li>Для меньшей загрузки CPU замените фрактальную визуализацию на простой canvas-паттерн или отключите её вовсе.</li>
+    <li>Чтобы управлять тоном более музыкально, сохраняйте для каждой ячейки не индекс <code>idx</code>, а заранее вычисленные частоты (в герцах).</li>
+    <li>Добавьте <code>BiquadFilterNode</code> перед выходом в <code>destination</code>, чтобы смягчать высокий спектр sawtooth.</li>
+  </ul>
+
+  <h2>Короткий чек-лист для тестирования</h2>
+  <div class="note">
+    <ul>
+      <li>Нажмите New — сетка получила гармоники (цвета тоже).</li>
+      <li>Нажмите на ячейку в режиме <code>synth</code> — должен прозвучать тон.</li>
+      <li>Переключитесь в <code>sample</code>, загрузите хотя бы один файл — при касании должна играть запись.</li>
+      <li>Покрутите транспозер — активные осцилляторы меняют высоту.</li>
+      <li>Нажмите Stop — все осцилляторы должны остановиться.</li>
+    </ul>
+  </div>
+
+  <div class="footer">guide1 · Музыкальный лабиринт — учебник к синтезатору №1 · Сохрани как <code>guide1.html</code></div>
+</div>
+</body>
+</html>

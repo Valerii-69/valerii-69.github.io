@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Guide 3 — Живой сон (пентатоника)</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+  :root{
+    --bg:#050515; --panel:#0f1724; --muted:#9fb4d6; --accent:#8b5cf6; --text:#e6e9f2;
+  }
+  body{margin:0;background:radial-gradient(circle at center,#050515,#020208);color:var(--text);font-family:system-ui,Segoe UI,Arial;padding:28px;max-width:900px;margin-inline:auto;}
+  h1{color:#c7d2fe;font-size:20px;margin:6px 0 10px;text-align:center;}
+  h2{color:#a5b4fc;margin-top:20px;}
+  p{margin:8px 0;line-height:1.5;color:#dbeafe}
+  .note{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;color:var(--muted);margin:12px 0}
+  pre{background:var(--panel);padding:14px;border-radius:10px;overflow:auto;font-size:13px}
+  code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+  ul{margin:8px 0 8px 20px}
+  .footer{margin-top:26px;color:rgba(230,238,248,0.55);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+  <h1>Учебник — «Живой сон» (генератор пентатонических фраз)</h1>
+
+  <h2>Коротко — о чём этот синтезатор</h2>
+  <p>
+    Генератор превращает текстовое имя сна в музыкальную «ткань» на пентатонической гамме.
+    Имя даёт семантическую подсказку (база, октава, цвет, настроение), а также служит
+    источником случайности через детерминированный seed — один и тот же текст всегда
+    даёт одно и то же звучание. Итог — набор коротких фраз, которые склеиваются с кроссфейдом,
+    оформляются ADSR-огибающей и могут быть сохранены в WAV.
+  </p>
+
+  <h2>Что вы услышите и какие параметры можно менять</h2>
+  <ul>
+    <li><strong>Имя сна</strong> — меняет базовую ноту и «характер» (семантика: вода/ночь/полет и т.п.).</li>
+    <li><strong>Mode</strong> — «Полный сон» (несколько фраз подряд) или «Музыкальная фраза» (одна короткая фраза).</li>
+    <li><strong>Crossfade</strong> — длительность перекрытия между фразами; при больших значениях фразы плавно перетекают.</li>
+    <li><strong>Attack / Release</strong> — ADSR-часть, влияет на приятность начала и концов звучания.</li>
+    <li><strong>Tempo</strong> — множитель времени, ускоряет или замедляет пульс фраз.</li>
+    <li>Кнопка <em>Сохранить WAV</em> экспортирует итог в файл .wav.</li>
+  </ul>
+
+  <div class="note">
+    Идея для эксперимента: введите одно и то же имя, но меняйте только tempo — вы увидите,
+    как та же «мелодия» меняет ощущение времени. Другой эксперимент — увеличить crossfade —
+    результат станет похож на длинный амбиентный пейзаж.
+  </div>
+
+  <h2>Ключевые фрагменты JS (готово к копированию)</h2>
+
+  <h3>1) Семантика и парсинг имени</h3>
+  <pre><code class="language-javascript">
+// Небольшая семантика: ищем ключевые слова в имени и возвращаем базовую ноту и октаву.
+function parseDreamName(name){
+  const n = name.toLowerCase();
+  for(const key of Object.keys(dreamSemanticMap)){
+    if(n.includes(key)) return dreamSemanticMap[key];
+  }
+  // значение по умолчанию
+  return { base: "E", oct: 0, color: "#88aaff", mood: "neutral" };
+}
+  </code></pre>
+
+  <h3>2) Детерминированный генератор случайных чисел</h3>
+  <pre><code class="language-javascript">
+// Преобразуем строку в числовой seed и создаём PRNG
+function stringToSeed(str){
+  let s = 0;
+  for (let c of str) s = (s * 31 + c.charCodeAt(0)) >>> 0;
+  return s;
+}
+function seededRandom(seed){
+  return () => {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    return ((seed >>> 0) % 10000) / 10000;
+  };
+}
+  </code></pre>
+
+  <h3>3) Генерация одной пентатонической фразы</h3>
+  <pre><code class="language-javascript">
+// baseFreq — частота базовой ноты (в Гц)
+// duration — примерное время фразы (сек)
+// rand — функция генератора случайных чисел
+// attack/release — параметры огибающей
+function generatePhrase(baseFreq, duration, rand, attack, release, tempo){
+  const SAMPLE_RATE = 44100;
+  const len = Math.floor(duration * SAMPLE_RATE);
+  const data = new Float32Array(len);
+  const pent = [0,2,4,7,9]; // интервалы пентатоники (в полутонов)
+  let pos = 0;
+  while (pos < len) {
+    const note = pent[Math.floor(rand() * pent.length)];
+    const freq = baseFreq * Math.pow(2, note / 12) * tempo;
+    const noteLen = Math.floor(SAMPLE_RATE * (0.25 + rand() * 0.25)); // длина отдельной ноты
+    for (let i = 0; i < noteLen && pos < len; i++, pos++) {
+      const t = i / noteLen;
+      const env = (t < attack ? t / attack : t > 1 - release ? (1 - t) / release : 1);
+      data[pos] = Math.sin(2 * Math.PI * freq * (pos / SAMPLE_RATE)) * 0.35 * env;
+    }
+  }
+  return data;
+}
+  </code></pre>
+
+  <h3>4) Склейка фраз с кроссфейдом</h3>
+  <pre><code class="language-javascript">
+// phrases — массив Float32Array
+// crossfade — длительность в секундах
+function mergePhrases(phrases, crossfade){
+  const SAMPLE_RATE = 44100;
+  const fadeSamples = Math.floor(crossfade * SAMPLE_RATE);
+  let total = phrases.reduce((a,b)=>a+b.length,0) - (phrases.length - 1) * fadeSamples;
+  const out = new Float32Array(total);
+  let pos = 0;
+  for (let i = 0; i < phrases.length; i++) {
+    const p = phrases[i];
+    if (i > 0) {
+      for (let j = 0; j < fadeSamples; j++) {
+        const t = j / fadeSamples;
+        out[pos - fadeSamples + j] = out[pos - fadeSamples + j] * (1 - t) + p[j] * t;
+      }
+      out.set(p.subarray(fadeSamples), pos);
+      pos += p.length - fadeSamples;
+    } else {
+      out.set(p, pos);
+      pos += p.length;
+    }
+  }
+  return out;
+}
+  </code></pre>
+
+  <h3>5) Экспорт в WAV (короткая реализация)</h3>
+  <pre><code class="language-javascript">
+// Возвращает ArrayBuffer с WAV-данными (16-bit PCM)
+function encodeWav(samples){
+  const SAMPLE_RATE = 44100;
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  function writeString(o, s){ for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); }
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, SAMPLE_RATE, true);
+  view.setUint32(28, SAMPLE_RATE * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, samples.length * 2, true);
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    let s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buffer;
+}
+  </code></pre>
+
+  <h2>Рекомендации и улучшения</h2>
+  <ul>
+    <li>Если хотите более выраженный бас — понизьте baseFreq на октаву для части фраз.</li>
+    <li>Для сложных тем замените синус на смесь гармоник (additive synthesis) — так фраза станет богаче.</li>
+    <li>Визуализация (line-стейт) можно упростить, если canvas нагружает устройство — уменьшите длину буфера, передаваемого в рисовалку.</li>
+    <li>Экспорт WAV — работает локально в браузере; при больших длительностях может потребоваться прогресс-бар.</li>
+  </ul>
+
+  <div class="footer">guide3 · Живой сон — учебник к синтезатору №3 · Сохрани как <code>guide3.html</code></div>
+
+</body>
+</html>
