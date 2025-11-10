@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tutorial: Pentatonic Dream</title>
+<style>
+body {
+    background: radial-gradient(ellipse at center, #050505 0%, #000010 100%);
+    color: #e0e0ff;
+    font-family: "Trebuchet MS", sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+h1, h2, h3 {
+    color: #a0f0ff;
+}
+ul, ol {
+    text-align: left;
+    display: inline-block;
+    margin-top: 0;
+}
+canvas {
+    width: 100%;
+    height: 200px;
+    background: transparent;
+    display: block;
+    margin: 10px auto;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+.controls input, .controls select, .controls button {
+    width: 100%;
+    padding: 6px;
+    font-size: 1em;
+    border-radius: 6px;
+    border: none;
+    margin: 4px 0;
+}
+button {
+    background: linear-gradient(90deg,#4e9,#29f);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+button:hover {
+    background: linear-gradient(90deg,#6af,#4df);
+}
+</style>
+</head>
+<body>
+
+<h1>Manual: Pentatonic Dream</h1>
+
+<h2>Synthesizer Description</h2>
+<p>This synthesizer creates stereo, triadic melodies based on the pentatonic scale. It uses the dream name to generate random but repeatable melodies with a specified base note, tempo, pan, attack, and decay. You can also save a dream as a WAV file.</p>
+
+<h2>Interface Elements</h2>
+<ul>
+<li><b>Dream Name:</b> A string that defines a unique melody.</li>
+<li><b>Base Note:</b> Select from the pentatonic scale (C, D, E, G, A).</li>
+<li><b>Tempo (BPM):</b> The playback speed of the melody.</li>
+<li><b>Crossfade:</b> Smooth transition between notes/phrases.</li>
+<li><b>Attack/Release:</b> Adjusts the envelope of each note.</li>
+<li><b>Panorama:</b> The position of the sound in stereo (left/right side).</li>
+<li><b>Generate Dream:</b> Creates a melody and visualization on canvas.</li>
+<li><b>Write WAV:</b> Saves the current dream to a WAV file.</li>
+<li><b>Canvas:</b> Displays a visualization of sound waves with a dynamic background.</li>
+<li><b>Key:</b> Shows the base note and tempo.</li>
+</ul>
+
+<h2>How it works</h2>
+<ol>
+<li>The dream name is converted into a numeric seed for repeatable random number generation.</li>
+<li>The octave is determined based on the ratio of vowels and consonants.</li>
+<li>A frequency array for the pentatonic scale is created.</li>
+<li>An audio buffer with three-note phrases with attack and decay envelopes, panning, and reverb is generated.</li>
+<li>The audio buffer is played through the <b>AudioContext</b>, and the waveform Visualized on <b>canvas</b>.</li>
+<li>You can export the audio buffer to a WAV file.</li>
+</ol>
+
+<h2>Tips for Experimentation</h2>
+<ul>
+<li>Change the sleep name to create unique melodies.</li>
+<li>Experiment with the base note—it changes the key of the entire melody.</li>
+<li>Smoothly adjust the attack and release for a softer or sharper sound.</li>
+<li>Use crossfade to create smooth transitions between phrases.</li>
+<li>Panorama creates the feeling of sound moving in space.</li>
+<li>Tempo affects the duration of phrases and rhythm.</li>
+<li>Save your favorite melodies as WAV files for later listening or analysis.</li>
+</ul>
+
+<h2>Usage Example</h2>
+<p>Enter Dream title: <i>Night Wind</i>, select base note: <b>E</b>, tempo 100 BPM. Click <b>Generate Dream</b>. After listening, click <b>Record WAV</b> to save the file.</p>
+
+<h2>Canvas Visualization</h2>
+<canvas id="dreamCanvas"></canvas>
+
+<h2>Controls</h2>
+<div class="controls">
+<input id="dreamName" placeholder="Enter a dream name">
+<label>Base Note (Pentatonic):
+<select id="baseNote">
+<option value="C">C</option>
+<option value="D">D</option>
+<option value="E">E</option>
+<option value="G">G</option>
+<option value="A">A</option>
+</select>
+</label>
+<label>Tempo (BPM): <input type="range" id="tempo" min="40" max="180" value="90"></label>
+<label>Crossfade: <input type="range" id="crossfade" min="0.05" max="1" step="0.05" value="0.3"></label>
+<label>Attack: <input type="range" id="attack" min="0.01" max="0.3" step="0.01" value="0.08"></label>
+<label>Fade: <input type="range" id="release" min="0.05" max="0.5" step="0.01" value="0.15"></label>
+<label>Panorama: <input type="range" id="pan" min="-1" max="1" step="0.1" value="0"></label>
+<button id="generate">Generate dream</button>
+<button id="saveWav">Record WAV</button>
+<div id="toneDisplay">Pitch: —</div>
+</div>
+
+<h2>Main Functions</h2>
+<ul>
+<li><b>stringToSeed(str):</b> Converts a dream name to a numeric seed for the random number generator.</li>
+<li><b>seededRandom(seed):</b> Returns a repeatable pseudo-random number generator.</li>
+<li><b>parseDreamName(name):</b> Parses a dream name, determines octave, reverb, phrase length, and crossfade.</li>
+<li><b>noteToFreq(note, octave):</b> Converts a note and octave to a frequency.</li>
+<li><b>generateDreamAudio(params):</b> Creates an audio buffer with three-note phrases.</li>
+<li><b>playDream(buffer):</b> Plays an audio buffer with visualization on the canvas.</li>
+<li><b>exportWav(buffer):</b> Saves the current dream to a WAV file.</li>
+</ul>
+
+</body>
+</html>

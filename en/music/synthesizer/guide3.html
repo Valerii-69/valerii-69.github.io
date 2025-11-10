@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Guide — Living Dream (pentatonic scale)</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+  :root{
+    --bg:#050515; --panel:#0f1724; --muted:#9fb4d6; --accent:#8b5cf6; --text:#e6e9f2;
+  }
+  body{margin:0;background:radial-gradient(circle at center,#050515,#020208);color:var(--text);font-family:system-ui,Segoe UI,Arial;padding:28px;max-width:900px;margin-inline:auto;}
+  h1{color:#c7d2fe;font-size:20px;margin:6px 0 10px;text-align:center;}
+  h2{color:#a5b4fc;margin-top:20px;}
+  p{margin:8px 0;line-height:1.5;color:#dbeafe}
+  .note{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;color:var(--muted);margin:12px 0}
+  pre{background:var(--panel);padding:14px;border-radius:10px;overflow:auto;font-size:13px}
+  code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+  ul{margin:8px 0 8px 20px}
+  .footer{margin-top:26px;color:rgba(230,238,248,0.55);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<h1>Tutorial — "Living Dream" (pentatonic phrase generator)</h1>
+
+<h2>A Brief Introduction to this Synthesizer</h2>
+<p>
+The generator transforms the textual name of a dream into musical "fabric" on a pentatonic scale.
+The name provides a semantic clue (base, octave, color, mood), and also serves as a
+source of randomness through a deterministic seed—the same text always
+produces the same sound. The result is a set of short phrases that are stitched together with a crossfade,
+formed with an ADSR envelope, and can be saved as a WAV file.
+</p>
+
+<h2>What you'll hear and what parameters you can change</h2>
+<ul>
+<li><strong>Dream Name</strong> — changes the base note and "character" (semantics: water/night/flight, etc.).</li>
+<li><strong>Mode</strong> — "Full Dream" (several phrases in a row) or "Musical Phrase" (one short phrase).</li>
+<li><strong>Crossfade</strong> — the duration of the overlap between phrases; At higher values, phrases flow smoothly.</li>
+<li><strong>Attack / Release</strong> — ADSR section, affects the pleasantness of the beginning and end of the sound.</li>
+<li><strong>Tempo</strong> — time multiplier, speeds up or slows down the pulse of phrases.</li>
+<li>The <em>Save WAV</em> button exports the result to a .wav file.</li>
+</ul>
+
+<div class="note">
+Experiment idea: enter the same name, but change only the tempo — you will see
+how the same "melody" changes the sense of time. Another experiment: increase the crossfade —
+the result will resemble a long ambient landscape. </div>
+
+<h2>Key JS fragments (copy-paste ready)</h2>
+
+<h3>1) Name Semantics and Parsing</h3>
+<pre><code class="language-javascript">
+// A little semantics: we search for keywords in the name and return the base note and octave.
+function parseDreamName(name){
+const n = name.toLowerCase();
+for(const key of Object.keys(dreamSemanticMap)){
+if(n.includes(key)) return dreamSemanticMap[key];
+}
+// default value
+return { base: "E", oct: 0, color: "#88aaff", mood: "neutral" };
+}
+</code></pre>
+
+<h3>2) Deterministic Random Number Generator</h3>
+<pre><code class="language-javascript">
+// Convert the string to a numeric seed and create a PRNG
+function stringToSeed(str){
+let s = 0;
+for (let c of str) s = (s * 31 + c.charCodeAt(0)) >>> 0;
+return s;
+}
+function seededRandom(seed){
+return () => {
+seed ^= seed << 13;
+seed ^= seed >>> 17;
+seed ^= seed << 5;
+return ((seed >>> 0) % 10000) / 10000;
+};
+}
+</code></pre>
+
+<h3>3) Generating a single pentatonic phrase</h3>
+<pre><code class="language-javascript">
+// baseFreq — base note frequency (in Hz)
+// duration — approximate phrase time (sec)
+// rand — random number generator function
+// attack/release — envelope parameters
+function generatePhrase(baseFreq, duration, rand, attack, release, tempo){
+const SAMPLE_RATE = 44100;
+const len ​​= Math.floor(duration * SAMPLE_RATE);
+const data = new Float32Array(len);
+const pent = [0,2,4,7,9]; // pentatonic intervals (in semitones)
+let pos = 0;
+while (pos < len) { 
+const note = pent[Math.floor(rand() * pent.length)]; 
+const freq = baseFreq * Math.pow(2, note / 12) * tempo; 
+const noteLen = Math.floor(SAMPLE_RATE * (0.25 + rand() * 0.25)); // length of a single note 
+for (let i = 0; i < noteLen && pos < len; i++, pos++) { 
+const t = i / noteLen; 
+const env = (t < attack ? t / attack : t > 1 - release ? (1 - t) / release : 1); 
+data[pos] = Math.sin(2 * Math.PI * freq * (pos / SAMPLE_RATE)) * 0.35 * env; 
+} 
+} 
+return data;
+}
+</code></pre>
+
+<h3>4) Merging phrases with crossfade</h3>
+<pre><code class="language-javascript">
+// phrases — Float32Array
+// crossfade — duration in seconds
+function mergePhrases(phrases, crossfade){
+const SAMPLE_RATE = 44100;
+const fadeSamples = Math.floor(crossfade * SAMPLE_RATE);
+let total = phrases.reduce((a,b)=>a+b.length,0) - (phrases.length - 1) * fadeSamples;
+const out = new Float32Array(total);
+let pos = 0;
+for (let i = 0; i < phrases.length; i++) {
+const p = phrases[i];
+if (i > 0) { 
+for (let j = 0; j < fadeSamples; j++) { 
+const t = j / fadeSamples; 
+out[pos - fadeSamples + j] = out[pos - fadeSamples + j] * (1 - t) + p[j] * t; 
+} 
+out.set(p.subarray(fadeSamples), pos); 
+pos += p.length - fadeSamples; 
+} else { 
+out.set(p, pos); 
+pos += p.length; 
+} 
+} 
+return out;
+} 
+</code></pre> 
+
+<h3>5) Export to WAV (short implementation)</h3> 
+<pre><code class="language-javascript">
+// Returns an ArrayBuffer with WAV data (16-bit PCM)
+function encodeWav(samples){ 
+const SAMPLE_RATE = 44100; 
+const buffer = new ArrayBuffer(44 + samples.length * 2); 
+const view = new DataView(buffer); 
+function writeString(o, s){ for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); } 
+writeString(0, "RIFF"); 
+view.setUint32(4, 36 + samples.length * 2, true); 
+writeString(8, "WAVE"); 
+writeString(12, "fmt "); 
+view.setUint32(16, 16, true);view.setUint16(20, 1, true); 
+view.setUint16(22, 1, true); 
+view.setUint32(24, SAMPLE_RATE, true); 
+view.setUint32(28, SAMPLE_RATE * 2, true); 
+view.setUint16(32, 2, true); 
+view.setUint16(34, 16, true); 
+writeString(36, "data"); 
+view.setUint32(40, samples.length * 2, true); 
+let offset = 44; 
+for (let i = 0; i < samples.length; i++, offset += 2) { 
+let s = Math.max(-1, Math.min(1, samples[i])); 
+view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+}
+return buffer;
+}
+</code></pre>
+
+<h2>Recommendations and Improvements</h2>
+<ul>
+<li>If you want a more pronounced bass, lower baseFreq by an octave for some phrases.</li>
+<li>For complex themes, replace the sine wave with a harmonic mixture (additive synthesis) – this will make the phrase richer.</li>
+<li>Visualization (line state) can be simplified. If the canvas is loading the device, reduce the length of the buffer passed to the drawing program.</li>
+<li>WAV export – works locally in the browser; for longer durations, a progress bar may be required.</li>
+</ul>
+
+</body>
+</html>

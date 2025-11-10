@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Living Dream - Pentatonic Phrase Generator</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    background: radial-gradient(circle at center, #050515, #020208);
+    color: #e0e0f0;
+  }
+  h1 { font-weight: 400; margin-top: .5em; }
+  input[type=text], input[type=range] {
+    width: 300px;
+    padding: 0.4em;
+    font-size: 1rem;
+    text-align: center;
+    border: 1px solid #556;
+    border-radius: 6px;
+    background: #111222;
+    color: #e0e0f0;
+  }
+  canvas { border: 1px solid #444; width: 90%; height: 220px; margin-top: 1em; border-radius: 10px; }
+  button {
+    margin: 0.5em;
+    padding: 0.6em 1.4em;
+    font-size: 1rem;
+    background: #223;
+    color: #ddd;
+    border: 1px solid #556;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: #334; }
+  label { display: inline-block; margin: 0.5em; }
+  #crossfadeValue, #attackValue, #releaseValue, #tempoValue {
+    display:inline-block; width:40px; text-align:center;
+  }
+</style>
+</head>
+<body>
+<h1>🎵 Living Dream — Pentatonic Phrase Generator</h1>
+
+<p>Enter the dream name:</p>
+<input id="dreamName" type="text" placeholder="For example: Silver Rain">
+<br>
+<label><input type="radio" name="mode" value="full" checked> Full Dream</label>
+<label><input type="radio" name="mode" value="phrase"> Musical Phrase</label>
+<br>
+
+<label>Crossfade: <span id="crossfadeValue">0.4</span> s</label><br>
+<input type="range" id="crossfadeSlider" min="0" max="1.5" step="0.01" value="0.4"><br>
+
+<label>Attack: <span id="attackValue">0.1</span> with</label><br>
+<input type="range" id="attackSlider" min="0.01" max="0.5" step="0.01" value="0.1"><br>
+
+<label>Release: <span id="releaseValue">0.3</span> s</label><br>
+<input type="range" id="releaseSlider" min="0.05" max="1" step="0.01" value="0.3"><br>
+
+<label>Tempo: <span id="tempoValue">1.0</span>×</label><br>
+<input type="range" id="tempoSlider" min="0.5" max="2.0" step="0.01" value="1.0"><br>
+
+<button id="generateBtn">🌙 Generate</button>
+<button id="stopBtn">⏹ STOP</button>
+<button id="saveBtn">💾 Save WAV</button>
+<div id="downloadArea"></div>
+<canvas id="visualizer" width="900" height="220"></canvas>
+
+<script type="module">
+// =================== КОНСТАНТЫ ===================
+const SAMPLE_RATE = 44100;
+const NOTE_BASE = { C:261.63, D:293.66, E:329.63, F:349.23, G:392.00, A:440.00, B:493.88 };
+
+// =================== СЕМАНТИКА ===================
+const dreamSemanticMap = {
+  "звезда":{base:"A",oct:+1,color:"#e0d4ff",mood:"mystic"},
+  "луна":{base:"F",oct:0,color:"#ccddee",mood:"calm"},
+  "вода":{base:"D",oct:0,color:"#77aaff",mood:"flow"},
+  "огонь":{base:"A",oct:+1,color:"#ff9966",mood:"energy"},
+  "река":{base:"D",oct:0,color:"#6699ff",mood:"smooth"},
+  "небо":{base:"D",oct:+1,color:"#aaddff",mood:"airy"},
+  "ночь":{base:"F",oct:-1,color:"#223344",mood:"dark"},
+  "сердце":{base:"F",oct:0,color:"#ffb3c1",mood:"warm"},
+  "память":{base:"F",oct:0,color:"#9999bb",mood:"nostalgic"},
+  "эхо":{base:"G",oct:0,color:"#8888aa",mood:"reflective"},
+  "любовь":{base:"F",oct:0,color:"#ffb3c1",mood:"warm"},
+  "туман":{base:"E",oct:-1,color:"#99aabb",mood:"soft"},
+  "полет":{base:"B",oct:+1,color:"#bbf0ff",mood:"freedom"},
+  "время":{base:"D",oct:0,color:"#aabbcc",mood:"steady"},
+  "дождь":{base:"A",oct:-1,color:"#99bbff",mood:"soft"},
+  "пламя":{base:"A",oct:+1,color:"#ff8844",mood:"energy"},
+  "камень":{base:"C",oct:-1,color:"#665544",mood:"grounded"},
+  "море":{base:"C",oct:0,color:"#4488cc",mood:"deep"},
+  "звук":{base:"E",oct:0,color:"#99aaff",mood:"bright"},
+  "тишина":{base:"D",oct:-1,color:"#444466",mood:"mystery"}
+};
+
+// =================== ПАРСИНГ ===================
+function parseDreamName(name){
+  const n = name.toLowerCase();
+  for(const key of Object.keys(dreamSemanticMap)){
+    if(n.includes(key)) return dreamSemanticMap[key];
+  }
+  return {base:"E",oct:0,color:"#88aaff",mood:"neutral"};
+}
+
+// =================== УТИЛИТЫ ===================
+function stringToSeed(str){let s=0;for(let c of str)s=(s*31+c.charCodeAt(0))>>>0;return s;}
+function seededRandom(seed){return ()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return((seed>>>0)%10000)/10000;}}
+
+// =================== ГЕНЕРАЦИЯ ===================
+function generatePhrase(baseFreq,duration,rand,attack,release,tempo){
+  const len=Math.floor(duration*SAMPLE_RATE);
+  const data=new Float32Array(len);
+  const pent=[0,2,4,7,9];
+  let pos=0,phase=0,phaseShift=0;
+  while(pos<len){
+    const note=pent[Math.floor(rand()*pent.length)];
+    const freq=baseFreq*Math.pow(2,note/12)*tempo;
+    const noteLen=Math.floor(SAMPLE_RATE*(0.25+rand()*0.25));
+    for(let i=0;i<noteLen && pos<len;i++,pos++){
+      const t=i/noteLen;
+      const env=(t<attack? t/attack : t>1-release? (1-t)/release : 1);
+      const ph=2*Math.PI*freq*(pos/SAMPLE_RATE + 0.001*Math.sin(phaseShift));
+      data[pos]=Math.sin(ph)*0.35*env;
+      phaseShift+=0.0003;
+    }
+  }
+  return data;
+}
+
+// =================== CROSSFADE ===================
+function mergePhrases(phrases,crossfade){
+  const fadeSamples=Math.floor(crossfade*SAMPLE_RATE);
+  let total=phrases.reduce((a,b)=>a+b.length,0)-(phrases.length-1)*fadeSamples;
+  const out=new Float32Array(total);
+  let pos=0;
+  for(let i=0;i<phrases.length;i++){
+    const p=phrases[i];
+    if(i>0){
+      for(let j=0;j<fadeSamples;j++){
+        const t=j/fadeSamples;
+        out[pos-fadeSamples+j]=out[pos-fadeSamples+j]*(1-t)+p[j]*t;
+      }
+      out.set(p.slice(fadeSamples),pos);
+      pos+=p.length-fadeSamples;
+    } else {out.set(p,pos);pos+=p.length;}
+  }
+  return out;
+}
+
+// =================== ВИЗУАЛИЗАЦИЯ ===================
+function createVisualizer(canvas){
+  const ctx=canvas.getContext("2d");
+  let t=0;
+  return{
+    draw(buffer,baseColor){
+      const w=canvas.width,h=canvas.height,step=Math.floor(buffer.length/w);
+      const ampScale=h*0.35*(1+0.1*Math.sin(t/60)); // дыхание
+      const amp=0.5+0.5*Math.sin(t/40);
+      const hueShift=(t/3)%360;
+      ctx.fillStyle=`hsl(${hueShift},40%,${10+amp*20}%)`; // фон мерцает
+      ctx.fillRect(0,0,w,h);
+      ctx.beginPath();
+      for(let x=0;x<w;x++){
+        const y=h/2-buffer[x*step]*ampScale;
+        if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle=baseColor;
+      ctx.lineWidth=2;
+      ctx.shadowBlur=20;
+      ctx.shadowColor=baseColor;
+      ctx.stroke();
+      t++;
+    }
+  };
+}
+
+// =================== АУДИО ===================
+let audioCtx=null,currentSrc=null;
+function playBuffer(signal){
+  if(!audioCtx) audioCtx=new AudioContext();
+  stop();
+  const buffer=audioCtx.createBuffer(1,signal.length,SAMPLE_RATE);
+  buffer.getChannelData(0).set(signal);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buffer;
+  const gain=audioCtx.createGain();
+  src.connect(gain).connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0,audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.35,audioCtx.currentTime+0.05);
+  gain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+signal.length/SAMPLE_RATE);
+  src.start();
+  currentSrc=src;
+}
+function stop(){if(currentSrc){try{currentSrc.stop();}catch{}currentSrc=null;}}
+
+// =================== UI ===================
+const inputEl=document.getElementById("dreamName");
+const btn=document.getElementById("generateBtn");
+const stopBtn=document.getElementById("stopBtn");
+const saveBtn=document.getElementById("saveBtn");
+const canvas=document.getElementById("visualizer");
+const viz=createVisualizer(canvas);
+
+const crossfade=document.getElementById("crossfadeSlider");
+const attack=document.getElementById("attackSlider");
+const release=document.getElementById("releaseSlider");
+const tempo=document.getElementById("tempoSlider");
+document.getElementById("crossfadeValue").textContent=crossfade.value;
+document.getElementById("attackValue").textContent=attack.value;
+document.getElementById("releaseValue").textContent=release.value;
+document.getElementById("tempoValue").textContent=tempo.value;
+
+[crossfade,attack,release,tempo].forEach(sl=>sl.addEventListener("input",()=>{
+  document.getElementById(sl.id.replace("Slider","Value")).textContent=sl.value;
+}));
+
+btn.addEventListener("click",()=>{
+  const name=inputEl.value.trim()||"Безымянный сон";
+  const sem=parseDreamName(name);
+  const seed=stringToSeed(name);
+  const rand=seededRandom(seed);
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  const baseFreq=NOTE_BASE[sem.base]*Math.pow(2,sem.oct);
+  const phraseCount=(mode==="phrase")?1:4;
+  const phrases=[];
+  for(let i=0;i<phraseCount;i++){
+    phrases.push(generatePhrase(baseFreq,2.5,rand,parseFloat(attack.value),parseFloat(release.value),parseFloat(tempo.value)));
+  }
+  const merged=mergePhrases(phrases,parseFloat(crossfade.value));
+  stop();
+  playBuffer(merged);
+  let t=0;
+  function anim(){
+    if(currentSrc){viz.draw(merged,sem.color);t=requestAnimationFrame(anim);}
+  }anim();
+});
+
+stopBtn.addEventListener("click",()=>stop());
+
+// ===== WAV сохранение =====
+saveBtn.addEventListener("click",()=>{
+  const name=inputEl.value.trim()||"dream";
+  const sem=parseDreamName(name);
+  const seed=stringToSeed(name);
+  const rand=seededRandom(seed);
+  const baseFreq=NOTE_BASE[sem.base]*Math.pow(2,sem.oct);
+  const phrases=[generatePhrase(baseFreq,3,rand,parseFloat(attack.value),parseFloat(release.value),parseFloat(tempo.value))];
+  const merged=mergePhrases(phrases,parseFloat(crossfade.value));
+  const wav=encodeWav(merged);
+  const blob=new Blob([wav],{type:"audio/wav"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=name+".wav";a.click();
+});
+
+function encodeWav(samples){
+  const buffer=new ArrayBuffer(44+samples.length*2);
+  const view=new DataView(buffer);
+  function writeString(o,s){for(let i=0;i<s.length;i++)view.setUint8(o+i,s.charCodeAt(i));}
+  writeString(0,"RIFF");view.setUint32(4,36+samples.length*2,true);
+  writeString(8,"WAVE");writeString(12,"fmt ");view.setUint32(16,16,true);
+  view.setUint16(20,1,true);view.setUint16(22,1,true);
+  view.setUint32(24,SAMPLE_RATE,true);view.setUint32(28,SAMPLE_RATE*2,true);
+  view.setUint16(32,2,true);view.setUint16(34,16,true);
+  writeString(36,"data");view.setUint32(40,samples.length*2,true);
+  let o=44;for(let i=0;i<samples.length;i++,o+=2){
+    let s=Math.max(-1,Math.min(1,samples[i]));
+    view.setInt16(o,s<0?s*0x8000:s*0x7FFF,true);
+  }
+  return buffer;
+}
+</script>
+</body>
+</html>

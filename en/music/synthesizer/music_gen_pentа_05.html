@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pentatonic triphonic dream</title>
+<style>
+body {
+  background: radial-gradient(circle at center, #001010, #000000 80%);
+  color: #b5ffff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding-top: 20px;
+}
+canvas {
+  width: 90%;
+  height: 300px;
+  border: 1px solid #044;
+  border-radius: 12px;
+  background: rgba(0, 20, 20, 0.2);
+  box-shadow: 0 0 30px rgba(0,255,255,0.1);
+}
+input[type=text] {
+  width: 60%;
+  padding: 5px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #0aa;
+  background: #001818;
+  color: #b5ffff;
+}
+button {
+  margin: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #055, #0aa);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: linear-gradient(45deg, #0aa, #0ff); }
+.slider-container { margin: 10px; color: #8ff; }
+</style>
+</head>
+<body>
+<h1>Pentatonic Triphonic Dream</h1>
+<input id="dreamInput" type="text" placeholder="Enter a dream name...">
+<button id="playBtn">▶ Generate Dream</button>
+<button id="stopBtn">⏹ Stop</button>
+<div class="slider-container">
+<label>Crossfade: <input id="crossfadeSlider" type="range" min="0.1" max="2" step="0.05" value="0.5"></label>
+<label>Attack: <input id="attackSlider" type="range" min="0.01" max="1" step="0.01" value="0.2"></label>
+<label>Release: <input id="releaseSlider" type="range" min="0.05" max="2" step="0.05" value="0.8"></label>
+</div>
+<h3 id="toneInfo">Tonality: —</h3>
+<canvas id="visual" width="900" height="300"></canvas>
+
+<script>
+const sampleRate = 44100;
+let audioCtx = null;
+let playing = false;
+
+// --- Псевдослучай из строки ---
+function stringToSeed(str){
+  let seed = 0;
+  for(let c of str) seed = (seed*31 + c.charCodeAt(0)) >>> 0;
+  return seed;
+}
+function seededRandom(seed){
+  return function(){
+    seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+    return ((seed >>> 0) % 10000) / 10000;
+  };
+}
+
+// --- Анализ названия сна ---
+function parseDreamName(name){
+  const n = name.trim().toLowerCase();
+  const letters = n.length || 1;
+  const vowels = (n.match(/[аеёиоуыэюяaeyoiu]/g) || []).length;
+  const mood = vowels / letters;
+  const seed = stringToSeed(n);
+  const rand = seededRandom(seed);
+
+  let octaveShift = 0;
+  if (n.match(/звёз|небо|свет|высок|полет|лет|stars|sky|light|high|years/)) octaveShift = +1;
+  if (n.match(/земл|глуб|ноч|тень|сон|тих|earth|night|shadow|sleep|silence/)) octaveShift = -1;
+
+  const baseFreq = 220 * Math.pow(2, octaveShift);
+  const numDreams = 3 + (letters % 5);
+  const dreamLength = 2 + Math.min(8, vowels);
+  const reverbAmount = 0.3 + 0.6 * mood;
+  const crossfadeTime = 0.3 + 0.02 * letters;
+  return {seed, rand, baseFreq, numDreams, dreamLength, reverbAmount, crossfadeTime};
+}
+
+// --- Пентатоническая шкала (в полутонах) ---
+const pentatonic = [0, 2, 4, 7, 9];
+
+// --- Генерация одной тризвучной ноты с дыханием и фазовым сдвигом ---
+function generateChordSample(freqBase, duration, rand, attack, release){
+  const length = Math.floor(duration * sampleRate);
+  const data = new Float32Array(length);
+
+  const freqs = [
+    freqBase,
+    freqBase * (5/4),   // терция
+    freqBase * (3/2)    // квинта
+  ];
+  const phases = freqs.map(()=>rand()*Math.PI*2);
+  const breathSpeed = 0.2 + 0.2*rand();
+  const phaseDrift = 0.5 + rand();
+
+  for(let i=0;i<length;i++){
+    const t = i/sampleRate;
+    const env = i<attack*sampleRate ? (i/(attack*sampleRate)) :
+      i>length-release*sampleRate ? (1-(i-(length-release*sampleRate))/(release*sampleRate)) : 1;
+    let breath = 0.85 + 0.15*Math.sin(2*Math.PI*breathSpeed*t);
+    let sample = 0;
+    for(let k=0;k<freqs.length;k++){
+      sample += Math.sin(2*Math.PI*freqs[k]*t + phases[k] + Math.sin(2*Math.PI*phaseDrift*t)*0.3);
+    }
+    data[i] = (sample/3)*env*breath*0.6;
+  }
+  return data;
+}
+
+// --- Реверберация ---
+function addReverb(signal, amount){
+  const delay = Math.floor(0.15 * sampleRate);
+  const out = new Float32Array(signal.length);
+  for (let i=0;i<signal.length;i++){
+    out[i] = signal[i];
+    if (i>=delay) out[i] += amount*out[i-delay];
+  }
+  return out;
+}
+
+// --- Кроссфейд ---
+function mergeDreams(dreams, crossfadeTime){
+  const fadeSamples = Math.floor(crossfadeTime * sampleRate);
+  let totalLength = dreams.reduce((a,b)=>a+b.length, 0) - (dreams.length-1)*fadeSamples;
+  const out = new Float32Array(totalLength);
+  let pos = 0;
+  for (let i=0;i<dreams.length;i++){
+    let d = dreams[i];
+    if (i>0){
+      for (let j=0;j<fadeSamples;j++){
+        const t = j/fadeSamples;
+        out[pos - fadeSamples + j] = out[pos - fadeSamples + j]*(1-t) + d[j]*t;
+      }
+      out.set(d.slice(fadeSamples), pos);
+      pos += d.length - fadeSamples;
+    } else {
+      out.set(d, pos);
+      pos += d.length;
+    }
+  }
+  return out;
+}
+
+// --- Генерация сна ---
+function generateDream(name, attack, release, crossfadeUser){
+  const {rand, baseFreq, numDreams, dreamLength, reverbAmount, crossfadeTime} = parseDreamName(name);
+  const dreams = [];
+  const fade = crossfadeUser || crossfadeTime;
+  const notes = pentatonic.map(x => baseFreq * Math.pow(2, x/12));
+  let lastNote = notes[0];
+
+  for(let i=0;i<numDreams;i++){
+    const note = notes[Math.floor(rand()*notes.length)];
+    const d = generateChordSample(note, dreamLength, rand, attack, release);
+    dreams.push(addReverb(d, reverbAmount));
+    lastNote = note;
+  }
+
+  // Завершающая нота — та же, что и первая, чтобы зациклить
+  dreams.push(generateChordSample(notes[0], dreamLength, rand, attack, release));
+  return mergeDreams(dreams, fade);
+}
+
+// --- Проигрывание ---
+let sourceNode = null;
+function playDream(buffer){
+  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if (sourceNode) sourceNode.stop();
+  const audioBuffer = audioCtx.createBuffer(1, buffer.length, sampleRate);
+  audioBuffer.copyToChannel(buffer, 0);
+  sourceNode = audioCtx.createBufferSource();
+  sourceNode.buffer = audioBuffer;
+  sourceNode.connect(audioCtx.destination);
+  sourceNode.start();
+  playing = true;
+  visualize(buffer);
+}
+function stopDream(){
+  if (sourceNode) { sourceNode.stop(); sourceNode = null; }
+  playing = false;
+}
+
+// --- Визуализация ---
+function visualize(buffer){
+  const canvas = document.getElementById("visual");
+  const ctx = canvas.getContext("2d");
+  let i=0;
+  function draw(){
+    if(!playing) return;
+    const w = canvas.width, h = canvas.height;
+    ctx.fillStyle = `rgba(0,0,0,0.1)`;
+    ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle = `hsl(${(Date.now()/50)%360},80%,60%)`;
+    ctx.beginPath();
+    const step = Math.floor(buffer.length/w);
+    for(let x=0;x<w;x++){
+      const y = h/2 - buffer[i]*h*0.4;
+      ctx.lineTo(x,y);
+      i = (i+step)%buffer.length;
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.globalAlpha = 0.9;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// --- UI ---
+document.getElementById("playBtn").onclick = ()=>{
+  const name = document.getElementById("dreamInput").value || "сон без имени";
+  const attack = parseFloat(document.getElementById("attackSlider").value);
+  const release = parseFloat(document.getElementById("releaseSlider").value);
+  const crossfadeUser = parseFloat(document.getElementById("crossfadeSlider").value);
+  const {baseFreq} = parseDreamName(name);
+  document.getElementById("toneInfo").innerText = `Тональность сна: ${baseFreq.toFixed(1)} Гц`;
+  const dream = generateDream(name, attack, release, crossfadeUser);
+  playDream(dream);
+};
+document.getElementById("stopBtn").onclick = stopDream;
+</script>
+</body>
+</html>

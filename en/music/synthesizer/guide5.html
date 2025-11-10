@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Textbook: Three-note pentatonic dream</title>
+<style>
+body {
+    background: radial-gradient(ellipse at center, #001018 0%, #000010 100%);
+    color: #aeeaff;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+h1, h2, h3 {
+    color: #8ff;
+}
+ul {
+    text-align: left;
+    display: inline-block;
+    margin-top: 0;
+}
+canvas {
+    width: 90%;
+    height: 300px;
+    margin: 20px auto;
+    display: block;
+    background: rgba(0,0,30,0.6);
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0,150,255,0.3);
+}
+input, button {
+    margin: 5px;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+<h1>Tutorial: Three-Part Pentatonic Son</h1>
+
+<h2>Synthesizer Description</h2>
+<p>This synthesizer creates stereo three-part melodies based on the pentatonic scale. Each son is formed as a sequence of three-note chords with a smooth attack/decay, panning, and reverb. You can also save the result as a WAV file.</p>
+
+<h2>Interface Elements</h2>
+<ul>
+<li><b>Dream Name:</b> Enter any string—the synthesizer will create a unique melody.</li>
+<li><b>Generate Dream:</b> Creates and plays a dream based on the entered name.</li>
+<li><b>Save WAV:</b> Saves the current dream in WAV format.</li>
+<li><b>Canvas:</b> Displays a real-time waveform visualization with color effects.</li>
+<li><b>Key:</b> Shows the base frequency of triads.</li>
+</ul>
+
+<h2>How it works</h2>
+<ol>
+<li>The name string is converted into a numeric seed for repeatable generation.</li>
+<li>Generates a sequence of three-note pentatonic chords scales.</li>
+<li>An attack/release envelope is applied for smoothness.</li>
+<li>Panorama is added for a stereo effect and reverb.</li>
+<li>Visualization displays the dynamics of the sound and smoothly changes the background.</li>
+<li>Multiple triads can be combined using crossfades.</li>
+<li>The result can be played back or recorded as a WAV file.</li>
+</ol>
+
+<h2>Tips for Experimentation</h2>
+<ul>
+<li>Change the dream title—each variant creates a unique melody.</li>
+<li>Observe the visualization: it reflects the rhythm and amplitude of the sound stream.</li>
+<li>Experiment with different title lengths and the number of vowels—this affects phrase length, reverb, and crossfades.</li>
+<li>Use a WAV recording for Analyze or save your favorite tunes.</li>
+</ul>
+
+<h2>Usage example</h2>
+<p>Enter the dream name: <i>Stardust</i>, click <b>Generate dream</b>. After listening, click <b>Record WAV</b> to save the file.</p>
+
+<h2>Canvas Visualization</h2>
+<canvas id="visual" width="900" height="300"></canvas>
+
+<h2>Controls</h2>
+<input id="dreamName" value="Stardust" style="width:300px">
+<button id="genBtn">Generate Dream</button>
+<button id="wavBtn">Record WAV</button>
+<div id="toneDisplay">Tone: [—]</div>
+
+<h2>Main Functions</h2>
+<ul>
+<li><b>stringToSeed(str):</b> Converts the name string to a numeric seed for generating random numbers.</li>
+<li><b>seededRandom(seed):</b> Returns a pseudo-random number generator function for repeatable generation.</li>
+<li><b>parseDreamName(name):</b> Parses the dream name, determines the base frequency, melody length, number of dreams, and reverb.</li>
+<li><b>generateDream(freqBase, scale, duration, rand):</b> Creates three-part melodies with panning and envelope.</li>
+<li><b>addReverb(stereo, amount):</b> Adds reverb to a stereo signal.</li>
+<li><b>mergeDreams(dreams, crossfadeTime):</b> Merges multiple three-part dreams with a smooth transition.</li>
+<li><b>playBuffer(stereo):</b> Plays a three-part dream through Audio context.</li>
+<li><b>exportWav(stereo):</b> Exports the current dream to a WAV file.</li>
+<li><b>visualize(data):</b> Visualizes the sound wave and smoothly changes the page background.</li>
+</ul>
+
+</body>
+</html>

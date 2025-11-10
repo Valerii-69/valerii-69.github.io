@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Textbook: Pentatonic Dream Generator.</title>
+<style>
+body {
+    background: radial-gradient(circle at center, #101020, #050509);
+    color: #e0e0f0;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+h1, h2, h3 {
+    color: #77f;
+}
+ul, ol {
+    text-align: left;
+    display: inline-block;
+    margin-top: 0;
+}
+canvas {
+    border: 1px solid #444;
+    width: 90%;
+    height: 200px;
+    margin: 10px auto;
+    border-radius: 6px;
+}
+label {
+    display: inline-block;
+    width: 180px;
+    text-align: right;
+    margin-right: .5em;
+}
+input[type=range] {
+    width: 200px;
+}
+button {
+    margin: 1em;
+    padding: 0.5em 1.2em;
+    font-size: 1rem;
+    background: #223;
+    color: #ddd;
+    border: 1px solid #556;
+    border-radius: 6px;
+    cursor: pointer;
+}
+button:hover {
+    background: #334;
+}
+span {
+    margin-left: 0.5em;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h1>Tutorial: Pentatonic Dream Generator</h1>
+
+<h2>Synthesizer Description</h2>
+<p>Synthesizer 7 creates multiple pentatonic dreams, combines them with a crossfade, adds reverb, and visualizes the result on the <b>canvas</b>. Each playback creates a unique combination of sounds that can be saved as a WAV file.</p>
+
+<h2>Interface Elements</h2>
+<ul>
+<li><b>Number of Dreams:</b> The number of individual melodies that will be combined.</li>
+<li><b>Dream Duration (sec):</b> The duration of each melody.</li>
+<li><b>Reverb Strength:</b> The intensity of the reverb effect.</li>
+<li><b>Crossfade Speed ​​(sec):</b> The smoothness of the transition between melodies.</li>
+<li><b>Generate and Play:</b> Creates a combined melody, visualizes it, and plays it.</li>
+<li><b>Canvas:</b> Displays a visualization of the sound waves.</li>
+<li><b>Download WAV:</b> A link appears to save the combined melody. sleep.</li>
+</ul>
+
+<h2>How it works</h2>
+<ol>
+<li>Random base frequencies are generated for each melody.</li>
+<li>A random pentatonic scale is selected for each sleep.</li>
+<li>An audio buffer with sine waves is created.</li>
+<li>Reverb is applied for depth.</li>
+<li>Melodies are combined with a specified crossfade.</li>
+<li>Rendered on <b>canvas</b>.</li>
+<li>Played via <b>AudioContext</b> and a WAV download link is provided.</li>
+</ol>
+
+<h2>Experimenting tips</h2>
+<ul>
+<li>Increase the number of sleeps for a more complex melody texture.</li>
+<li>Vary the sleep duration for short or long sleeps phrases.</li>
+<li>Use reverb to create space and atmosphere.</li>
+<li>Try different crossfade values ​​for smoother or sharper melodic transitions.</li>
+<li>Each playback creates a unique dream thanks to random base frequencies and scale selection.</li>
+</ul>
+
+<h2>Usage example</h2>
+<p>Set the number of dreams to 5, the duration to 3 seconds, the reverb to 0.3, and the crossfade to 0.5. Click <b>🎧 Generate and play</b>. After listening, a link <b>💾 Download WAV</b> will appear.</p>
+
+<h2>Canvas Visualizer</h2>
+<!--<canvas id="visualizer"></canvas>-->
+
+<h2>Controls</h2>
+<div class="controls">
+<div>
+<label>Number of Dreams:</label>
+<input id="numDreams" type="range" min="2" max="10" value="5">
+<span id="numDreamsVal">5</span>
+</div>
+<div>
+<label>Dream Duration (sec):</label>
+<input id="dreamLength" type="range" min="1" max="10" value="3">
+<span id="dreamLengthVal">3</span>
+</div>
+<div>
+<label>Reverb Amount:</label>
+<input id="reverbAmount" type="range" min="0" max="1" step="0.05" value="0.3">
+<span id="reverbAmountVal">0.3</span>
+</div>
+<div>
+<label>Crossfade Speed ​​(sec):</label>
+<input id="crossfadeTime" type="range" min="0.1" max="2" step="0.1" value="0.5">
+<span id="crossfadeTimeVal">0.5</span>
+</div>
+</div>
+<button id="generateBtn">🎧 Generate and Play (sample! position only!)</button>
+
+<h2>Main Functions Synthesizer</h2>
+<ul>
+<li><b>generateDream(freqBase, scale, duration):</b> Creates a single pentatonic melody.</li>
+<li><b>addReverb(signal, amount):</b> Applies a simple reverb.</li>
+<li><b>mergeDreams(dreams, crossfadeTime):</b> Combines multiple melodies with a crossfade.</li>
+<li><b>visualize(canvas, buffer):</b> Displays the audio amplitude on the <b>canvas</b>.</li>
+<li><b>encodeWAV(samples, sampleRate):</b> Converts the audio buffer to a WAV file for downloading.</li></ul>
+
+</body>
+</html>

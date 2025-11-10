@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide — Notes and ADSR</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/dracula.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem;
+      max-width: 800px;
+      margin-inline: auto;
+    }
+    h1, h2 {
+      color: #93c5fd;
+      text-align: center;
+    }
+    p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
+    pre {
+      background: #1e293b;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    code {
+      font-size: 0.9rem;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #334155;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+<h1>🎧 Guide 2 — Notes and ADSR</h1>
+
+<h2>What this synthesizer does</h2>
+<p>
+This synthesizer lets you hear how a note with a dynamic envelope is born from a simple waveform.
+Each press of the <em>Play Note</em> button generates a selected frequency (for example, A4 = 440 Hz)
+and creates a sound wave of the specified type—sine, square, sawtooth, triangle, or trapezoid.
+</p>
+<p>
+The main idea is to explore how the ADSR (Attack, Decay, Sustain, Release) parameters
+shape the character of a sound. This is a model of how loudness develops over time: from a soft onset
+to a decay after the note is released.
+</p>
+
+<h2>What you can hear and adjust</h2>
+<p>
+Select a note (A2–A5), change the waveform type and ADSR parameters. Try a short <strong>Attack</strong> and a long <strong>Release</strong> -
+the sound will become more "singing."
+Increase <strong>Decay</strong> and decrease <strong>Sustain</strong> -
+to get the characteristic "thump" of a keyboard instrument.
+</p>
+
+<hr>
+
+<h2>Key Code Snippets</h2>
+
+<p><strong>1. Initializing and Preparing the Audio Context</strong></p>
+<pre><code class="language-javascript">
+let audioCtx;
+
+function ensureAudio() {
+if (!audioCtx) {
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+}
+</code></pre>
+
+<p><strong>2. ADSR</strong></p>Envelope Shaping 
+<pre><code class="language-javascript">
+const now = audioCtx.currentTime;
+gain.gain.cancelScheduledValues(now);
+gain.gain.setValueAtTime(0, now);
+gain.gain.linearRampToValueAtTime(0.8, now + a); // Attack
+gain.gain.linearRampToValueAtTime(s, now + a + d); // Decay → Sustain
+gain.gain.setValueAtTime(s, now + a + d + 0.2);
+gain.gain.linearRampToValueAtTime(0, now + a + d + 0.2 + r); // Release 
+</code></pre> 
+
+<p><strong>3. Waveform selection</strong></p> 
+<pre><code class="language-javascript">
+if (waveType === 'custom') { 
+const real = new Float32Array([0, 1, 0.5, 0.25, 0.1]); 
+const imag = new Float32Array(real.length); 
+osc.setPeriodicWave(audioCtx.createPeriodicWave(real, imag));
+} else { 
+osc.type = waveType;
+} 
+</code></pre> 
+
+<p><strong>4. ADSR Envelope Drawing</strong></p> 
+<pre><code class="language-javascript">
+function drawEnvelope(a, d, s, r) { 
+const width = envCanvas.width; 
+const height = envCanvas.height; 
+const total = a + d + r + 0.2;
+
+ectx.beginPath();
+ectx.moveTo(0, height);
+ectx.lineTo(width * (a / total), 0);
+ectx.lineTo(width * ((a + d) / total), height * (1 - s));
+ectx.lineTo(width * ((a + d + 0.2) / total), height * (1 - s));
+ectx.lineTo(width, height);
+ectx.stroke();
+}
+</code></pre>
+
+<hr>
+
+<h2>Summary</h2>
+<p>
+This synthesizer is a simple laboratory for studying sound dynamics.
+Here you can observe how the geometry of the waveform combines with the temporal structure of ADSR. Ideal for experimenting with the perception of attack, decay and release.
+  </p>
+</body>
+</html>
