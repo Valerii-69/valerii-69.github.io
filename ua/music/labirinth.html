@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+<title>Музичний лабіринт</title> 
+<meta property="og:title" content="Музичний лабіринт - Цікава математика з ІІ" /> 
+<meta property="og:description" content="Подорож музичним лабіринтом - від тиші до гармонії, від хвиль до співзвуччя." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://valerii-69.github.io/ru/music/labyrinth.html" />
+  <meta property="og:image" content="https://valerii-69.github.io/ru/images/og-image.png" />
+<link rel="stylesheet" href="../style.css">
+  <style>
+    body { font-family: sans-serif; background: #f5faff; margin: 20px; }
+    h1 { color: #222; text-align: center; }
+    #maze { display: grid; grid-template-columns: repeat(4, 180px); gap: 12px; justify-content: center; }
+    .cell {
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+      background: #ffffff;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 120px;
+    }
+    .cell:hover { transform: scale(1.05); background: #e6f0ff; }
+    .cell canvas {
+      border: 1px solid #aaa;
+      background: white;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+    #viewer {
+      margin-top: 20px;
+      width: 760px;
+      height: 900px;
+      border: 2px solid black;
+      border-radius: 8px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      background: #eef8ff;
+    }
+    #nextBatch {
+      display: block;
+      margin: 15px auto;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+    #nextBatch:hover { background-color: #45a049; }
+    #aphorism {
+      width: 60%;
+      margin: 10px auto;
+      padding: 6px;
+      text-align: center;
+      font-style: italic;
+      font-size: 18px;
+      background: #f0faff;
+      border-radius: 8px;
+      border: 1px solid #cce;
+    }
+	.prof_item {
+   /*display: flex;*/
+   flex-direction: row;
+}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<a href="../oglavlenie.html" class="back-link">&larr; Повернутись до змісту</a> 
+<h1>Музичний лабіринт</h1> 
+<div id="aphorism">ЧИТАЙ!!</div> 
+<button id="nextBatch">Наступний лабіринт</button>
+  <div class="prof_item">
+  <div id="maze"></div>
+  <iframe id="viewer"></iframe>
+	</div>
+
+  <script src="js/thoughts.js"></script>
+  <script>
+    let modules = [];
+    const maze = document.getElementById("maze");
+    const viewer = document.getElementById("viewer");
+
+    // === Визуальные превью (мини-анимации)
+    function wavePreview(c) {
+      const ctx = c.getContext("2d");
+      let t = 0;
+      function draw() {
+        ctx.clearRect(0,0,c.width,c.height);
+        ctx.beginPath();
+        for(let x=0;x<c.width;x++){
+          const y = c.height/2 + 10*Math.sin((x+t)/10);
+          ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle="#0077cc";
+        ctx.stroke();
+        t+=0.8;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function firePreview(c){
+      const ctx=c.getContext("2d");
+      let a=0;
+      function draw(){
+        ctx.clearRect(0,0,c.width,c.height);
+        const g=ctx.createLinearGradient(0,c.height,0,0);
+        g.addColorStop(0,"#ff6600");
+        g.addColorStop(1,"#ffff99");
+        ctx.fillStyle=g;
+        ctx.fillRect(0,c.height-20-Math.sin(a)*10,c.width,20+Math.sin(a)*10);
+        a+=0.2;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function crystalPreview(c){
+      const ctx=c.getContext("2d");
+      let a=0;
+      function draw(){
+        ctx.clearRect(0,0,c.width,c.height);
+        ctx.save();
+        ctx.translate(c.width/2,c.height/2);
+        ctx.rotate(a);
+        ctx.strokeStyle="#33c";
+        ctx.beginPath();
+        for(let i=0;i<6;i++){
+          ctx.moveTo(0,0);
+          ctx.lineTo(20,0);
+          ctx.rotate(Math.PI/3);
+        }
+        ctx.stroke();
+        ctx.restore();
+        a+=0.03;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // === Вспомогательная функция
+    function sample(arr,n){return arr.slice().sort(()=>Math.random()-0.5).slice(0,n);}
+
+    function createMap(){
+      maze.innerHTML="";
+      const chosen = sample(modules, 16);
+      chosen.forEach(mod=>{
+        const cell=document.createElement("div");
+        cell.className="cell";
+        const label=document.createElement("div");
+        label.textContent=mod.title;
+        cell.appendChild(label);
+        const c=document.createElement("canvas");
+        c.width=60;c.height=40;
+        cell.appendChild(c);
+        if(mod.model==="wave") wavePreview(c);
+        if(mod.model==="fire") firePreview(c);
+        if(mod.model==="crystal") crystalPreview(c);
+        cell.onclick=()=>{viewer.src=mod.content;};
+        maze.appendChild(cell);
+      });
+    }
+
+    function loadMatrix(){
+      const script=document.createElement("script");
+      script.src=`js/musicMatrix0.js`;
+      script.onload=()=>{
+        modules=window.modulesMusic1;
+        createMap();
+      };
+      document.head.appendChild(script);
+    }
+
+    loadMatrix();
+
+    // === Афоризмы
+    let aphorismIndex = 0;
+    setInterval(()=>{
+      document.getElementById("aphorism").textContent = thoughts[aphorismIndex];
+      aphorismIndex = (aphorismIndex+1)%thoughts.length;
+    }, 5000);
+
+    document.getElementById("nextBatch").onclick = createMap;
+  </script>
+</body>
+</html>
