@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Учебник: Пентатоническая лаборатория</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+:root {
+  --bg: #071022;
+  --panel: #0f1724;
+  --accent: #7c3aed;
+  --muted: #bcd7ff;
+}
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Inter, system-ui, Arial;
+  background: linear-gradient(180deg, #071022 0%, #061427 100%);
+  color: var(--muted);
+}
+h1, h2, h3 {
+  color: white;
+}
+a { color: var(--accent); }
+.card {
+  background: linear-gradient(180deg, #0f1728, #081022);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.7);
+  margin-bottom: 18px;
+}
+code {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 90%;
+}
+pre {
+  background: rgba(255,255,255,0.06);
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+  button {
+    background: linear-gradient(135deg, #009688, #00695c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #00796b);
+    transform: scale(1.05);
+  }
+footer {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 30px;
+}
+</style>
+</head>
+<body>
+<h1>Учебник: Пентатоническая лаборатория</h1>
+<div class="card">
+  <h2>Цель эксперимента</h2>
+  <p>
+  Лаборатория позволяет исследовать звучание <strong>пентатонической гаммы</strong> — набора из пяти звуков,
+  образующих гармоничные созвучия без полутонов. 
+  Здесь можно управлять <em>тембром, интервалами, полифонией</em> и наблюдать живую <strong>осциллограмму</strong> звука.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Основные модули</h2>
+  <h3>1. Matrix (нотовая матрица)</h3>
+  <p>
+  Генерирует пентатонический ряд от выбранной базовой ноты. 
+  Кнопки нот активируют соответствующие частоты, построенные по выбранной модели (12-TET, пифагорейская и т.д.).
+  </p>
+
+  <h3>2. AudioEngine</h3>
+  <p>
+  Использует <code>AudioContext</code> и осцилляторы Web Audio API. 
+  Каждый голос создаётся с параметрами <code>osc.type</code> (волна) и <code>gain</code> (громкость).
+  Звук обрабатывается через <code>AnalyserNode</code> и реверберацию.
+  </p>
+
+  <h3>3. Transposer</h3>
+  <p>
+  Отвечает за интервалы и полифонию — добавление терций, квинт, трезвучий и их расщепление на несколько голосов.
+  Используются интервальные пресеты:
+  <code>{note:[0], third:[0,4], fifth:[0,7], triad:[0,4,7]}</code>.
+  </p>
+
+  <h3>4. Oscilloscope</h3>
+  <p>
+  Реализован через Canvas. Отображает осциллограмму в реальном времени, используя данные из <code>AnalyserNode.getByteTimeDomainData()</code>.
+  Линия визуализируется градиентом — фиолетовый, бирюзовый, сиреневый.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Математические модели частот</h2>
+  <p>
+  Выбор математической модели позволяет сравнить разные музыкальные строи.
+  </p>
+  <ul>
+    <li><strong>12-TET</strong> — равномерная темперация, стандарт для фортепиано и синтезаторов.</li>
+    <li><strong>Пифагорейская</strong> — интервалы строятся на чистых квинтах 3:2.</li>
+    <li><strong>Чистая интонация</strong> — частоты выражаются простыми дробями m/n.</li>
+    <li><strong>Гармонический ряд</strong> — каждый звук = k-ая гармоника базовой частоты.</li>
+  </ul>
+  <p>
+  Пример формулы для 12-TET: <code>f = f0 * 2^((n - n0)/12)</code>
+  </p>
+</div>
+
+<div class="card">
+  <h2>Интерактивный пример</h2>
+  <p>Попробуй изменить базовую ноту и нажать «Проиграть ряд». Осциллограмма изменится в реальном времени.</p>
+  <pre><code>
+// Пример кода проигрывания ряда
+function playRowSequential() {
+  const pent = generatePentSet(currentBaseIndex);
+  let t = 0;
+  for (const n of pent) {
+    setTimeout(() => playChord([n]), t * 1000);
+    t += 0.5;
+  }
+}
+  </code></pre>
+</div>
+
+<div class="card">
+  <h2>Как работает полифония</h2>
+  <p>
+  Для каждого нота создаются несколько осцилляторов, слегка расстроенных между собой (на ±6 центов) 
+  и панорамированных влево и вправо. Это создаёт эффект пространственного звучания.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Советы для экспериментов</h2>
+  <ul>
+    <li>Слушай через наушники — так лучше ощущается пространственная панорама.</li>
+    <li>Попробуй чередовать волны: <em>triangle</em> для мягкости, <em>sawtooth</em> для насыщенности.</li>
+    <li>Сравни гармонический ряд с равномерной темперацией и почувствуй разницу.</li>
+  </ul>
+</div>
+<div style="text-align:center;">
+  <button onclick="window.close()">⬅ Вернуться в Лабораторию</button>
+</div>
+<footer>
+  Учебник Пентатонической лаборатории — версия 1.0 | Сайт «Занимательная математика с ИИ»
+</footer>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гид: Поиграем с ИИ — безопасный вывод кода</title>
+
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: radial-gradient(circle at 30% 30%, #060b14, #0b1220, #020408);
+  color: #e6eef8;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  color: #9bf8d6;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+main {
+  max-width: 880px;
+  margin: auto;
+  padding: 1.5rem;
+}
+section {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+h2 {
+  color: #7ee1ff;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+pre {
+  background: rgba(0,0,0,0.5);
+  border-radius: 10px;
+  overflow-x: auto;
+  margin-top: 0.8rem;
+  font-size: 0.95rem;
+}
+code {
+  font-family: "Fira Code", monospace;
+}
+footer {
+  text-align: center;
+  color: #aaa;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+button {
+  background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.8rem;
+  transition: background 0.3s, transform 0.3s;
+}
+button:hover {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+<header>🎹 Учебник: «Поиграем с ИИ»</header>
+
+<main>
+
+<section>
+  <h2>1. Идея генератора</h2>
+  <p>
+    Мы создаём простую мелодическую идею, основанную на детерминированной случайности. 
+    Это значит, что одна и та же тема даёт один и тот же результат, как будто у нас «ИИ с памятью».
+  </p>
+</section>
+
+<section>
+  <h2>2. Преобразование текста в число</h2>
+  <p>
+    ВНИМАНИЕ СПРАВКА: Чтобы браузер не испортил код (перепутав угловые скобки с HTML-тегами), мы экранируем символы 
+    <code>&lt;</code>, <code>&gt;</code> и <code>&amp;</code>. Затем библиотека 
+    <b>highlight.js</b> раскрашивает синтаксис. Это и есть безопасный вывод кода.
+	<pre><code>
+	&lt;!-- Подключаем стили и движок подсветки highlight.js --&gt;
+&lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;hljs.highlightAll();&lt;/script&gt;
+	</code></pre>
+	</p>
+
+  <pre><code class="language-javascript">
+function hashSeed(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+  </code></pre>
+
+  <p>
+    Каждый символ текста влияет на число — <i>seed</i>, задающее последовательность «случайных» чисел.
+  </p>
+</section>
+
+<section>
+  <h2>3. Генерация мелодии</h2>
+  <pre><code class="language-javascript">
+const base = 60 + (seed % 12); // базовая нота
+const scale = [0, 2, 3, 5, 7, 9, 10]; // диатоника
+const seq = [];
+
+for (let i = 0; i < 8; i++) {
+  const r = Math.floor(rng() * scale.length);
+  seq.push(scale[r]);
+}
+  </code></pre>
+
+  <p>
+    Массив интервалов <code>scale</code> задаёт структуру ладов, а генератор <code>rng()</code> выбирает
+    случайные ноты относительно базовой. Результат будет одинаков при одинаковом seed.
+  </p>
+</section>
+
+<section>
+  <h2>4. Эмуляция ИИ через детерминированную случайность</h2>
+  <p>
+    Мы не используем нейросети, но воспроизводим иллюзию «ума» за счёт предсказуемой случайности.
+    Алгоритм линейной конгруэнции (LCG) генерирует одинаковые последовательности при одном и том же seed.
+  </p>
+</section>
+
+<div style="text-align:center;">
+  <button onclick="window.close()">⬅ Вернуться в Лабораторию</button>
+</div>
+
+</main>
+
+<footer>© 2025 Занимательная математика с ИИ — Поиграем с ИИ</footer>
+
+</body>
+</html>

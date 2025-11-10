@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гид: Плавающие пузырьки — визуализация и звук</title>
+<!-- Подключаем стили и движок подсветки highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  body {
+    font-family: "Inter", Arial, sans-serif;
+    background: radial-gradient(circle at 30% 30%, #060b14, #0b1220, #020408);
+    color: #e6eef8;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    color: #80eaff;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  main {
+    max-width: 880px;
+    margin: auto;
+    padding: 1.5rem;
+  }
+  section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+  }
+  section:hover { transform: scale(1.02); }
+  h2 {
+    color: #9bf8d6;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+  }
+  pre {
+    background: rgba(0,0,0,0.6);
+    color: #7ee1ff;
+    padding: 1rem;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  code { font-family: "Courier New", monospace; }
+  footer {
+    text-align: center;
+    color: #aaa;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+  button {
+    background: linear-gradient(135deg, #009688, #00796b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    margin: 1.5rem auto 0;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #26a69a, #009688);
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+<header>🫧 Учебник: «Плавающие пузырьки»</header>
+<main>
+  <section>
+    <h2>1. Что делает визуализация?</h2>
+    <p>
+      Эта страница создаёт анимированный фон, где каждый пузырь — не просто графическая точка,
+      а миниатюрный музыкальный инструмент. Он поднимается вверх, постепенно растворяясь в пространстве,
+      и при своём появлении порождает аккорд.
+    </p>
+    <p>
+      При активации «медитации» интерфейс исчезает, оставляя только движение и звук.  
+      Это режим созерцания — экран становится музыкальной водой, в которой рождаются гармонии.
+    </p>
+  </section>
+
+  <section>
+    <h2>2. Как рождаются пузырьки</h2>
+    <p>
+      Каждый пузырёк — это объект с координатами <code>x, y</code>, радиусом <code>r</code>, скоростью <code>vy</code>,
+      прозрачностью и цветовым оттенком, зависящим от его частоты.  
+      Код создаёт их так:
+    </p>
+    <pre><code>function spawn(x, y) {
+  const r = 8 + Math.random() * 28;
+  const bubble = {
+    x: x || Math.random() * W,
+    y: y || H + 20,
+    r,
+    vy: -1 - Math.random() * 2,
+    alpha: 0.9,
+    hue: 220 + (r / 36) * 100,
+    pulse: 0
+  };
+  bubbles.push(bubble);
+  playPolyphonicPhrase(bubble);
+}</code></pre>
+    <p>
+      Чем меньше радиус — тем выше частота и светлее цвет.  
+      В результате звук и свет объединяются в одну систему ощущений.
+    </p>
+  </section>
+
+  <section>
+    <h2>3. Музыкальный синтез пузырей</h2>
+    <p>
+      Для каждого пузыря создаётся три осциллятора (звуковых генератора), образующих аккорд —  
+      интервалы 1 : 5/4 : 3/2 соответствуют основному тону, терции и квинте.
+    </p>
+    <pre><code>function playPolyphonicPhrase(b) {
+  const baseFreq = 65.4;
+  const octave = b.r < 18 ? 2 + Math.random() : 1 + Math.random();
+  const root = baseFreq * Math.pow(2, octave);
+  const intervals = [1, 5/4, 3/2];
+  intervals.forEach((ratio, i) => {
+    const freq = root * ratio;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const pan = audioCtx.createStereoPanner();
+    osc.type = ["sine","triangle","sine"][i%3];
+    osc.frequency.value = freq;
+    pan.pan.value = (b.x / W) * 2 - 1;
+    osc.connect(gain).connect(pan).connect(synthMasterGain);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 2);
+  });
+}</code></pre>
+    <p>
+      Так пузырь «поёт» свой короткий аккорд. Панорама зависит от позиции пузыря по оси X —
+      левый пузырь звучит левее, правый — правее.
+    </p>
+  </section>
+
+  <section>
+    <h2>4. Визуальная алхимия: как рисуется фон</h2>
+    <p>
+      Каждый кадр цикл <code>draw()</code> очищает экран мягким цветом и рисует все пузырьки полупрозрачными
+      градиентами, которые постепенно исчезают.
+    </p>
+    <pre><code>function draw() {
+  ctx.fillStyle = `hsl(${globalHue}, 40%, 6%)`;
+  ctx.fillRect(0, 0, W, H);
+  for (let b of bubbles) {
+    b.y += b.vy;
+    b.alpha *= 0.998;
+    const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * 1.6);
+    grad.addColorStop(0, `hsla(${b.hue},90%,75%,${b.alpha})`);
+    grad.addColorStop(1, `hsla(${b.hue+40},90%,20%,0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}</code></pre>
+    <p>
+      Здесь нет случайных мазков — это визуальная акустика, где каждый пиксель светится в ритме звука.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. Медитация и управление</h2>
+    <p>
+      Значок ☯ включает режим медитации — интерфейс скрывается, остаётся только движение и звук.  
+      Клавиша <kbd>Esc</kbd> возвращает элементы управления.  
+      Такой подход помогает создать «чистую» атмосферу для наблюдения за музыкальными формами.
+    </p>
+  </section>
+
+  <div style="text-align:center;">
+    <button onclick="window.close()">⬅ Вернуться в Лабораторию</button>
+  </div>
+</main>
+<footer>© 2025 Занимательная математика с ИИ — Визуализация: Плавающие пузырьки</footer>
+</body>
+</html>
