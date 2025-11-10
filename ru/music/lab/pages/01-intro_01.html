@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Интро: Путешествие по лабиринту</title>
+<style>
+  body {
+    background: #071022;
+    color: #e6eef8;
+    font-family: Inter, Arial;
+    margin: 0;
+    padding: 20px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  .lead { color: #bcd7ff; margin-bottom: 12px; }
+  .example { background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 10px; }
+  .pulse {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #7c3aed33, #06b6d433);
+    box-shadow: 0 6px 18px rgba(12,17,34,0.6);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s ease;
+  }
+  .pulse:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Интро: Путешествие по Лаборатории читателя</h1>
+    <div class="lead">
+      Музыкальная Лаборатория — это пространство, где каждая ячейка звучит.  
+      Маленькое прикосновение становится шагом по звуковому пути.
+    </div>
+
+    <div class="example">
+      Нажимай на кружок ниже — он издаст тон и создаст лёгкий резонанс.  
+      Каждый звук немного отличается, словно ты блуждаешь по залам эха.
+      <div style="height:16px"></div>
+      <div class="pulse" id="pulse">Нажать</div>
+    </div>
+
+    <section style="margin-top:14px;color:#d7e6ff;line-height:1.5">
+      <strong>Задание для читателя:</strong>
+      <ol>
+        <li>Нажмите на разные ячейки матрицы и слушайте, как меняется настроение.</li>
+        <li>Придумайте название для своей Лабораторной работы.</li>
+      </ol>
+    </section>
+  </div>
+
+<script>
+const pulse = document.getElementById('pulse');
+
+pulse.addEventListener('click', async () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // случайная нота в пределах октавы
+    const baseFreq = 440;
+    const randSemitone = Math.floor(Math.random() * 12) - 6; // от -6 до +6
+    const freq = baseFreq * Math.pow(2, randSemitone / 12);
+
+    // генераторы
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const reverb = ctx.createConvolver();
+
+    // создаём простую реверб-подобную импульсную характеристику
+    const len = ctx.sampleRate * 1.2;
+    const impulse = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = impulse.getChannelData(ch);
+      for (let i = 0; i < len; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+      }
+    }
+    reverb.buffer = impulse;
+
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+
+    // цепочка: osc → gain → reverb → destination
+    osc.connect(gain);
+    gain.connect(reverb);
+    reverb.connect(ctx.destination);
+
+    // огибающая громкости
+    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 1300);
+
+    // анимация кнопки
+    pulse.animate(
+      [{ transform: "scale(1.0)" }, { transform: "scale(1.15)" }, { transform: "scale(1.0)" }],
+      { duration: 600, easing: "ease-out" }
+    );
+
+  } catch (e) {
+    console.warn("Audio error:", e);
+  }
+});
+</script>
+</body>
+</html>

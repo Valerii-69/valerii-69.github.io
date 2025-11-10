@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Сэмплы: Загрузка локально</title>
+<style>
+ body{background:#071022;color:#e6eef8;font-family:Inter,Arial;margin:0;padding:18px}
+ .wrap{max-width:900px;margin:0 auto}
+ .list{margin-top:12px}
+ .sample{background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+ button{padding:8px 10px;border-radius:8px;border:0;background:#7c3aed;color:white}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Сэмплы: Загрузка локально</h1>
+    <div>Выберите аудиофайлы с устройства [Выберите или 1 wav из собственной папки, например /sonata, или все wav из папки /samples]. (Ограничение браузера: мобильные и локальные файлы доступны через input.)</div>
+    <div style="margin-top:8px"><input id="file" type="file" webkitdirectory directory accept="audio/*" multiple></div>
+    <div class="list" id="list"></div>
+  </div>
+<script>
+  const fileEl = document.getElementById('file'); const list = document.getElementById('list'); let ctx=null;
+  fileEl.addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files);
+    list.innerHTML='';
+    for(const f of files){ const el = document.createElement('div'); el.className='sample'; el.textContent = f.name; const play = document.createElement('button'); play.textContent='Play'; el.appendChild(play); list.appendChild(el);
+      play.addEventListener('click', async ()=>{
+        if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+        const arr = await f.arrayBuffer(); const buf = await ctx.decodeAudioData(arr.slice(0)); const s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start();
+      });
+    }
+  });
+</script>
+</body>
+</html>

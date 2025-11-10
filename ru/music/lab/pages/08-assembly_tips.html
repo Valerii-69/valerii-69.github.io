@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Советы по монтажу</title>
+<style>
+ body{background:#071022;color:#e6eef8;font-family:Inter,Arial;margin:0;padding:18px}
+ .wrap{max-width:900px;margin:0 auto}
+ ul{line-height:1.6}
+  button {
+    background: linear-gradient(135deg, #7c3aed, #4a2b9b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0.5rem;
+    transition: background 0.3s, transform 0.3s;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Советы по монтажу</h1>
+    <ul>
+      <li>Структура папок: /lab/index.html (главная), /lab/pages/*.html (встроенные страницы), /lab/assets/ (сэмплы, шрифты).</li>
+      <li>Проверяй CORS при попытке загружать локальные файлы через fetch; лучше использовать input type=file для сэмплов.</li>
+      <li>Для мобильных: уменьшай начальный объем звуков и размер холста, используйте requestAnimationFrame экономно.</li>
+      <li>Сохраняй состояние матрицы в sessionStorage или localStorage с версией — это упростит откат.</li>
+      <li>Если нужно делиться страницами — упаковывай выбранный набор страниц в JSON и предлагай «Экспорт».</li>
+    </ul>
+  </div>
+</body>
+</html>

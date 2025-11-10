@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Пентатоническая лаборатория — волны и гармония</title>
+<style>
+:root{
+  --bg:#071022;
+  --panel:#0f1724;
+  --accent:#7c3aed;
+  --muted:#bcd7ff;
+  --card:#0f1727;
+}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #061427 100%);color:#e6eef8;font-family:Inter,system-ui,Arial;padding:16px;box-sizing:border-box}
+.wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start}
+header{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin-bottom:6px}
+header h1{margin:0;font-size:18px}
+.left, .right{background:linear-gradient(180deg,#07162a, #071022);border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(2,6,23,0.7)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.group{background:linear-gradient(180deg,#0c1a32,#081224);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);min-width:160px}
+.btn{border:0;padding:8px 10px;border-radius:8px;background:var(--accent);color:white;cursor:pointer}
+.opt{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.23);cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+.opt.active{background:linear-gradient(90deg,var(--accent),#4fd1c5);color:#051024;transform:translateY(-2px)}
+.note{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.23);cursor:pointer;border:1px solid rgba(255,255,255,0.04)}
+.note:active{transform:scale(.98)}
+#staff{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-radius:10px;background:linear-gradient(180deg,#0f1728,#081022)}
+#playRow{width:100%;margin-top:8px}
+#rowInfo{color:var(--muted);margin-top:8px;font-size:14px}
+.canvas-wrap{background:linear-gradient(180deg,#061427,#04101b);border-radius:10px;padding:8px;margin-top:10px}
+canvas{width:100%;height:180px;border-radius:8px;display:block;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
+#chordList{background:linear-gradient(180deg,#0f1727,#08101b);border-radius:10px;padding:8px;margin-top:6px;max-height:200px;overflow-y:auto;}
+.right .card{background:linear-gradient(180deg,#071428,#05101b);padding:12px;border-radius:10px}
+.small{font-size:13px;color:#cfe3ff}
+footer{grid-column:1/-1;margin-top:10px;color:rgba(230,238,248,0.6);font-size:13px;text-align:center}
+@media (max-width:980px){
+  .wrap{grid-template-columns:1fr; padding:10px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700">П</div>
+  <div>
+    <h1>Пентатоническая лаборатория — волны и гармония</h1>
+    <div class="small">Экспериментируй с интервалами, полифонией и наблюдай осциллограмму в реальном времени.</div>
+  </div>
+</header>
+
+<section class="left">
+  <div class="group">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Базовая нота</div>
+    <div id="noteSelector"></div>
+  </div>
+
+  <div style="height:10px"></div>
+
+  <div class="controls">
+    <div class="group" style="flex:1">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Тембр (волна)</div>
+      <div id="waveSelector"></div>
+    </div>
+
+    <div class="group" style="min-width:210px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Интервал</div>
+      <div id="intervalSelector"></div>
+    </div>
+
+    <div class="group" style="min-width:210px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Полифония (голоса)</div>
+      <div id="polySelector"></div>
+<div style="height:10px"></div>
+<div class="group">
+  <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Математическая модель</div>
+  <div id="modelSelector"></div>
+</div>
+	  
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div id="staff" aria-live="polite"></div>
+
+  <button id="playRow" class="btn" style="margin-top:10px">Проиграть ряд</button>
+  <div id="rowInfo">Пентатонический ряд от C5: C5 – D5 – E5 – G5 – A5</div>
+
+  <div class="canvas-wrap">
+    <canvas id="oscillo"></canvas>
+  </div>
+
+  <div id="chordList" class="card small">
+    <strong>Текущие звучащие ноты:</strong>
+    <div id="chordNotes"></div>
+  </div>
+</section>
+
+<aside class="right">
+  <div class="card">
+    <h3 style="margin:0 0 8px 0">Параметры (инфо)</h3>
+    <div class="small">
+      <p><strong>Интервал:</strong> задаёт добавочные ступени (терция = +4, квинта = +7, тризвучие = 0+4+7).</p>
+      <p><strong>Полифония:</strong> сколько голосов создаётся для каждого нота/интервала; голоса слегка детюнятся и панорамируются.</p>
+      <p>Canvas показывает текущую осциллографию выходного сигнала (AnalyserNode).</p>
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="card small">
+    <div><strong>Советы:</strong></div>
+    <ul>
+      <li>Для мобильных — используйте наушники или внешние динамики.</li>
+      <li>Первое касание возобновляет AudioContext — это требование браузера.</li>
+      <li>Экспериментируй с тембром и полифонией: треугольник даёт мягкий звук, пила — более богатый спектр.</li>
+    </ul>
+  </div>
+</aside>
+</div>
+
+<footer>Пентатоническая лаборатория — версия 1.2</footer>
+
+<script>
+
+/* ===== Модели расчёта частот ===== */
+const frequencyModels = [
+  {
+    id: '12tet',
+    name: 'Двенадцатитоновая равномерная темперация (12-TET)',
+    formula: 'f = f0 * 2^((n - n0)/12)',
+    description: `Стандартная западная система. f0 = частота базовой ноты (обычно A4=440Hz). n = номер полутона в MIDI. Используется для клавишных, синтезаторов, гитар, фортепиано.`,
+  },
+  {
+    id: 'pythagorean',
+    name: 'Пифагорейская настройка',
+    formula: 'f = f0 * (3/2)^p * 2^q',
+    description: `Интервалы строятся на чистых квинтах (3:2). p = число квинт от базовой ноты, q = смещение октавы. Для струнных инструментов и исторической музыки.`,
+  },
+  {
+    id: 'justIntonation',
+    name: 'Чистая интонация (Just Intonation)',
+    formula: 'f = f0 * (m/n)',
+    description: `Отношения частот выражены простыми дробями. Подходит для вокала и акустических ансамблей.`,
+  },
+  {
+    id: 'harmonicSeries',
+    name: 'Гармонический ряд',
+    formula: 'f = f0 * k',
+    description: `Ноты берутся как гармоники базовой частоты. k = 1,2,3,... Используется для духовых, струнных инструментов, органной имитации.`,
+  }
+];
+
+let currentFreqModel = '12tet';
+
+
+/* ========= Логика звука и интерфейса ========= */
+const baseNotes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const pentSteps = [0,2,4,7,9];
+const intervalPresets = {
+  'note': [0],
+  'third': [0,4],
+  'fifth': [0,7],
+  'triad': [0,4,7]
+};
+const polyOptions = { mono:1, duo:2, tri:3 };
+
+const noteSelector = document.getElementById('noteSelector');
+const waveSelector = document.getElementById('waveSelector');
+const intervalSelector = document.getElementById('intervalSelector');
+const polySelector = document.getElementById('polySelector');
+const staff = document.getElementById('staff');
+const playRowBtn = document.getElementById('playRow');
+const rowInfo = document.getElementById('rowInfo');
+const chordNotesDiv = document.getElementById('chordNotes');
+
+const canvas = document.getElementById('oscillo');
+const canvasCtx = canvas.getContext('2d');
+let WIDTH, HEIGHT;
+function resizeCanvas(){
+  canvas.width = canvas.clientWidth * devicePixelRatio;
+  canvas.height = canvas.clientHeight * devicePixelRatio;
+  WIDTH = canvas.width;
+  HEIGHT = canvas.height;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx = null, masterGain, analyser, analyserData, reverb, reverbGain;
+
+let currentBaseIndex = 0, currentWave = 'sine', currentIntervalKey = 'note', currentPoly = 'mono';
+
+function makeOptions(container, items, onClick, defaultKey){
+  for(const key of items){
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = key;
+    b.dataset.key = key;
+    b.addEventListener('click', ()=> {
+      container.querySelectorAll('.opt').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      onClick(key);
+    });
+    container.appendChild(b);
+  }
+  container.firstChild.classList.add('active');
+}
+
+makeOptions(noteSelector, baseNotes, k => { currentBaseIndex = baseNotes.indexOf(k); renderStaff(); }, baseNotes[0]);
+makeOptions(waveSelector, ['sine','triangle','square','sawtooth'], k => { currentWave = k; }, 'sine');
+makeOptions(intervalSelector, ['note','third','fifth','triad'], k => { currentIntervalKey = k; renderStaff(); }, 'note');
+makeOptions(polySelector, ['mono','duo','tri'], k => { currentPoly = k; }, 'mono');
+
+/* ===== ВСТАВИТЬ ЗДЕСЬ: JS инициализация кнопок для выбора математической модели ===== */
+makeOptions(modelSelector, frequencyModels.map(m=>m.id), k => {
+  currentFreqModel = k;
+  updateInfoPanel();
+}, frequencyModels[0].id);
+
+updateInfoPanel(); // сразу показать информацию о выбранной модели
+
+
+
+function generatePentSet(rootIndex){
+  return pentSteps.map(step => baseNotes[(rootIndex + step) % 12]);
+}
+
+const semitoneMap = {'C':-9,'C#':-8,'D':-7,'D#':-6,'E':-5,'F':-4,'F#':-3,'G':-2,'G#':-1,'A':0,'A#':1,'B':2};
+function noteToFreq(note, octave=5){
+  const A4 = 440;
+  const semitoneDistance = semitoneMap[note] + 12*(octave-4);
+  return A4 * Math.pow(2,semitoneDistance/12);
+}
+
+function ensureAudio() {
+  if (ctx) return;
+  ctx = new AudioCtx();
+  masterGain = ctx.createGain();
+  masterGain.gain.value = 0.9;
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyserData = new Uint8Array(analyser.fftSize);
+
+  reverb = ctx.createConvolver();
+  const len = ctx.sampleRate * 0.6;
+  const imp = ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){
+    const data = imp.getChannelData(ch);
+    for(let i=0;i<len;i++){
+      data[i] = (Math.random()*2 -1)*Math.pow(1 - i/len,2.0)*0.3;
+    }
+  }
+  reverb.buffer = imp;
+  reverbGain = ctx.createGain();
+  reverbGain.gain.value = 0.18;
+
+  masterGain.connect(analyser);
+  analyser.connect(ctx.destination);
+  reverb.connect(reverbGain);
+  reverbGain.connect(ctx.destination);
+}
+
+function renderStaff(){
+  staff.innerHTML = '';
+  const notes = generatePentSet(currentBaseIndex);
+  notes.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'note';
+    btn.textContent = n+'5';
+    btn.addEventListener('pointerdown', async ()=> {
+      ensureAudio();
+      if (ctx.state==='suspended') await ctx.resume();
+      playChord([n], {polyphony: polyOptions[currentPoly], intervals: intervalPresets[currentIntervalKey]});
+    }, {passive:true});
+    staff.appendChild(btn);
+  });
+  const rowNotes = notes.map(n=>n+'5').join(' – ');
+  rowInfo.textContent = `Пентатонический ряд от ${baseNotes[currentBaseIndex]}5: ${rowNotes}`;
+}
+
+function showChordNotes(notes){
+  chordNotesDiv.innerHTML='';
+  notes.forEach(n=>{
+    const f = noteToFreq(n,5).toFixed(1);
+    const div = document.createElement('div');
+    div.textContent = `${n}5 (${f} Hz)`;
+    chordNotesDiv.appendChild(div);
+  });
+}
+
+function playChord(rootNotes, opts={}){
+  ensureAudio();
+  const poly = opts.polyphony||1;
+  const intervals = opts.intervals||[0];
+  const voices = [];
+  const baseOctave = 5;
+  const now = ctx.currentTime;
+  const duration = 0.7;
+
+  const playedNotes = [];
+  for(const root of rootNotes){
+    const rootIndex = baseNotes.indexOf(root);
+    for(const interval of intervals){
+      const noteName = baseNotes[(rootIndex + interval)%12];
+      for(let v=0;v<poly;v++){
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const pan = ctx.createStereoPanner();
+        osc.type = currentWave;
+        const detuneCents = (v-(poly-1)/2)*(6+Math.random()*6);
+        const f = noteToFreq(noteName,baseOctave)*Math.pow(2,detuneCents/1200);
+        osc.frequency.value=f;
+        pan.pan.value=(v-(poly-1)/2)*0.3;
+        gain.gain.setValueAtTime(0.0001,now);
+        gain.gain.exponentialRampToValueAtTime(0.22,now+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001,now+duration);
+        osc.connect(gain);
+        const sendGain = ctx.createGain(); sendGain.gain.value=0.08;
+        gain.connect(sendGain); sendGain.connect(reverb);
+        gain.connect(masterGain);
+        gain.connect(pan); pan.connect(masterGain);
+        osc.start(now); osc.stop(now+duration+0.02);
+        voices.push({osc,gain,pan});
+        playedNotes.push(noteName);
+      }
+    }
+  }
+  showChordNotes(playedNotes);
+  return voices;
+}
+
+function playRowSequential(){
+  ensureAudio();
+  if (ctx.state==='suspended') ctx.resume();
+  const pent = generatePentSet(currentBaseIndex);
+  const intervals = intervalPresets[currentIntervalKey];
+  const poly = polyOptions[currentPoly];
+  let t=0.0;
+  const gap=0.5;
+  for(const n of pent){
+    setTimeout(()=>{playChord([n],{polyphony:poly,intervals:intervals});}, Math.round(t*1000));
+    t+=gap;
+  }
+}
+
+playRowBtn.addEventListener('pointerdown', async ()=>{
+  ensureAudio();
+  if (ctx.state==='suspended') await ctx.resume();
+  playRowSequential();
+},{passive:true});
+
+function updateInfoPanel() {
+  const infoDiv = document.querySelector('.right .card .small');
+  const model = frequencyModels.find(m => m.id === currentFreqModel);
+  if(model){
+    infoDiv.innerHTML = `<p><strong>${model.name}</strong></p><p>${model.description}</p><p>Формула: ${model.formula}</p>`;
+  }
+}
+
+
+
+renderStaff();
+
+
+
+function drawLoop(){
+  if(!analyser||!ctx){requestAnimationFrame(drawLoop);return;}
+  analyser.getByteTimeDomainData(analyserData);
+  canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
+  canvasCtx.lineWidth=2*devicePixelRatio;
+  const grad=canvasCtx.createLinearGradient(0,0,WIDTH,0);
+  grad.addColorStop(0,'#7c3aed'); grad.addColorStop(0.5,'#06b6d4'); grad.addColorStop(1,'#9f7aea');
+  canvasCtx.strokeStyle=grad; canvasCtx.beginPath();
+  const sliceWidth=WIDTH/analyserData.length; let x=0;
+  for(let i=0;i<analyserData.length;i++){
+    const v=analyserData[i]/128.0;
+    const y=v*HEIGHT/2;
+    if(i===0) canvasCtx.moveTo(x,y); else canvasCtx.lineTo(x,y);
+    x+=sliceWidth;
+  }
+  canvasCtx.stroke();
+  canvasCtx.globalAlpha=0.06;
+  canvasCtx.fillStyle='#7c3aed';
+  canvasCtx.fillRect(0,HEIGHT/2-1,WIDTH,2);
+  canvasCtx.globalAlpha=1;
+  requestAnimationFrame(drawLoop);
+}
+
+function startAnalyserIfNeeded(){if(analyser) return; ensureAudio();}
+startAnalyserIfNeeded();
+drawLoop();
+</script>
+</body>
+</html>
