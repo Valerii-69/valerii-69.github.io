@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Waves — Entertaining Math with AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+/* аналогичный стиль как в RU */
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Story 12: Memory Waves</h1>
+
+<h2>Literary version:</h2>
+<p>Memories rise in waves: sometimes quiet and almost unnoticed, sometimes turbulent and overwhelming. Music can mimic these rhythms and carry the listener through their personal stories.</p>
+
+<h2>Mathematical model:</h2>
+<p>A harmonic series with modulated amplitude creates "memory waves": each subsequent note changes in volume and duration depending on the previous one.</p>
+
+<div class="canvas-container">
+<canvas id="memoryCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('memoryCanvas');
+const ctx=canvas.getContext('2d');
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<canvas.width;i+=10){
+    const y=100 + 40*Math.sin((i+t)/20) * Math.sin((i+t)/50);
+    ctx.beginPath();
+    ctx.arc(i,y,4,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${i+t},60%,50%)`;
+    ctx.fill();
+  }
+  t+=1;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+<h2>Interactive melody:</h2>
+<iframe src="melody12_en.html"></iframe>
+
+<h2>Message to reader from AI:</h2>
+<div class="ai-wish">
+Try to catch the rhythms of your memories through music. Notice how quiet moments and vivid bursts create their own harmony inside your mind.
+</div>
+
+</body>
+</html>

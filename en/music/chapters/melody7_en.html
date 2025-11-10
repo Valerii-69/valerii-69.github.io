@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Melody 7 — Planetary Rhythms</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+body{margin:0;padding:0;font-family:system-ui,sans-serif;background:#fff8f0;color:#222;}
+.container{padding:1rem;text-align:center;}
+button{padding:.5rem 1rem;font-size:1rem;border:none;border-radius:6px;background:#3366ff;color:white;cursor:pointer;}
+input[type=number]{width:60px;padding:.2rem;margin-left:.5rem;}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Melody 7 — Planetary Rhythms</h2>
+<p>Note sequence reflects the orbital rhythms of planets</p>
+<button id="playBtn">▶ Play</button>
+<label>Tempo: <input type="number" id="bpm" value="120" min="30" max="300"></label>
+</div>
+
+<script>
+(function(){
+  const sequence=[60,64,67,71,67,64,60,65]; // MIDI ноты (C4, E4, G4, B4...)
+  const playBtn=document.getElementById('playBtn');
+  const bpmInput=document.getElementById('bpm');
+  let audioCtx=null;
+
+  function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+  
+  async function playSequence(){
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const tempo=Number(bpmInput.value)||120;
+    const beat=60/tempo;
+    const startTime=audioCtx.currentTime+0.05;
+
+    sequence.forEach((midi,i)=>{
+      const freq=midiToFreq(midi);
+      const t=startTime+i*beat;
+      const osc=audioCtx.createOscillator();
+      const gain=audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0,t);
+      gain.gain.linearRampToValueAtTime(0.15,t+0.01);
+      gain.gain.linearRampToValueAtTime(0.0,t+beat*0.9);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t+beat);
+    });
+  }
+
+  playBtn.addEventListener('click',async ()=>{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') await audioCtx.resume();
+    playBtn.disabled=true;
+    playBtn.textContent='… проигрывается';
+    await playSequence();
+    setTimeout(()=>{playBtn.disabled=false;playBtn.textContent='▶ Проиграть';},(sequence.length*(60/(Number(bpmInput.value)||120)+0.05)*1000));
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Path of Ether — Harmonic Shadows</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:system-ui;background:linear-gradient(#f7fbff,#eef6ff);color:#0b2a3b;padding:18px;max-width:980px;margin:0 auto}
+  h1{text-align:center;color:#123a5a}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .col{flex:1 1 320px;background:#fff;padding:14px;border-radius:10px;box-shadow:0 8px 26px rgba(15,30,50,0.06)}
+  canvas{display:block;width:100%;height:220px;border-radius:8px;background:#f6fbff}
+  iframe{width:100%;height:420px;border:0;margin-top:12px;border-radius:8px}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .play{background:#0b6cff;color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  .stop{background:#cfe0ff;color:#07344e;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  pre.model{background:#0e2b3f;color:#e6f7ff;padding:10px;border-radius:8px}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Path of Ether — Harmonic Shadows</h1>
+
+<div class="row">
+  <div class="col">
+    <h2>Literary essay</h2>
+    <p>Ether is not emptiness but a fine fabric where harmonics tremble. Shadows here are not lack of light but interference patterns — delicate overlays of waves that create new shades of sound. In harmonic shadows we hear past and sense future.</p>
+    <h3>Reader's wish</h3>
+    <p>May these shadows hint at new chords — listen closely and they will reveal unexpected melodies.</p>
+  </div>
+
+  <div class="col">
+    <h2>Mathematical model — harmonic series & interference</h2>
+    <p>Any periodic motion can be expanded in a Fourier series — sum of sinusoids with frequencies n·f₀. Resonance and shadows occur when frequencies match or are close.</p>
+    <pre class="model">y(x,t) = Σ_{n=1..N} A_n · sin(2π n f₀ t + φ_n)
+Interference: y_total = y1 + y2 → constructive/destructive depending on phase.</pre>
+  </div>
+</div>
+
+<div style="margin-top:14px" class="row">
+  <div class="col" style="flex:2 1 640px">
+    <h2>Canvas — harmonic interference</h2>
+    <canvas id="etherCanvasEn" width="860" height="220"></canvas>
+
+    <div class="controls">
+      <label>Base f₀ (Hz): <input id="f0_en" type="range" min="0.05" max="1.0" step="0.01" value="0.15"></label>
+      <label>Harmonics N: <input id="N_en" type="range" min="1" max="20" value="8"></label>
+      <label>Phase φ: <input id="phi_en" type="range" min="0" max="6.283" step="0.1" value="0"></label>
+      <button id="startEn" class="play">▶ Start</button>
+      <button id="stopEn" class="stop">■ Stop</button>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>Embedded melody</h2>
+    <iframe src="melody4_en.html" title="Melody 4 — Path of Ether"></iframe>
+    <p style="margin-top:8px;color:#345">Two detuned oscillators with delay and filter create an airy resonance.</p>
+  </div>
+</div>
+
+<script>
+const canvasEn = document.getElementById('etherCanvasEn'); const ctxEn = canvasEn.getContext('2d');
+const f0En = document.getElementById('f0_en'), NEn = document.getElementById('N_en'), phiEn = document.getElementById('phi_en');
+const startEn = document.getElementById('startEn'), stopEn = document.getElementById('stopEn');
+let anim = null, t0 = 0;
+
+function drawEn(ts){
+  if(!t0) t0 = ts;
+  const elapsed = (ts - t0)/1000;
+  const f0 = Number(f0En.value), N = Number(NEn.value), phi = Number(phiEn.value);
+  const w = canvasEn.width, h = canvasEn.height;
+  ctxEn.fillStyle = '#f6fbff'; ctxEn.fillRect(0,0,w,h);
+
+  // faint individual harmonics
+  ctxEn.lineWidth = 1;
+  for(let n=1;n<=N;n++){
+    ctxEn.beginPath();
+    for(let x=0;x<w;x++){
+      const time = elapsed + x/200;
+      const y = 0.9*Math.sin(2*Math.PI*n*f0*time + phi*n)*(1/n)*(h/3);
+      if(x===0) ctxEn.moveTo(x,h/2 + y); else ctxEn.lineTo(x,h/2 + y);
+    }
+    ctxEn.strokeStyle = 'rgba(60,120,180,0.08)'; ctxEn.stroke();
+  }
+
+  // total
+  ctxEn.beginPath();
+  for(let x=0;x<w;x++){
+    const time = elapsed + x/200;
+    let sum=0;
+    for(let n=1;n<=N;n++) sum += (1/n)*Math.sin(2*Math.PI*n*f0*time + phi*n);
+    const y = sum*(h/3);
+    if(x===0) ctxEn.moveTo(x,h/2+y); else ctxEn.lineTo(x,h/2+y);
+  }
+  ctxEn.strokeStyle='#0b4f66'; ctxEn.lineWidth=2; ctxEn.stroke();
+
+  anim = requestAnimationFrame(drawEn);
+}
+
+startEn.addEventListener('click', ()=>{ if(!anim){ t0=0; anim=requestAnimationFrame(drawEn); startEn.disabled=true; }});
+stopEn.addEventListener('click', ()=>{ if(anim){ cancelAnimationFrame(anim); anim=null; startEn.disabled=false; }});
+</script>
+</body>
+</html>

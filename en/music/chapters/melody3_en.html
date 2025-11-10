@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Melody 3 — Path of Earth</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+body { background:#f8f6e8; color:#4b3a00; font-family:"Segoe UI",sans-serif; text-align:center; padding:2rem; }
+button { background:#d4b200; border:none; color:#fff; padding:1rem 2rem; font-size:1.2rem; border-radius:10px; cursor:pointer; }
+button:hover { background:#c09c00; }
+canvas { display:block; margin:2rem auto; background:#fffbe6; border-radius:10px; }
+</style>
+</head>
+<body>
+<h1>Melody 3 — Path of Earth</h1>
+<p>The Earth's slow heartbeat — steady as time itself.</p>
+<button id="playBtn">▶ Play</button>
+<canvas id="viz" width="600" height="150"></canvas>
+
+<script>
+const btn=document.getElementById('playBtn');
+const canvas=document.getElementById('viz');
+const ctx=canvas.getContext('2d');
+let audioCtx;
+
+btn.onclick=async()=>{
+ if(!audioCtx){
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const osc1=audioCtx.createOscillator();
+  const osc2=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  const lfo=audioCtx.createOscillator();
+  lfo.frequency.value=0.25;
+  const lfoGain=audioCtx.createGain();
+  lfoGain.gain.value=30;
+  lfo.connect(lfoGain).connect(osc1.frequency);
+  osc1.type="sine"; osc2.type="triangle";
+  osc1.frequency.value=110; osc2.frequency.value=55;
+  osc1.connect(gain); osc2.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0.5,audioCtx.currentTime);
+  lfo.start(); osc1.start(); osc2.start();
+  setTimeout(()=>{osc1.stop();osc2.stop();audioCtx.close();audioCtx=null;},10000);
+  animate();
+ }
+};
+
+let t=0;
+function animate(){
+ ctx.fillStyle="#fffbe6";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.beginPath();
+ for(let x=0;x<canvas.width;x++){
+  const y=75+40*Math.sin(0.02*x+t)*Math.exp(-0.001*x);
+  ctx.lineTo(x,y);
+ }
+ ctx.strokeStyle="#b29200";
+ ctx.lineWidth=2;
+ ctx.stroke();
+ t+=0.05;
+ requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>

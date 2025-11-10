@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 9: The Path of Water</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:sans-serif;background:#001020;color:#ddd;margin:0;padding:10px;}
+button{padding:6px 12px;margin:4px;}
+h1,h2{color:#66e0ff;}
+canvas{background:#000020; display:block; margin:10px 0; width:100%; height:150px;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+
+<h1>Chapter 9: The Path of Water</h1>
+
+<h2>Literary Essay</h2>
+<p>
+Water never stops; it seeks a path. Sometimes it flows quietly, sometimes it rages and sweeps away everything in its path. The music of water is smoothness and fluidity, gentle harmony and constant movement. Every chord conveys the breath of a river, a calm stream, or a rushing brook. The path of water teaches us to adapt, embrace change, and find beauty in continuity.
+</p>
+
+<h2>Questions for AI</h2>
+<p>
+How can we create a musical flow that feels natural, like flowing water? Which mathematical wave models best convey the effect of smooth flow and the interaction of currents? Is it possible to teach a synthesizer to "play" water, so that different sections sound like different currents?
+</p>
+
+<h2>Mathematical Model</h2>
+<p>
+Let the sound of water be modeled as the sum of sinusoids with a phase shift and an envelope:
+\[ y(t) = \sum_{i=1}^{N} A_i(t) \cdot \sin(2 \pi f_i t + \phi_i(t)) \]
+where \( A_i(t) \) is the amplitude, which smoothly changes over time (interpolation), \( f_i \) is the frequency of the component, \( \phi_i(t) \) is the phase shift, which also changes.
+
+This model creates the effect of continuous flow and overlapping streams.
+</p>
+
+<h2>Demo Synthesizer</h2>
+<button id="startWater">Start Stream</button>
+<button id="stopWater">STOP</button>
+<canvas id="vizWater"></canvas>
+
+<h2>A Wish for the Reader</h2>
+<p>
+READ!! Listen carefully to the Path of Water. Let its smoothness and fluidity inspire you to make gentle decisions and find harmony with the world around you. Learn to feel movement without effort, allowing sounds to flow like water flows down a river.
+</p>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const masterGain = audioCtx.createGain();
+masterGain.gain.value = 0.8;
+masterGain.connect(audioCtx.destination);
+
+const canvas = document.getElementById('vizWater');
+const ctx = canvas.getContext('2d');
+canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+
+let waterNode;
+
+function drawWave(data){
+  ctx.fillStyle="#000020";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#66e0ff"; ctx.beginPath();
+  for(let i=0;i<data.length;i++){
+    const y = (0.5 - data[i]/2)*canvas.height;
+    const x = i*(canvas.width/data.length);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function createWaterFlow(){
+  const bufferSize = 4096;
+  const node = audioCtx.createScriptProcessor(bufferSize,1,1);
+  const N = 3;
+  const freqs = [220, 330, 440];
+  let phase = new Array(N).fill(0);
+  node.onaudioprocess = function(e){
+    const output = e.outputBuffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){
+      let sample = 0;
+      for(let j=0;j<N;j++){
+        phase[j] += 2*Math.PI*freqs[j]/audioCtx.sampleRate;
+        sample += 0.3*Math.sin(phase[j]);
+      }
+      output[i] = sample;
+    }
+    drawWave(output);
+  };
+  node.connect(masterGain);
+  return node;
+}
+
+document.getElementById('startWater').addEventListener('click',async ()=>{
+  await audioCtx.resume();
+  if(waterNode) waterNode.disconnect();
+  waterNode = createWaterFlow();
+});
+
+document.getElementById('stopWater').addEventListener('click',()=>{
+  if(waterNode) waterNode.disconnect();
+});
+</script>
+
+</body>
+</html>

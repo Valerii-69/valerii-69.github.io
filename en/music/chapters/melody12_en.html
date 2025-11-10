@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Melody 12 — Waves of Memory</title>
+<link rel="stylesheet" href="../style.css">
+<style>body{font-family:system-ui;background:#f0f8ff;padding:2rem;text-align:center;}button{padding:.5rem 1rem;background:#224488;color:white;border:none;border-radius:6px;cursor:pointer;}input{width:60px;margin-left:.5rem;}</style>
+</head>
+<body>
+<h2>Melody 12 — Waves of Memory</h2>
+<button id="playBtn">▶ Play</button>
+<label>Tempo: <input id="bpm" type="number" value="100" min="30" max="300"></label>
+<script>
+(function(){
+const seq=[60,62,65,69,65,62,60,64]; 
+const btn=document.getElementById('playBtn');
+const bpmInput=document.getElementById('bpm');
+let audioCtx=null;
+function playSequence(){
+if(!audioCtx)audioCtx=new(AudioContext||webkitAudioContext)();
+const tempo=Number(bpmInput.value)||100;
+const beat=60/tempo;
+const startTime=audioCtx.currentTime+0.05;
+seq.forEach((note,i)=>{
+const freq=440*Math.pow(2,(note-69)/12);
+const t=startTime+i*beat;
+const osc=audioCtx.createOscillator();
+const gain=audioCtx.createGain();
+osc.type='sine';
+osc.frequency.value=freq;
+gain.gain.setValueAtTime(0,t);
+gain.gain.linearRampToValueAtTime(0.15,t+0.01);
+gain.gain.linearRampToValueAtTime(0,t+beat*0.9);
+osc.connect(gain);gain.connect(audioCtx.destination);
+osc.start(t);osc.stop(t+beat);
+});
+}
+btn.addEventListener('click',async()=>{
+if(!audioCtx)audioCtx=new(AudioContext||webkitAudioContext)();
+if(audioCtx.state==='suspended')await audioCtx.resume();
+btn.disabled=true;btn.textContent='… проигрывается';
+playSequence();
+setTimeout(()=>{btn.disabled=false;btn.textContent='▶ Проиграть';},seq.length*(60/(Number(bpmInput.value)||100)*1000));
+});
+})();
+</script>
+</body>
+</html>

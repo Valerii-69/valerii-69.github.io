@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chaos and Melody — Entertaining Math with AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:system-ui,sans-serif;background:#f8fff0;color:#222;margin:0;padding:1rem;}
+h1{text-align:center;color:#336622;}
+.canvas-container{display:flex;justify-content:center;margin:1rem 0;}
+iframe{border:2px solid #333;border-radius:6px;width:720px;height:480px;display:block;margin:0 auto;}
+.ai-wish{margin-top:1rem;padding:1rem;background:#f0fff0;border-radius:8px;border:1px solid #cce;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Story 14: Chaos and Melody</h1>
+
+<h2>Literary version:</h2>
+<p>There is beauty hidden in chaos: random sounds, unexpected rhythms, spontaneous harmonies. When we listen carefully, patterns emerge where it seemed disorder reigned.</p>
+
+<h2>Mathematical model:</h2>
+<p>Use a random number generator for intervals and durations of notes, creating sequences with stochastic elements. They can be analyzed with statistics and visualized with graphs.</p>
+
+<div class="canvas-container">
+<canvas id="chaosCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('chaosCanvas');
+const ctx=canvas.getContext('2d');
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<canvas.width;i+=15){
+    const y=100 + 40*Math.sin((i+t)/20)*Math.random();
+    ctx.beginPath();
+    ctx.arc(i,y,4,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${(i+t*3)%360},60%,50%)`;
+    ctx.fill();
+  }
+  t+=1;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+<h2>Interactive melody:</h2>
+<iframe src="melody14_en.html"></iframe>
+
+<h2>Message to reader from AI:</h2>
+<div class="ai-wish">
+Let chaos manifest in music. Notice unexpected harmonies and rhythms — they can inspire new ideas.
+</div>
+
+</body>
+</html>

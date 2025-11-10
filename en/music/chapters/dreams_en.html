@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Maiden Dreams - Three Synthesizers</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:sans-serif;background:#f9f9ff;margin:20px;}
+  h1{text-align:center;color:#333;}
+  #essay,#model,#canvasWrap,#iframeWrap,#wish{margin:20px auto;max-width:720px;padding:15px;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+  canvas{display:block;margin:10px auto;border:1px solid #ccc;border-radius:8px;}
+  button, select, input{margin-top:10px;padding:6px 12px;border-radius:6px;border:1px solid #aaa;cursor:pointer;}
+  iframe{width:100%;height:380px;border:1px solid #ccc;border-radius:8px;}
+  .control-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+
+<h1>Maiden Dreams - Three Synthesizers</h1>
+
+<div id="essay">
+<h2>Literary Essay</h2>
+<p>In the silence of the night, three synthesizers create waves of music, as if the girls' dreams were mingling in harmony. Each note is a flash of memory, each pause a breath of space. Is it possible to visualize these dreams, hear their form, and construct a model of sensations?</p>
+</div>
+
+<div id="model">
+<h2>Mathematical Model</h2>
+<p>Each synthesizer constructs a sequence of notes based on harmonic series. Let the notes A, B, C correspond to three series: {C4, E4, G4}, {D4, F4, A4}, {E4, G4, B4}. Frequencies are calculated via MIDI: <code>freq = 440 * 2^((midi-69)/12)</code>.</p>
+</div>
+
+<div id="canvasWrap">
+<h2>Synth Visualization</h2>
+<canvas id="synthCanvas" width="680" height="200"></canvas>
+<div class="control-row">
+<label>Mode: <select id="synthMode"><option value="0">Synth A</option><option value="1">Synth B</option><option value="2">Synth C</option></select></label>
+<button id="playBtn">▶ Play</button>
+<label>Tempo: <input id="bpm" type="number" value="120" min="30" max="300"></label>
+</div>
+</div>
+
+<div id="iframeWrap">
+<h2>Melody</h2>
+<iframe src="melody5_en.html"></iframe>
+</div>
+
+<div id="wish">
+<h2>A wish for the reader</h2>
+<p>Watch the three-color musical spiral, switch synthesizer modes, and create your own dreams. Music is an experiment, and every sound is your unique world.</p>
+</div>
+<script>
+// === Canvas визуализация волн
+const canvas = document.getElementById('synthCanvas');
+const ctx = canvas.getContext('2d');
+let t = 0;
+
+function drawWave(mode){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<canvas.width;i++){
+        let y = canvas.height/2 + 20*Math.sin((i+t)/10 + mode*Math.PI/2);
+        ctx.fillStyle=`hsl(${mode*120},80%,50%)`;
+        ctx.fillRect(i,y,2,2);
+    }
+    t+=0.5;
+    requestAnimationFrame(()=>drawWave(document.getElementById('synthMode').value));
+}
+
+drawWave(0);
+
+// === Синтезатор
+const seqs = [
+  [1,3,5,7,5,3,1],   // Синтезатор A
+  [2,4,6,8,6,4,2],   // Синтезатор B
+  [1,4,7,10,7,4,1]   // Синтезатор C
+];
+
+function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12);}
+function valToMidi(v){ return 60 + (v-1); }
+
+let audioCtx = null;
+
+async function playSequence(){
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const mode = Number(document.getElementById('synthMode').value);
+    const seq = seqs[mode];
+    const tempo = Number(document.getElementById('bpm').value)||120;
+    const beat = 60/tempo;
+    const noteDur = beat*0.9;
+    const startTime = audioCtx.currentTime + 0.05;
+
+    seq.forEach((v,i)=>{
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const midi = valToMidi(v);
+        osc.frequency.value = midiToFreq(midi);
+        osc.type='sine';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0,startTime + i*beat);
+        gain.gain.linearRampToValueAtTime(0.18,startTime + i*beat +0.01);
+        gain.gain.linearRampToValueAtTime(0.12,startTime + i*beat + noteDur*0.6);
+        gain.gain.linearRampToValueAtTime(0,startTime + i*beat + noteDur);
+        osc.start(startTime + i*beat);
+        osc.stop(startTime + i*beat + noteDur +0.02);
+    });
+}
+
+document.getElementById('playBtn').addEventListener('click',async()=>{
+    if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
+    if(audioCtx.state==='suspended') await audioCtx.resume();
+    document.getElementById('playBtn').disabled=true;
+    document.getElementById('playBtn').textContent='… проигрывается';
+    await playSequence();
+    const mode = Number(document.getElementById('synthMode').value);
+    const seq = seqs[mode];
+    const total = seq.length*(60/(Number(document.getElementById('bpm').value)||120));
+    setTimeout(()=>{document.getElementById('playBtn').disabled=false;document.getElementById('playBtn').textContent='▶ Проиграть';},(total+0.1)*1000);
+});
+</script>
+
+</body>
+</html>

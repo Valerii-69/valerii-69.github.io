@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Subtle Rhythms — Entertaining Math with AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:system-ui,sans-serif;background:#fff8f0;color:#222;margin:0;padding:1rem;}
+h1{text-align:center;color:#883322;}
+.canvas-container{display:flex;justify-content:center;margin:1rem 0;}
+iframe{border:2px solid #333;border-radius:6px;width:720px;height:480px;display:block;margin:0 auto;}
+.ai-wish{margin-top:1rem;padding:1rem;background:#fff0f5;border-radius:8px;border:1px solid #dcc;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Story 13: Subtle Rhythms</h1>
+
+<h2>Literary version:</h2>
+<p>Melodies are not only loud and obvious — there are subtle rhythms that are felt more by the heart than by the ear. They create inner harmony and gently guide attention.</p>
+
+<h2>Mathematical model:</h2>
+<p>Sequence of notes is created with slight variations in intervals and duration, forming a "fine rhythm grid" perceptible only with careful listening.</p>
+
+<div class="canvas-container">
+<canvas id="subtleCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('subtleCanvas');
+const ctx=canvas.getContext('2d');
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<canvas.width;i+=12){
+    const y=100 + 20*Math.sin((i+t)/15)*Math.cos((i+t)/40);
+    ctx.beginPath();
+    ctx.arc(i,y,3,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${(i+t)%360},70%,50%)`;
+    ctx.fill();
+  }
+  t+=1;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+<h2>Interactive melody:</h2>
+<iframe src="melody13_en.html"></iframe>
+
+<h2>Message to reader from AI:</h2>
+<div class="ai-wish">
+Listen to the subtle rhythms within music. Notice how tiny changes create a sense of movement and harmony.
+</div>
+
+</body>
+</html>

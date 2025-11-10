@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Path of Earth — Steady Rhythms</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+body {font-family:"Segoe UI",sans-serif;background:linear-gradient(#fffbe0,#f0f0d0);color:#4b3a00;max-width:800px;margin:0 auto;padding:1.5rem;}
+h1{text-align:center;color:#7a6400;}
+canvas{display:block;margin:1rem auto;border-radius:10px;background:#faf8e0;}
+iframe{display:block;margin:1.5rem auto;width:100%;height:200px;border:2px solid #ccc;border-radius:10px;}
+.section{margin-bottom:2rem;}
+.footer{text-align:center;font-style:italic;margin-top:2rem;color:#6c5a00;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<h1>Path of Earth — Steady Rhythms</h1>
+
+<div class="section">
+<h2>Literary Essay</h2>
+<p>The Earth breathes slowly. It knows the rhythm of rain, the step of the wind, the weight of dawn’s crops.  
+Every motion returns to the beginning. All living things find stability in it, and even chaos dances to its rhythm.</p>
+</div>
+
+<div class="section">
+<h2>Mathematical Model</h2>
+<p>Damped harmonic oscillations are described by:</p>
+<pre>f(t) = A * e<sup>−βt</sup> * cos(2πf₀t + φ)</pre>
+<p>Where <em>A</em> — initial amplitude, <em>β</em> — damping coefficient, <em>f₀</em> — base frequency, <em>φ</em> — phase.  
+This rhythm resembles footsteps that gradually soften yet keep balance.</p>
+</div>
+
+<canvas id="earthCanvas" width="700" height="200"></canvas>
+
+<iframe src="melody10_en.html" title="Melody 10 — Path of Earth"></iframe>
+
+<div class="footer">
+Feel the stability beneath your feet. Every motion gains meaning when it resonates with the world’s rhythm.
+</div>
+
+<script>
+const canvas=document.getElementById("earthCanvas");
+const ctx=canvas.getContext("2d");
+let t=0;
+function draw(){
+ ctx.fillStyle="#faf8e0";ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.beginPath();
+ const A=70,beta=0.015,f0=0.02;
+ ctx.moveTo(0,canvas.height/2);
+ for(let x=0;x<canvas.width;x++){
+  const y=A*Math.exp(-beta*x)*Math.cos(2*Math.PI*f0*x+t);
+  ctx.lineTo(x,canvas.height/2+y);
+ }
+ ctx.strokeStyle="#cc9900";ctx.lineWidth=2;ctx.stroke();
+ t+=0.1;requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
