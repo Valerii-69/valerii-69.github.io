@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="uk">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мелодія 2 — Шлях вогню</title>
+<link rel="stylesheet" href="../style.css">
+<style>body{font-family:system-ui;padding:12px;background:#fff7f3;color:#2b1208} .card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.06)} button{padding:8px 10px;border-radius:8px;border:none;cursor:pointer} .play{background:#b33000;color:#fff} .stop{background:#aaa;color:#222}</style>
+</head>
+<body>
+<div class="card">
+  <h2>Мелодія 2 — Шлях вогню</h2>
+  <p>Тембр: пила (sawtooth). Патерн: [3,6,9,12,9,6,3] з акцентом на першому кроці.</p>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button id="play" class="play">▶ Проиграти</button>
+    <button id="stop" class="stop">■ Стоп</button>
+    <label style="margin-left:8px">BPM <input id="bpm" type="number" value="110" min="30" max="300"></label>
+  </div>
+</div>
+
+<script>
+(function(){
+  const seq=[3,6,9,12,9,6,3];
+  const play=document.getElementById('play'), stop=document.getElementById('stop'), bpm=document.getElementById('bpm');
+  let ctx=null, scheduled=[];
+  function valToMidi(v){return 60+(v-1);}
+  function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+  function playSeq(){
+    const tempo=Number(bpm.value)||110; const beat=60/tempo; const now=ctx.currentTime+0.05;
+    seq.forEach((v,i)=>{
+      const t=now+i*beat;
+      const o=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter();
+      f.type='lowpass'; f.frequency.value = 2000 - i*80;
+      o.type='sawtooth'; o.frequency.value = midiToFreq(valToMidi(v));
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.22,t+0.01); g.gain.linearRampToValueAtTime(0.12,t+beat*0.6); g.gain.linearRampToValueAtTime(0,t+beat);
+      o.connect(f); f.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t+beat+0.02);
+      scheduled.push(o);
+    });
+    const bufSize = 0.2*ctx.sampleRate; const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate); const data = buffer.getChannelData(0);
+    for(let i=0;i<bufSize;i++) data[i]=(Math.random()*2-1)*0.18;
+    const noise = ctx.createBufferSource(); noise.buffer=buffer; const ng=ctx.createGain(); noise.connect(ng); ng.connect(ctx.destination);
+    ng.gain.setValueAtTime(0.0001, now); ng.gain.exponentialRampToValueAtTime(0.18, now+0.01); ng.gain.exponentialRampToValueAtTime(0.0001, now+0.12);
+    noise.start(now); scheduled.push(noise);
+  }
+  play.addEventListener('click', async ()=>{
+    if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') await ctx.resume();
+    playSeq();
+  });
+  stop.addEventListener('click', ()=>{ scheduled.forEach(s=>{try{s.stop()}catch(e){} }); scheduled=[]; });
+})();
+</script>
+</body>
+</html>

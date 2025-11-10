@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ua">
+<head>
+<meta charset="UTF-8">
+<title>Голоси сфер — Занимальна математика з ІІ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:system-ui,sans-serif;background:#f0f8ff;color:#222;margin:0;padding:1rem;}
+h1{text-align:center;color:#223366;}
+.canvas-container{display:flex;justify-content:center;margin:1rem 0;}
+iframe{border:2px solid #333;border-radius:6px;width:720px;height:480px;display:block;margin:0 auto;}
+.ai-wish{margin-top:1rem;padding:1rem;background:#eef6ff;border-radius:8px;border:1px solid #ccd;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Історія 8: Голоси сфер</h1>
+
+<h2>Літературна версія:</h2>
+<p>Ночі повні тихих мелодій, що звучать серед зірок. Кожна сфера у Всесвіті випромінює свій ритм, який можна почути, якщо уважно слухати.</p>
+
+<h2>Математична модель:</h2>
+<p>Кожну сферу можна уявити як осцилятор з частотою f = 1/T, де T — період обертання. Сукупність осциляторів створює гармонійний спектр, схожий на хоровий звук Всесвіту.</p>
+
+<div class="canvas-container">
+<canvas id="sphereCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('sphereCanvas');
+const ctx=canvas.getContext('2d');
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<8;i++){
+    const x=90+i*80;
+    const y=100+Math.sin(t*0.02+i)*50;
+    ctx.beginPath();
+    ctx.arc(x,y,15,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${i*45},80%,50%)`;
+    ctx.fill();
+  }
+  t++;
+  requestAnimationFrame(draw);
+}
+draw();</script>
+
+<h2>Інтерактивна мелодія:</h2>
+<iframe src="melody8_ua.html"></iframe>
+
+<h2>Побажання читачеві від ІІ:</h2>
+<div class="ai-wish">
+Прислухайся до тихих голосів сфер. Спробуй візуалізувати їхні ритми та гармонію, щоб відчути Всесвіт через музику.
+</div>
+
+</body>
+</html>

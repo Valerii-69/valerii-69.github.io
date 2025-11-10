@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Шлях ефіру — гармонічні тіні</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:system-ui;background:linear-gradient(#f7fbff,#eef6ff);color:#0b2a3b;padding:18px;max-width:980px;margin:0 auto}
+  h1{text-align:center;color:#123a5a}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .col{flex:1 1 320px;background:#fff;padding:14px;border-radius:10px;box-shadow:0 8px 26px rgba(15,30,50,0.06)}
+  canvas{display:block;width:100%;height:220px;border-radius:8px;background:#f6fbff}
+  iframe{width:100%;height:420px;border:0;margin-top:12px;border-radius:8px}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Шлях ефіру — гармонічні тіні</h1>
+
+<div class="row">
+  <div class="col">
+    <h2>Літературне есе</h2>
+    <p>Ефір — не пустка, а тонка тканина, в якій тремтять гармоніки. Тіні тут — не відсутність світла, а візерунки інтерференції: накладання хвиль, що народжують нові відтінки звучання. У гармонічних тінях чути минуле й відчувати майбутнє.</p>
+    <h3>Побажання</h3>
+    <p>Нехай ці тіні підкажуть нові співзвуччя — дослухайся, і вони відкриють несподівані мелодії.</p>
+  </div>
+
+  <div class="col">
+    <h2>Математична модель</h2>
+    <pre class="model">y(x,t) = Σ_{n=1..N} A_n · sin(2π n f₀ t + φ_n)</pre>
+    <p>Інтерференція: сума хвиль дає підсилення або загасання залежно від фази.</p>
+  </div>
+</div>
+
+<div style="margin-top:14px" class="row">
+  <div class="col" style="flex:2 1 640px">
+    <h2>Canvas — інтерференція</h2>
+    <canvas id="etherCanvasUk" width="860" height="220"></canvas>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center">
+      <label>f₀ (Hz): <input id="f0_uk" type="range" min="0.05" max="1.0" step="0.01" value="0.15"></label>
+      <label>N: <input id="N_uk" type="range" min="1" max="20" value="8"></label>
+      <label>φ: <input id="phi_uk" type="range" min="0" max="6.283" step="0.1" value="0"></label>
+      <button id="startUk" style="background:#0b6cff;color:#fff;padding:8px;border-radius:8px;border:none">▶ Пуск</button>
+      <button id="stopUk" style="background:#cfe0ff;padding:8px;border-radius:8px;border:none">■ Стоп</button>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>Вбудована мелодія</h2>
+    <iframe src="melody4_ua.html" title="Мелодія 4 — Шлях ефіру"></iframe>
+  </div>
+</div>
+
+<script>
+const canvasUk = document.getElementById('etherCanvasUk'); const ctxUk = canvasUk.getContext('2d');
+const f0Uk = document.getElementById('f0_uk'), NUk = document.getElementById('N_uk'), phiUk = document.getElementById('phi_uk');
+const startUk = document.getElementById('startUk'), stopUk = document.getElementById('stopUk');
+let animUk = null, t0Uk = 0;
+
+function drawUk(ts){
+  if(!t0Uk) t0Uk = ts;
+  const elapsed = (ts - t0Uk)/1000;
+  const f0 = Number(f0Uk.value), N = Number(NUk.value), phi = Number(phiUk.value);
+  const w = canvasUk.width, h = canvasUk.height;
+  ctxUk.fillStyle = '#f6fbff'; ctxUk.fillRect(0,0,w,h);
+
+  // faint harmonics
+  ctxUk.lineWidth = 1;
+  for(let n=1;n<=N;n++){
+    ctxUk.beginPath();
+    for(let x=0;x<w;x++){
+      const time = elapsed + x/200;
+      const y = 0.9*Math.sin(2*Math.PI*n*f0*time + phi*n)*(1/n)*(h/3);
+      if(x===0) ctxUk.moveTo(x,h/2 + y); else ctxUk.lineTo(x,h/2 + y);
+    }
+    ctxUk.strokeStyle = 'rgba(60,120,180,0.08)'; ctxUk.stroke();
+  }
+
+  // total
+  ctxUk.beginPath();
+  for(let x=0;x<w;x++){
+    const time = elapsed + x/200;
+    let sum=0;
+    for(let n=1;n<=N;n++) sum += (1/n)*Math.sin(2*Math.PI*n*f0*time + phi*n);
+    const y = sum*(h/3);
+    if(x===0) ctxUk.moveTo(x,h/2+y); else ctxUk.lineTo(x,h/2+y);
+  }
+  ctxUk.strokeStyle='#0b4f66'; ctxUk.lineWidth=2; ctxUk.stroke();
+
+  animUk = requestAnimationFrame(drawUk);
+}
+
+startUk.addEventListener('click', ()=>{ if(!animUk){ t0Uk=0; animUk=requestAnimationFrame(drawUk); startUk.disabled=true; }});
+stopUk.addEventListener('click', ()=>{ if(animUk){ cancelAnimationFrame(animUk); animUk=null; startUk.disabled=false; }});
+</script>
+</body>
+</html>

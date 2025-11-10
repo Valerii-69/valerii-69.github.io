@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="uk">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мелодія 1 — Хвиля тиші</title>
+<link rel="stylesheet" href="../style.css">
+<style>body{font-family:system-ui;padding:12px;background:#f0fbff;color:#0b2540} .card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 8px 20px rgba(10,20,30,0.06)} button{background:#0077cc;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}</style>
+</head>
+<body>
+<div class="card">
+  <h2>Мелодія 1 — Хвиля тиші</h2>
+  <p>Послідовність: [1,3,5,7,5,3,1]. Значення мапляться на C4 + (v-1).</p>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button id="playBtn">▶ Проиграти</button>
+    <button id="stopBtn">■ Стоп</button>
+    <label style="margin-left:10px">BPM <input id="bpm" type="number" value="90" min="30" max="300"></label>
+  </div>
+</div>
+
+<script>
+(function(){
+  const seq=[1,3,5,7,5,3,1];
+  const play=document.getElementById('playBtn'), stop=document.getElementById('stopBtn'), bpm=document.getElementById('bpm');
+  let ctx=null, timers=[];
+  function valToMidi(v){return 60+(v-1);}
+  function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+  function schedule(){
+    const tempo = Number(bpm.value)||90; const beat=60/tempo; const now = ctx.currentTime+0.05;
+    seq.forEach((v,i)=>{
+      const t = now + i*beat;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type='sine'; o.frequency.value = midiToFreq(valToMidi(v));
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.16,t+0.01);
+      g.gain.linearRampToValueAtTime(0.12,t+beat*0.6); g.gain.linearRampToValueAtTime(0,t+beat);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+beat+0.02);
+      timers.push(o);
+    });
+  }
+  play.addEventListener('click', async ()=>{
+    if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') await ctx.resume();
+    schedule();
+  });
+  stop.addEventListener('click', ()=>{ timers.forEach(o=>{try{o.stop()}catch(e){} }); timers=[]; });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Хвиля тиші — Занятна математика з ШІ</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{font-family:system-ui;padding:16px;background:#fbfeff;color:#122}
+  .container{max-width:980px;margin:0 auto}
+  .row{display:flex;gap:18px;flex-wrap:wrap}
+  .col{flex:1 1 320px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(10,20,30,0.06)}
+  canvas{width:100%;height:180px;border-radius:8px;background:#f7fbff;display:block}
+  iframe{width:100%;height:420px;border:0;margin-top:12px;border-radius:8px}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="container">
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+  <h1>Хвиля тиші</h1>
+
+  <div class="row">
+    <div class="col">
+      <h2>Літературне есе</h2>
+      <p>Тихо. Звук ніби вислизнув крізь нитки повітря, залишивши легке коливання — немов хвиля по поверхні води. У цій тиші народжуються ритми: не завжди чутні вухом, але відчутні тілом. Хвиля тиші — це не відсутність руху; це рух настільки делікатний, що увага приймає його за спокій.</p>
+      <h2>Побажання читачеві</h2>
+      <p>Нехай ця хвиля пробудить у тобі цікавість до невидимих ритмів світу. Послухай, відчуй і намалюй власну хвилю.</p>
+    </div>
+
+    <div class="col">
+      <h2>Математична модель — проста хвиля</h2>
+      <p>
+        y(x,t) = A · sin(2π (x/λ − f t) + φ)
+      </p>
+      <label>Амплітуда A: <span id="A_val_uk">20</span></label>
+      <input id="A_uk" type="range" min="0" max="80" value="20">
+      <label>Довжина хвилі λ (px): <span id="L_val_uk">120</span></label>
+      <input id="L_uk" type="range" min="40" max="400" value="120">
+      <label>Частота f (Гц): <span id="F_val_uk">0.6</span></label>
+      <input id="F_uk" type="range" min="0.1" max="2.0" step="0.05" value="0.6">
+      <pre id="calcBox_uk" style="background:#0b5aa6;color:#fff;padding:10px;border-radius:8px"></pre>
+    </div>
+  </div>
+
+  <div style="margin-top:14px" class="row">
+    <div class="col" style="flex:2 1 620px">
+      <h2>Візуалізація (canvas)</h2>
+      <canvas id="waveCanvasUk" width="880" height="180"></canvas>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="startUk">Старт</button>
+        <button id="stopUk">Стоп</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2>Вбудована мелодія</h2>
+      <iframe src="melody1_ua.html" title="Мелодія 1 — Хвиля тиші"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// аналог логіки RU/EN, адаптована для id с UK
+(function(){
+  const canvas = document.getElementById('waveCanvasUk'); const ctx=canvas.getContext('2d');
+  const A_el=document.getElementById('A_uk'), L_el=document.getElementById('L_uk'), F_el=document.getElementById('F_uk');
+  const A_val=document.getElementById('A_val_uk'), L_val=document.getElementById('L_val_uk'), F_val=document.getElementById('F_val_uk');
+  const calcBox=document.getElementById('calcBox_uk');
+  let A=+A_el.value, L=+L_el.value, f=+F_el.value, phi=0;
+  let running=false, raf=null;
+  function update(){ A=+A_el.value;L=+L_el.value;f=+F_el.value; A_val.textContent=A; L_val.textContent=L; F_val.textContent=f; const v=(L*f).toFixed(2);
+    calcBox.textContent=`y(x,t) = ${A}·sin(2π(x/${L} - ${f}·t))\nv = λ·f = ${v} px/s\nT = ${(1/f).toFixed(2)} s`; }
+  function draw(t){ const w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h); ctx.beginPath(); const time=t*0.001;
+    for(let x=0;x<w;x++){ const y = h/2 + A*Math.sin(2*Math.PI*(x/L - f*(time)) + phi); if(x==0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.strokeStyle='#0077cc'; ctx.lineWidth=2; ctx.stroke(); if(running) raf=requestAnimationFrame(draw); }
+  A_el.addEventListener('input',update); L_el.addEventListener('input',update); F_el.addEventListener('input',update);
+  update(); draw(0);
+  document.getElementById('startUk').addEventListener('click',()=>{ if(!running){ running=true; raf=requestAnimationFrame(draw);} });
+  document.getElementById('stopUk').addEventListener('click',()=>{ running=false; if(raf) cancelAnimationFrame(raf); });
+})();
+</script>
+
+</body>
+</html>

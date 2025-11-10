@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ua">
+<head>
+<meta charset="UTF-8">
+<title>Музика і фрактали — Занимальна математика з ІІ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:system-ui,sans-serif;background:#fff8f5;color:#222;margin:0;padding:1rem;}
+h1{text-align:center;color:#882211;}
+.canvas-container{display:flex;justify-content:center;margin:1rem 0;}
+iframe{border:2px solid #333;border-radius:6px;width:720px;height:480px;display:block;margin:0 auto;}
+.ai-wish{margin-top:1rem;padding:1rem;background:#fff0f0;border-radius:8px;border:1px solid #fbb;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Історія 11: Музика і фрактали</h1>
+
+<h2>Літературна версія:</h2>
+<p>Фрактали зустрічаються не лише в природі, але й у музиці. Повторювані узори створюють ритми та мелодії, які одночасно прості й складні.</p>
+
+<h2>Математична модель:</h2>
+<p>Використовуємо рекурсивну генерацію фрактальної послідовності: кожна нота повторюється зі зменшеною амплітудою та зміненим часом звучання, створюючи самоподібні структури.</p>
+
+<div class="canvas-container">
+<canvas id="fractalsCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('fractalsCanvas');
+const ctx=canvas.getContext('2d');
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  function fract(x,y,size,depth){
+    if(depth===0)return;
+    ctx.beginPath();
+    ctx.arc(x,y,size,0,Math.PI*2);
+    ctx.strokeStyle=`hsl(${depth*40},70%,50%)`;
+    ctx.stroke();
+    fract(x+size,y,size*0.5,depth-1);
+    fract(x-size,y,size*0.5,depth-1);
+  }
+  fract(360,100,40,5);
+  t++;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+<h2>Інтерактивна мелодія:</h2>
+<iframe src="melody11_ua.html"></iframe>
+
+<h2>Побажання читачеві від ІІ:</h2>
+<div class="ai-wish">
+Спробуй спостерігати, як прості правила створюють складні музичні узори. Експериментуй з повторенням, зміною тривалості та гучності нот — і відчуй фрактальну структуру в музиці.
+</div>
+
+</body>
+</html>

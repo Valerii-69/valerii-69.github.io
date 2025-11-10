@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глава 9: Шлях води</title><link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:sans-serif;background:#001020;color:#ddd;margin:0;padding:10px;}
+button{padding:6px 12px;margin:4px;}
+h1,h2{color:#66e0ff;}
+canvas{background:#000020; display:block; margin:10px 0; width:100%; height:150px;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+
+<h1>Глава 9: Шлях води</h1>
+
+<h2>Літературне есе</h2>
+<p>
+Вода ніколи не зупиняється, шукає шлях. Іноді вона тихо тече, іноді вирує і змітає все на своєму шляху. Музика води – це плавність та плинність, м'яка гармонія та постійний рух. У кожному акорді відчувається подих річки, спокійного потоку чи стрімкого струмка. Шлях води вчить нас адаптуватися, приймати зміни та знаходити красу в безперервності.
+</p>
+
+<h2>Питання до ІІ</h2>
+<p>
+Як створити музичний потік, який відчуватиметься природно, як вода? Які математичні моделі хвиль найкраще передають ефект плавної течії та взаємодію потоків? Чи можна навчити синтезатор «грати» воду, щоби різні ділянки звучали як різні течії?
+</p>
+
+<h2>Математична модель</h2>
+<p>
+Нехай звук води моделюється як сума синусоїд з фазовим зсувом та огинає:
+\[ y(t) = \sum_{i=1}^{N} A_i(t) \cdot \sin(2 \pi f_i t + \phi_i(t)) \]
+де \(A_i(t)\) - амплітуда, що плавно змінюється в часі (interpolation), \(f_i\) - частота компонента, \(\phi_i(t)\) - фазовий зсув, який також змінюється.
+Ця модель створює ефект безперервної течії і потоків, що перекриваються.
+</p>
+
+<h2>Демонстраційний синтезатор</h2>
+<button id="startWater">Запустити потік</button>
+<button id="stopWater">СТОП</button>
+<canvas id="vizWater"></canvas>
+
+<h2>Побажання читачеві</h2>
+<p>
+ЧИТАЙ!! Вслухайся в Шлях води. Нехай її плавність і плинність надихнуть тебе на м'які рішення та гармонію з навколишнім світом. Вчись відчувати рух без зусилля, дозволяючи звукам текти так, як вода тече по річці.
+</p>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const masterGain = audioCtx.createGain();
+masterGain.gain.value = 0.8;
+masterGain.connect(audioCtx.destination);
+
+const canvas = document.getElementById('vizWater');
+const ctx = canvas.getContext('2d');
+canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+
+let waterNode;
+
+function drawWave(data){
+  ctx.fillStyle="#000020";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#66e0ff"; ctx.beginPath();
+  for(let i=0;i<data.length;i++){
+    const y = (0.5 - data[i]/2)*canvas.height;
+    const x = i*(canvas.width/data.length);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function createWaterFlow(){
+  const bufferSize = 4096;
+  const node = audioCtx.createScriptProcessor(bufferSize,1,1);
+  const N = 3;
+  const freqs = [220, 330, 440];
+  let phase = new Array(N).fill(0);
+  node.onaudioprocess = function(e){
+    const output = e.outputBuffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){
+      let sample = 0;
+      for(let j=0;j<N;j++){
+        phase[j] += 2*Math.PI*freqs[j]/audioCtx.sampleRate;
+        sample += 0.3*Math.sin(phase[j]);
+      }
+      output[i] = sample;
+    }
+    drawWave(output);
+  };
+  node.connect(masterGain);
+  return node;
+}
+
+document.getElementById('startWater').addEventListener('click',async ()=>{
+  await audioCtx.resume();
+  if(waterNode) waterNode.disconnect();
+  waterNode = createWaterFlow();
+});
+
+document.getElementById('stopWater').addEventListener('click',()=>{
+  if(waterNode) waterNode.disconnect();
+});
+</script>
+
+</body>
+</html>

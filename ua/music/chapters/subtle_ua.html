@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ua">
+<head>
+<meta charset="UTF-8">
+<title>Тонкі ритми — Занимальна математика з ІІ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+body{font-family:system-ui,sans-serif;background:#fff8f0;color:#222;margin:0;padding:1rem;}
+h1{text-align:center;color:#883322;}
+.canvas-container{display:flex;justify-content:center;margin:1rem 0;}
+iframe{border:2px solid #333;border-radius:6px;width:720px;height:480px;display:block;margin:0 auto;}
+.ai-wish{margin-top:1rem;padding:1rem;background:#fff0f5;border-radius:8px;border:1px solid #dcc;}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<!--<a href="../oglavlenie.html" class="back-link">&larr; Вернуться к оглавлению</a>-->
+<h1>Історія 13: Тонкі ритми</h1>
+
+<h2>Літературна версія:</h2>
+<p>Мелодії бувають не лише гучними та явними — є тонкі ритми, які відчуваються більше серцем, ніж вухом. Вони створюють внутрішню гармонію і м’яко спрямовують увагу.</p>
+
+<h2>Математична модель:</h2>
+<p>Послідовність нот створюється з невеликими варіаціями інтервалів і тривалості, формуючи «тонку сітку» ритму, яка відчутна лише при уважному прослуховуванні.</p>
+
+<div class="canvas-container">
+<canvas id="subtleCanvas" width="720" height="200"></canvas>
+</div>
+
+<script>
+const canvas=document.getElementById('subtleCanvas');
+const ctx=canvas.getContext('2d');
+let t=0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<canvas.width;i+=12){
+    const y=100 + 20*Math.sin((i+t)/15)*Math.cos((i+t)/40);
+    ctx.beginPath();
+    ctx.arc(i,y,3,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${(i+t)%360},70%,50%)`;
+    ctx.fill();
+  }
+  t+=1;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+<h2>Інтерактивна мелодія:</h2>
+<iframe src="melody13_ua.html"></iframe>
+
+<h2>Побажання читачеві від ІІ:</h2>
+<div class="ai-wish">
+Слухай тихі ритми всередині музики. Зверни увагу на те, як невеликі зміни створюють відчуття руху та гармонії.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мелодія 4 — Шлях ефіру</title>
+<link rel="stylesheet" href="../style.css">
+<style>body{font-family:system-ui;background:#f5fbff;color:#07344e;padding:14px}.card{background:#fff;padding:12px;border-radius:10px}.controls{display:flex;gap:8px;align-items:center}.play{background:#0b6cff;color:#fff;padding:8px;border-radius:8px;border:none;cursor:pointer}.stop{background:#cfe0ff;padding:8px;border-radius:8px;border:none;cursor:pointer}</style>
+</head>
+<body>
+<div class="card">
+  <h2>Мелодія 4 — Шлях ефіру</h2>
+  <p>Ефірний резонанс: два детюнені осцилятори + легкий delay та фільтр.</p>
+  <div class="controls">
+    <button id="play" class="play">▶ Проиграти</button>
+    <button id="stop" class="stop">■ Стоп</button>
+    <label style="margin-left:8px">BPM <input id="bpm" type="number" value="68" min="30" max="200" style="width:72px"></label>
+  </div>
+</div>
+
+<script>
+(function(){
+  const seq=[1,1,2,3,2,1,0];
+  const play=document.getElementById('play'), stop=document.getElementById('stop'), bpm=document.getElementById('bpm');
+  let ctx=null, scheduled=[];
+
+  function midiToFreq(m){ return 440 * Math.pow(2, (m - 69)/12); }
+
+  async function playSeq(){
+    if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') await ctx.resume();
+    const tempo = Number(bpm.value)||68, beat=60/tempo, now=ctx.currentTime+0.05;
+    const base = 64;
+
+    const delay = ctx.createDelay(); delay.delayTime.value = 0.25;
+    const fb = ctx.createGain(); fb.gain.value = 0.33;
+    delay.connect(fb); fb.connect(delay);
+
+    const master = ctx.createGain(); master.gain.value = 0.9;
+    delay.connect(master); master.connect(ctx.destination);
+
+    seq.forEach((s,i)=>{
+      const t = now + i*beat;
+      const midi = base + s*2;
+      const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
+      o1.type='sine'; o2.type='sine';
+      o1.frequency.value = midiToFreq(midi);
+      o2.frequency.value = midiToFreq(midi) * 1.0025;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.22,t+0.02);
+      g.gain.linearRampToValueAtTime(0.12,t+beat*0.6);
+      g.gain.linearRampToValueAtTime(0,t+beat);
+      const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 600;
+      o1.connect(g); o2.connect(g); g.connect(bp);
+      bp.connect(ctx.destination); bp.connect(delay);
+      o1.start(t); o2.start(t);
+      o1.stop(t+beat+0.05); o2.stop(t+beat+0.05);
+      scheduled.push(o1,o2);
+    });
+
+    const pad = ctx.createOscillator(); pad.type='triangle'; pad.frequency.value = midiToFreq(base-12);
+    const pg = ctx.createGain(); pg.gain.setValueAtTime(0.0, now); pg.gain.linearRampToValueAtTime(0.06, now+0.5);
+    pad.connect(pg); pg.connect(delay);
+    pad.start(now); pad.stop(now + seq.length*beat + 1.0);
+    scheduled.push(pad);
+  }
+
+  play.addEventListener('click', playSeq);
+  stop.addEventListener('click', ()=>{ scheduled.forEach(n=>{ try{ n.stop(); } catch(e){} }); scheduled = []; });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Мелодія 8 — Голоси сфер</title>
+<link rel="stylesheet" href="../style.css">
+<style>body{font-family:system-ui;background:#f8fff0;padding:2rem;text-align:center;}button{padding:.5rem 1rem;background:#33cc66;color:white;border:none;border-radius:6px;cursor:pointer;}input{width:60px;margin-left:.5rem;}</style>
+</head>
+<body>
+<h2>Мелодія 8 — Голоси сфер</h2>
+<button id="playBtn">▶ Програти</button>
+<label>Темп: <input id="bpm" type="number" value="120" min="30" max="300"></label>
+<script>
+(function(){
+const seq=[62,65,69,72,69,65,62,67];
+const btn=document.getElementById('playBtn');
+const bpmInput=document.getElementById('bpm');
+let audioCtx=null;
+function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+async function playSequence(){
+if(!audioCtx)audioCtx=new(AudioContext||webkitAudioContext)();
+const tempo=Number(bpmInput.value)||120;
+const beat=60/tempo;
+const startTime=audioCtx.currentTime+0.05;
+seq.forEach((m,i)=>{
+const freq=midiToFreq(m);
+const t=startTime+i*beat;
+const osc=audioCtx.createOscillator();
+const gain=audioCtx.createGain();
+osc.type='sine';osc.frequency.value=freq;
+gain.gain.setValueAtTime(0,t);
+gain.gain.linearRampToValueAtTime(0.15,t+0.01);
+gain.gain.linearRampToValueAtTime(0,t+beat*0.9);
+osc.connect(gain);gain.connect(audioCtx.destination);
+osc.start(t);osc.stop(t+beat);
+});
+}
+btn.addEventListener('click',async()=>{
+if(!audioCtx)audioCtx=new(AudioContext||webkitAudioContext)();
+if(audioCtx.state==='suspended')await audioCtx.resume();
+btn.disabled=true;btn.textContent='… проигрывается';
+await playSequence();
+setTimeout(()=>{btn.disabled=false;btn.textContent='▶ Проиграть';},seq.length*(60/(Number(bpmInput.value)||120)*1000));
+});
+})();
+</script>
+</body>
+</html>
