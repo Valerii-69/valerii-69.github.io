@@ -35,7 +35,7 @@
     let seedHolder = seed;
     const base = 60 + (seed % 12);
     const scale = [0,2,3,5,7,9,10];
-    const seq = [];
+    //const seq = [];
     for(let i=0;i<8;i++){ const r = Math.floor(rng()*scale.length); seq.push(scale[r]); }
     out.textContent = `Базовая нота (MIDI): ${base}\nМелодия (интервалы): ` + seq.join(', ');
   });
@@ -59,4 +59,5 @@
 </body>
 
 </html>
+
 
