@@ -18,10 +18,13 @@
 <div>Enter a theme, and the page will generate a simple melodic idea (locally, without real AI—word-based emulation).</div>
 <textarea id="prompt" placeholder="For example: field, rain, old train..."></textarea>
 <button id="go">Generate melody</button>
+   <button id="play">Play</button>
     <pre id="out"></pre>
   </div>
-<script>
-  const go = document.getElementById('go'); const out = document.getElementById('out');
+<script>   let seq = [];
+ const go = document.getElementById('go'); 
+ const playBtn = document.getElementById('play'); 
+ const out = document.getElementById('out');
   function hashSeed(s){ let h=0; for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i))|0; } return Math.abs(h); }
   go.addEventListener('click', ()=>{
     const text = document.getElementById('prompt').value.trim(); if(!text){ alert('Введи тему'); return; }
@@ -31,10 +34,29 @@
     let seedHolder = seed;
     const base = 60 + (seed % 12);
     const scale = [0,2,3,5,7,9,10];
-    const seq = [];
+    //const seq = [];
     for(let i=0;i<8;i++){ const r = Math.floor(rng()*scale.length); seq.push(scale[r]); }
-    out.textContent = `Базовая нота (MIDI): ${base}\nМелодия (интервалы): ` + seq.join(', ');
+    out.textContent = `Base note (MIDI): ${base}\nMelody (intervals): ` + seq.join(', ');
   });
+     playBtn.addEventListener('click', async ()=>{
+    if(!seq.length) return; 
+      const ctx = new (window.AudioContext||window.webkitAudioContext)(); 
+      let t = ctx.currentTime; 
+      for(let s of seq){ const o = ctx.createOscillator(); 
+                        const g = ctx.createGain(); 
+                        o.type='sine'; 
+                        o.frequency.value = 440*Math.pow(2,(60 + s -69)/12); 
+                        o.connect(g); 
+                        g.connect(ctx.destination); 
+                        g.gain.value=0.0001; 
+                        o.start(t); 
+                        g.gain.linearRampToValueAtTime(0.14, t+0.01); 
+                        g.gain.exponentialRampToValueAtTime(0.0001, t+0.22); 
+                        o.stop(t+0.28); t += 0.32;
+                       }
+            seq = [];
+     });
 </script>
 </body>
+
 </html>
