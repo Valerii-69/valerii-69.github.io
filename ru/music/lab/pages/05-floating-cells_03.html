@@ -23,8 +23,15 @@ canvas {display:block;width:140%;height:138%;}
 <body>
 <div class="header">
   <div>
-    <h1>Визуализация: Плавающие пузырьки</h1>
-    <div class="small">Каждый пузырь создаёт мини-аккорд — теперь можно фоном слушать рассказы.</div>
+    <!--<h1>Визуализация: Плавающие пузырьки</h1>
+    <div class="small">Каждый пузырь создаёт мини-аккорд — теперь можно фоном слушать рассказы.</div>-->
+    <div class="ui">
+  <button id="spawn">Создать пузырь</button>
+  <input type="number" id="autoInterval" value="500" min="50" step="50"> мс</input>
+  <button id="clear">Очистить</button>
+  <button id="fullscreenBtn" title="Во весь экран">⛶</button>
+</div>
+
   </div>
   <div class="controls">
     <div class="status">Фон: <span id="bgState">Синтезатор</span></div>
@@ -39,12 +46,6 @@ canvas {display:block;width:140%;height:138%;}
   <div class="meditateIcon" title="Режим медитации">☯</div>
 </div>
 
-<div class="ui">
-  <button id="spawn">Создать пузырь</button>
-  <input type="number" id="autoInterval" value="500" min="50" step="50"> мс</input>
-  <button id="clear">Очистить</button>
-  <button id="fullscreenBtn" title="Во весь экран">⛶</button>
-</div>
 
 <script>
 /* =================== ИНИЦИАЛИЗАЦИЯ =================== */
@@ -234,4 +235,5 @@ draw();
 </script>
 </body>
 </html>
+
 
