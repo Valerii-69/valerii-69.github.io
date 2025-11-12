@@ -73,7 +73,7 @@ const pagesJSON = [
 { id:1,type:'page',title:'Intro: Journey Through the Labyrinth', file:'pages/01-intro_01.html', content:'A Brief Introduction to Music Labs...' },
 { id:2,type:'page',title:'Experiment: Pentatonic Scale', file:'pages/02-pentatonic_05.html', content:'Pentatonic Set Generator...' },
 { id:3,type:'page',title:'Mode: Bass Patterns', file:'pages/03-bass-patterns_04.html', content:'How to Create a Low-Frequency Pattern...' },
-{ id:4,type:'page',title:'Visualization: Floating Bubbles', file:'pages/04-floating-cells_03.html', content:'Visualization Instructions...' },
+{ id:4,type:'page',title:'Visualization: Floating Bubbles', file:'pages/05-floating-cells_03.html', content:'Visualization Instructions...' },
 { id:5,type:'page',title:'Samples: Loading Locally', file:'pages/05-samples_local.html', content:'Guide to Embedding Local Samples...'},
 { id:6,type:'page',title:'Generator: Chaos and Melody', file:'pages/06-chaos_melody.html', content:'Melody generation packages...' },
 { id:7,type:'page',title:'Playing with AI', file:'pages/07-play_with_ai.html', content:'Minimal set of interactions with AI...' },
@@ -195,4 +195,5 @@ function focusCell(i){if(i<0||i>8)return; const c=document.querySelector('.cell[
 setTimeout(()=>{document.querySelectorAll('.cell').forEach(c=>c.setAttribute('tabindex','0'));},50);
 </script>
 </body>
+
 </html>
