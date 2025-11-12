@@ -12,7 +12,7 @@ body {margin:0;color:#e6eef8;font-family:Inter,Arial;overflow:hidden;background:
 button {padding:8px 10px;border-radius:8px;border:0;background:#7c3aed;color:white;font-size:0.9rem;cursor:pointer;}
 button.secondary {background:#1f2937;color:#e6eef8;border:1px solid rgba(255,255,255,0.03);}
 .canvas-wrap {position:relative;height:70vh;}
-canvas {display:block;width:100%;height:120%;}
+canvas {display:block;width:100%;height:100%;}
 .ui {padding:12px;text-align:center;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;}
 .ui input[type=number] {padding:6px;border-radius:6px;border:none;width:80px;text-align:center;}
 .status {font-size:0.9rem;color:#cfe3ff;margin-left:12px;}
@@ -23,9 +23,15 @@ canvas {display:block;width:100%;height:120%;}
 <body>
 <div class="header">
   <div>
-<h1>Visualization: Floating Bubbles</h1>
-<div class="small">Each bubble creates a mini-chord—now you can listen to stories in the background.</div>
-</div>
+<!--<h1>Visualization: Floating Bubbles</h1>
+<div class="small">Each bubble creates a mini-chord—now you can listen to stories in the background.</div>-->
+<div class="ui">
+<button id="spawn">Spawn bubble</button>
+<input type="number" id="autoInterval" value="500" min="50" step="50"> ms</input>
+<button id="clear">Clear</button>
+<button id="fullscreenBtn" title="Full screen">⛶</button>
+</div> 
+  </div>
 <div class="controls">
 <div class="status">Background: <span id="bgState">Synthesizer</span></div>
 <div class="trackTitle" id="trackTitle"></div>
@@ -39,11 +45,7 @@ canvas {display:block;width:100%;height:120%;}
 <div class="meditateIcon" title="Meditation Mode">☯</div>
 </div>
 
-<div class="ui">
-<button id="spawn">Spawn bubble</button>
-<input type="number" id="autoInterval" value="500" min="50" step="50"> ms</input>
-<button id="clear">Clear</button>
-<button id="fullscreenBtn" title="Full screen">⛶</button></div>
+
 
 <script>
 /* =================== ИНИЦИАЛИЗАЦИЯ =================== */
@@ -233,5 +235,6 @@ draw();
 </script>
 </body>
 </html>
+
 
 
