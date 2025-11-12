@@ -73,7 +73,7 @@ const pagesJSON = [
 { id:1,type:'page',title:'Інтро: Подорож лабіринтом', file:'pages/01-intro_01.html', content:'Коротке введення в музичні лабораторні роботи...' }, 
 { id:2,type:'page',title:'Експеримент: Пентатоніка', file:'pages/02-pentatonic_05.html', content:'Генератор пентатонічних сетів...' }, 
 { id:3,type:'page',title:'Режим: Бас-патерни', file:'pages/03-bass-patterns_04.html', content:'Як створити низькочастотний патерн...' }, 
-{ id:4,type:'page',title:'Візуалізація: Плаваючі бульбашки', file:'pages/04-floating-cells_03.html', content:'Інструкція з візуалізації...' }, 
+{ id:4,type:'page',title:'Візуалізація: Плаваючі бульбашки', file:'pages/05-floating-cells_03.html', content:'Інструкція з візуалізації...' }, 
 { id:5,type:'page',title:'Семпли: Завантаження локально', file:'pages/05-samples_local.html', content:'Посібник із вбудовування локальних семплів...'}, 
 { id:6,type:'page',title:'Генератор: Хаос і мелодія', file:'pages/06-chaos_melody.html', content:'Пакети генерації мелодій...' }, 
 { id:7,type:'page',title:'Пограємо з ІІ', file:'pages/07-play_with_ai.html', content:'Мінімальний набір взаємодій з ІІ...' }, 
@@ -195,4 +195,5 @@ function focusCell(i){if(i<0||i>8)return; const c=document.querySelector('.cell[
 setTimeout(()=>{document.querySelectorAll('.cell').forEach(c=>c.setAttribute('tabindex','0'));},50);
 </script>
 </body>
+
 </html>
