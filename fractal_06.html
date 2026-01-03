@@ -14,8 +14,8 @@ height: 100vh;
 gap: 10px;
 }
 canvas {
-width: 1480px;
-height: 1480px;
+width: 680px;
+height: 680px;
 background: #000;
 border: 1px solid #0a0;
 }
@@ -146,7 +146,7 @@ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 const source = audioCtx.createMediaStreamSource(stream);
 analyser = audioCtx.createAnalyser();
-analyser.fftSize = 512;
+analyser.fftSize = 2048;
 fftData = new Uint8Array(analyser.frequencyBinCount);
 source.connect(analyser);
 console.log("Audio init");
@@ -191,7 +191,7 @@ if (p.depth > max) max = p.depth;
 }
 if (max < 20) {
 for (let p of points) {
-p.depth = p.depth * 5 + Math.random() * 30;
+p.depth = p.depth * 5 + Math.random() * 25;
 }
 return;
 }
@@ -208,7 +208,7 @@ points[i].depth = i * 5 + Math.random() * 5;
 
 function generateAudioReactiveLissajous(t, bands) {
     const points = [];
-    const N = 600;
+    const N = 400;
 
     // -----------------------------------------
     // 1. Аудио-параметры
@@ -511,8 +511,8 @@ console.log("finish");
 });
 }
 function animate() {
-    angleY += 0.01;
-    angleX += 0.01;
+    angleY += 0;
+    angleX += 0;
     m += 0.7;
 
     // 1. Аудио-фрактал
