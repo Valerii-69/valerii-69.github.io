@@ -146,7 +146,7 @@ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 const source = audioCtx.createMediaStreamSource(stream);
 analyser = audioCtx.createAnalyser();
-analyser.fftSize = 512;
+analyser.fftSize = 2048;
 fftData = new Uint8Array(analyser.frequencyBinCount);
 source.connect(analyser);
 console.log("Audio init");
@@ -361,7 +361,7 @@ const canvas = ctx.canvas;
 const R =0;
 const G = 0;
 const B = 0;
-ctx.fillStyle = 'rgba('+ R + ', ' + G + ', ' + B + ', 0.1)';
+ctx.fillStyle = 'rgba('+ R + ', ' + G + ', ' + B + ', 0.5)';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -498,7 +498,7 @@ spiralRadius = Math.sin(angleY * 0.15) * 40;
     ctx.arc((X), (Y), point.size * sizeScale, 0, Math.PI * 2);
     ctx.fill();
 	ctx.shadowColor = point.color;
-	ctx.shadowBlur = 8;
+	ctx.shadowBlur = 10;
 	ctx.fill();
 	ctx.shadowBlur = 0;
 	
@@ -527,7 +527,7 @@ function animate() {
     // 3. Выбор режима
     if (renderMode === "audio") {
         finalPoints = audioPoints;
-		zone_t = 0.20;
+		zone_t = 0.01;
     }
     else if (renderMode === "lissajous") {
         finalPoints = lissajousPoints;
@@ -536,7 +536,7 @@ function animate() {
     else if (renderMode === "mix") {
         const mix = Math.min(1, Math.max(1, bands[1].amp / 255));
         finalPoints = mixPoints(audioPoints, lissajousPoints, mix);
-		zone_t = 0.35;
+		zone_t = 0.05;
     }
 
     // 4. Рисуем
