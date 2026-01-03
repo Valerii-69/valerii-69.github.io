@@ -146,7 +146,7 @@ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 const source = audioCtx.createMediaStreamSource(stream);
 analyser = audioCtx.createAnalyser();
-analyser.fftSize = 2048;
+analyser.fftSize = 512;
 fftData = new Uint8Array(analyser.frequencyBinCount);
 source.connect(analyser);
 console.log("Audio init");
@@ -450,7 +450,7 @@ for (let i = 0; i < count; i++) {
 const angle = i * turnsFactor;
 const r = point.size * sizeScale * (1 + i * radiusFactor * k);
 ctx.beginPath();
-ctx.fillStyle = `rgba(${R}, ${G}, ${B}, ${1 - i * 0.05})`;
+ctx.fillStyle = `rgba(${R}, ${G}, ${B}, ${1 - i * 0.5})`;
 ctx.arc(
 Math.cos(angle) * r,
 Math.sin(angle) * r,
@@ -498,7 +498,7 @@ spiralRadius = Math.sin(angleY * 0.15) * 40;
     ctx.arc((X), (Y), point.size * sizeScale, 0, Math.PI * 2);
     ctx.fill();
 	ctx.shadowColor = point.color;
-	ctx.shadowBlur = 10;
+	ctx.shadowBlur = 8;
 	ctx.fill();
 	ctx.shadowBlur = 0;
 	
@@ -513,7 +513,7 @@ console.log("finish");
 function animate() {
     angleY += 0;
     angleX += 0;
-    m += 0.7;
+    m += 0.85;
 
     // 1. Аудио-фрактал
     const audioPoints = fractalPoints;
@@ -527,7 +527,7 @@ function animate() {
     // 3. Выбор режима
     if (renderMode === "audio") {
         finalPoints = audioPoints;
-		zone_t = 0.3;
+		zone_t = 0.20;
     }
     else if (renderMode === "lissajous") {
         finalPoints = lissajousPoints;
@@ -536,7 +536,7 @@ function animate() {
     else if (renderMode === "mix") {
         const mix = Math.min(1, Math.max(1, bands[1].amp / 255));
         finalPoints = mixPoints(audioPoints, lissajousPoints, mix);
-		zone_t = 0.05;
+		zone_t = 0.35;
     }
 
     // 4. Рисуем
