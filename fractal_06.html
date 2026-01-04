@@ -14,8 +14,8 @@ height: 100vh;
 gap: 10px;
 }
 canvas {
-width: 480px;
-height: 480px;
+width: 400px;
+height: 400px;
 background: #000;
 border: 1px solid #0a0;
 }
@@ -37,8 +37,7 @@ border-radius: 8px;
 color: white;
 font-family: sans-serif;
 z-index: 9999;
-">
-<div>Чувствительность полос</div>
+"><div>Чувствительность полос</div>
 <select id="bandSelector" style="width: 100%; margin-top: 6px;">
 <option value="0">Полоса 1</option>
 <option value="1">Полоса 2</option>
@@ -46,6 +45,7 @@ z-index: 9999;
 <option value="3">Полоса 4</option>
 <option value="4">Полоса 5</option>
 </select>
+</div>
 <input id="gainSlider" type="range" min="0" max="5" step="0.1" value="1"
 style="width: 100%; margin-top: 10px;">
 <div id="gainValue" style="margin-top: 6px; text-align: center;">x1.0</div>
@@ -59,14 +59,32 @@ border-radius: 8px;
 color: white;
 font-family: sans-serif;
 z-index: 9999;
-">
-    <div>Режим визуализации</div>
+"><div>Режим визуализации</div>
     <select id="modeSelector" style="width: 100%; margin-top: 6px;">
         <option value="audio">Только аудио</option>
         <option value="lissajous">Только Лисажу</option>
         <option value="mix" selected>Смешивание</option>
     </select>
 </div>
+<!-- Панель управления аудио-входом -->
+<div id="audio-input-panel" style="border:1px solid #444;padding:8px;margin:8px 0;font-family: sans-serif;">
+  <div style="margin-bottom:4px;">
+    <label for="audio-device-select">Аудио-вход:</label>
+    <select id="audio-device-select">
+      <option value="">Загрузка устройств...</option>
+    </select>
+    <button id="audio-start-stop-btn">Старт</button>
+  </div>
+  <div style="margin-top:4px;">
+    <span>Уровень сигнала:</span>
+    <div style="background:#222;width:200px;height:10px;display:inline-block;margin-left:8px;vertical-align:middle;">
+      <div id="audio-level-bar" style="background:#0f0;width:0%;height:100%;"></div>
+    </div>
+    <span id="audio-level-text" style="margin-left:6px;font-size:12px;color:#ccc;">0%</span>
+  </div>
+  <div id="audio-status" style="margin-top:4px;font-size:11px;color:#aaa;"></div>
+</div>
+
 </div>
 <script>
 const canvasLeft  = document.getElementById('canvasLeft');
@@ -87,6 +105,359 @@ let renderMode = "mix";
 // варианты: "audio", "lissajous", "mix"
 
 const eyeSeparation = 0.065;   // разница углов между глазами
+
+// ==============================
+// МОДУЛЬ УПРАВЛЕНИЯ АУДИО-ВХОДОМ
+// ==============================
+class AudioInputManager {
+    // onAudioFrame: функция, которой мы передаём аудио-данные для фракталов
+    // options: дополнительные настройки (fftSize и т.п.)
+    constructor(onAudioFrame, options = {}) {
+        // ===== ПАРАМЕТРЫ =====
+        this.onAudioFrame = onAudioFrame;  // (dataArray, analyser, audioCtx) => {}
+        this.fftSize = options.fftSize || 512; // степень двойки: 512, 1024, 2048...
+
+        // ===== СТЕЙТ =====
+        this.audioCtx = null;
+        this.analyser = null;
+        this.source = null;
+        this.stream = null;
+        this.devices = [];
+        this.currentDeviceId = null;
+        this.animationId = null;
+        this.isRunning = false;
+
+        // ===== ЭЛЕМЕНТЫ UI =====
+        this.deviceSelect = document.getElementById("audio-device-select");
+        this.startStopBtn = document.getElementById("audio-start-stop-btn");
+        this.levelBar = document.getElementById("audio-level-bar");
+        this.levelText = document.getElementById("audio-level-text");
+        this.statusEl = document.getElementById("audio-status");
+
+        if (!this.deviceSelect || !this.startStopBtn) {
+            console.warn("AudioInputManager: не найдены элементы UI (select или button).");
+        }
+
+        this._bindUI();
+        this._initDevices();
+    }
+
+    // ------------------------------
+    // Привязка обработчиков к UI
+    // ------------------------------
+    _bindUI() {
+        if (this.deviceSelect) {
+            this.deviceSelect.addEventListener("change", () => {
+                this.currentDeviceId = this.deviceSelect.value || null;
+                this._logStatus("Выбрано устройство: " + (this.deviceSelect.selectedOptions[0]?.textContent || "неизвестно"));
+                // Если уже работает — переключаемся на новое устройство
+                if (this.isRunning) {
+                    this.restart();
+                }
+            });
+        }
+
+        if (this.startStopBtn) {
+            this.startStopBtn.addEventListener("click", () => {
+                if (this.isRunning) {
+                    this.stop();
+                } else {
+                    this.start();
+                }
+            });
+        }
+    }
+
+    // ------------------------------
+    // Инициализация списка устройств
+    // ------------------------------
+    async _initDevices() {
+        try {
+            // Небольшой хак: запрашиваем доступ один раз,
+            // чтобы браузер разрешил видеть label устройств
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            this._logStatus("Нет доступа к микрофону/аудио-входу: " + e.message);
+            return;
+        }
+
+        await this._updateDeviceList();
+
+        // Подписываемся на изменения устройств (подключение/отключение)
+        if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+            navigator.mediaDevices.addEventListener("devicechange", () => {
+                this._updateDeviceList();
+            });
+        }
+    }
+
+    // ------------------------------
+    // Обновление списка устройств
+    // ------------------------------
+    async _updateDeviceList() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            this.devices = devices.filter(d => d.kind === "audioinput");
+
+            if (!this.deviceSelect) return;
+
+            this.deviceSelect.innerHTML = "";
+
+            if (this.devices.length === 0) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Нет доступных аудио-входов";
+                this.deviceSelect.appendChild(opt);
+                this._logStatus("Аудио-входы не найдены.");
+                return;
+            }
+
+            let autoSelectedId = null;
+
+            this.devices.forEach((dev, index) => {
+                const opt = document.createElement("option");
+                opt.value = dev.deviceId;
+
+                // Пытаемся красиво подписать
+                // Ищем слова "Line", "Линейный", "Stereo Mix" и т.п.
+                let label = dev.label || `Устройство ${index + 1}`;
+                opt.textContent = label;
+
+                // Простая эвристика для авто-выбора Line-In
+                const lower = label.toLowerCase();
+                if (!autoSelectedId &&
+                    (lower.includes("line") ||
+                     lower.includes("линей") ||
+                     lower.includes("stereo mix") ||
+                     lower.includes("стерео микс"))) {
+                    autoSelectedId = dev.deviceId;
+                }
+
+                this.deviceSelect.appendChild(opt);
+            });
+
+            // Если уже был выбран deviceId — восстановим
+            if (this.currentDeviceId) {
+                const found = this.devices.find(d => d.deviceId === this.currentDeviceId);
+                if (found) {
+                    this.deviceSelect.value = this.currentDeviceId;
+                }
+            } else if (autoSelectedId) {
+                // Иначе — если найден "линейный" — выберем его
+                this.currentDeviceId = autoSelectedId;
+                this.deviceSelect.value = autoSelectedId;
+                this._logStatus("Автоматически выбран линейный вход: " +
+                    this.deviceSelect.selectedOptions[0]?.textContent);
+            } else {
+                // Иначе — по умолчанию первое устройство
+                this.currentDeviceId = this.devices[0].deviceId;
+                this.deviceSelect.value = this.currentDeviceId;
+                this._logStatus("По умолчанию выбран первый аудио-вход: " +
+                    this.deviceSelect.selectedOptions[0]?.textContent);
+            }
+        } catch (e) {
+            this._logStatus("Ошибка при получении списка устройств: " + e.message);
+        }
+    }
+
+    // ------------------------------
+    // Запуск аудио-потока
+    // ------------------------------
+    async start() {
+        if (this.isRunning) return;
+
+        try {
+            // Создаём или возобновляем AudioContext
+            if (!this.audioCtx) {
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } else if (this.audioCtx.state === "suspended") {
+                await this.audioCtx.resume();
+            }
+
+            // Конфиг для getUserMedia
+            const constraints = {
+                audio: {
+                    deviceId: this.currentDeviceId ? { exact: this.currentDeviceId } : undefined,
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
+            };
+
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+            // Привязываем поток к AudioContext
+            this.source = this.audioCtx.createMediaStreamSource(this.stream);
+
+            // Создаём анализатор
+            this.analyser = this.audioCtx.createAnalyser();
+            this.analyser.fftSize = this.fftSize;
+
+            this.source.connect(this.analyser);
+
+            this.isRunning = true;
+            if (this.startStopBtn) this.startStopBtn.textContent = "Стоп";
+            this._logStatus("Аудио-вход запущен.");
+
+            this._startAnimationLoop();
+        } catch (e) {
+            this._logStatus("Ошибка при запуске аудио-входа: " + e.message);
+            console.error(e);
+        }
+    }
+
+    // ------------------------------
+    // Остановка аудио-потока
+    // ------------------------------
+    stop() {
+        this.isRunning = false;
+
+        if (this.startStopBtn) this.startStopBtn.textContent = "Старт";
+
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+
+        if (this.analyser) {
+            this.analyser.disconnect();
+            this.analyser = null;
+        }
+
+        if (this.source) {
+            this.source.disconnect();
+            this.source = null;
+        }
+
+        if (this.stream) {
+            this.stream.getTracks().forEach(t => t.stop());
+            this.stream = null;
+        }
+
+        this._updateLevel(0);
+        this._logStatus("Аудио-вход остановлен.");
+    }
+
+    // Перезапуск (например, при смене устройства)
+    async restart() {
+        this.stop();
+        await this.start();
+    }
+
+    // ------------------------------
+    // Цикл анимации: чтение данных и передача во фракталы
+    // ------------------------------
+    _startAnimationLoop() {
+        if (!this.analyser) return;
+
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const loop = () => {
+            if (!this.isRunning || !this.analyser) return;
+
+            // Можно использовать getByteFrequencyData или getByteTimeDomainData
+            // Вариант 1: спектр (частоты)
+            this.analyser.getByteFrequencyData(dataArray);
+
+            // Вариант 2 (альтернативный): временная форма
+            // this.analyser.getByteTimeDomainData(dataArray);
+
+            // Вычисляем "уровень" сигнала для индикатора (простой вариант: максимум)
+            let maxVal = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                if (dataArray[i] > maxVal) maxVal = dataArray[i];
+            }
+            const level = maxVal / 255; // 0..1
+            this._updateLevel(level);
+
+            // Передаём данные во фрактальный движок
+            if (typeof this.onAudioFrame === "function") {
+                this.onAudioFrame(dataArray, this.analyser, this.audioCtx);
+            }
+
+            this.animationId = requestAnimationFrame(loop);
+        };
+
+        loop();
+    }
+
+    // ------------------------------
+    // Обновление индикатора уровня сигнала
+    // ------------------------------
+    _updateLevel(level) {
+        // level: 0..1
+        const percent = Math.round(level * 100);
+
+        if (this.levelBar) {
+            this.levelBar.style.width = percent + "%";
+
+            // Цвет по уровню: зелёный → жёлтый → красный
+            let color = "#0f0";
+            if (percent > 70) color = "#ff0";
+            if (percent > 90) color = "#f00";
+            this.levelBar.style.backgroundColor = color;
+        }
+
+        if (this.levelText) {
+            this.levelText.textContent = percent + "%";
+        }
+    }
+
+    // ------------------------------
+    // Лог статуса
+    // ------------------------------
+    _logStatus(msg) {
+        console.log("[AudioInputManager]", msg);
+        if (this.statusEl) {
+            const time = new Date().toLocaleTimeString();
+            this.statusEl.textContent = `[${time}] ${msg}`;
+        }
+    }
+}
+
+// ==============================
+// ПРИМЕР ИНИЦИАЛИЗАЦИИ ДЛЯ ТВОЕЙ ФРАКТАЛЬНОЙ СИСТЕМЫ
+// ==============================
+
+// Предполагаем, что у тебя есть функция, которая принимает аудио-данные
+// и обновляет параметры фрактала. Например:
+function handleAudioForFractals(dataArray, analyser, audioCtx) {
+    // Здесь ты делаешь всё, что хочешь:
+    // - вычисляешь среднюю громкость
+    // - анализируешь определённые диапазоны частот
+    // - маппишь значения на параметры фрактала (масштаб, цвет, вращение и т.д.)
+
+    // Простой пример: усреднение амплитуды
+    let sum = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+    }
+    const avg = sum / dataArray.length; // 0..255
+
+    // Преобразуем в 0..1
+    const norm = avg / 255;
+
+    // Дальше можно вызывать твой существующий API:
+    // updateFractalFromAudio(norm, dataArray);
+    // или, если у тебя есть глобальный объект контроллера:
+    // FRACTAL_CONTROLLER.setAudioLevel(norm);
+
+    // Пока просто выводим в консоль (для теста)
+    // console.log("Audio norm:", norm.toFixed(3));
+}
+
+// Создаём менеджер после загрузки страницы:
+window.addEventListener("DOMContentLoaded", () => {
+    // Инициализируем аудио-модуль с колбэком для фракталов
+    const audioManager = new AudioInputManager(handleAudioForFractals, {
+        fftSize: 512
+    });
+
+    // Если нужно — сохраняем его глобально:
+    window.FRACTAL_AUDIO_MANAGER = audioManager;
+});
+
 
 // Добавляем обработчик клика, чтобы войти в полноэкранный режим
 canvasLeft.addEventListener('click', () => {
@@ -146,7 +517,7 @@ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 const source = audioCtx.createMediaStreamSource(stream);
 analyser = audioCtx.createAnalyser();
-analyser.fftSize = 2048;
+analyser.fftSize = 512;
 fftData = new Uint8Array(analyser.frequencyBinCount);
 source.connect(analyser);
 console.log("Audio init");
@@ -191,7 +562,7 @@ if (p.depth > max) max = p.depth;
 }
 if (max < 20) {
 for (let p of points) {
-p.depth = p.depth * 5 + Math.random() * 25;
+p.depth = p.depth * 5 + Math.random() * 22;
 }
 return;
 }
@@ -208,7 +579,7 @@ points[i].depth = i * 5 + Math.random() * 5;
 
 function generateAudioReactiveLissajous(t, bands) {
     const points = [];
-    const N = 400;
+    const N = 800;
 
     // -----------------------------------------
     // 1. Аудио-параметры
@@ -345,7 +716,7 @@ size: Number(size.toFixed(2))
 });
 }
 });
-return points.slice(0, 50);
+return points.slice(0, 10);
 }
 async function updateData() {
 try {
@@ -358,10 +729,10 @@ console.error("ESP32fetcherror:", e);
 setInterval(updateData, 5);
 function drawFractal(ctx, fractalPoints, angleY, angleX, zone_t) {
 const canvas = ctx.canvas;
-const R =0;
+const R = 0;
 const G = 0;
 const B = 0;
-ctx.fillStyle = 'rgba('+ R + ', ' + G + ', ' + B + ', 0.5)';
+ctx.fillStyle = 'rgba('+ R + ', ' + G + ', ' + B + ', 0.17)';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -376,7 +747,7 @@ const cosA = Math.cos(angleY);
 const sinA = Math.sin(angleY);
 const x3d = px * cosA + pz * sinA;
 const z3d = pz * cosA - px * sinA;
-const perspective = 3 / (1 + z3d * 0.0002);
+const perspective = 3 / (1 + z3d * 0.0092);
 const X = centerX + x3d * perspective;
 const Y = centerY + py * perspective;
 const sizeScale = perspective;
@@ -401,7 +772,7 @@ ctx.fillStyle = `rgba(${R}, ${G}, ${B}, ${alpha})`;
 ctx.arc(X, Y, r, 0, Math.PI * 2);
 ctx.fill();
 ctx.shadowColor = point.color;
-ctx.shadowBlur = 2;
+ctx.shadowBlur = 7;
 ctx.fill();
 ctx.shadowBlur = 0;
 }
@@ -436,7 +807,7 @@ ctx.globalAlpha = 0.7;
 ctx.fill();
 ctx.globalAlpha = 1;
 ctx.shadowColor = point.color;
-ctx.shadowBlur = 2;
+ctx.shadowBlur = 7;
 ctx.fill();
 ctx.shadowBlur = 0;
 } else if (zone >0 & zone < 4) {
@@ -450,7 +821,7 @@ for (let i = 0; i < count; i++) {
 const angle = i * turnsFactor;
 const r = point.size * sizeScale * (1 + i * radiusFactor * k);
 ctx.beginPath();
-ctx.fillStyle = `rgba(${R}, ${G}, ${B}, ${1 - i * 0.5})`;
+ctx.fillStyle = `rgba(${R}, ${G}, ${B}, ${1 - i * 0.05})`;
 ctx.arc(
 Math.cos(angle) * r,
 Math.sin(angle) * r,
@@ -460,7 +831,7 @@ Math.PI * 2
 );
 ctx.fill();
 ctx.shadowColor = point.color;
-ctx.shadowBlur = 2;
+ctx.shadowBlur = 8;
 ctx.fill();
 ctx.shadowBlur = 0;
 }
@@ -473,7 +844,7 @@ const r = point.size * sizeScale * (1 + k * 2);
 ctx.arc(X, Y, r, 0, Math.PI * 2);
 ctx.fill();
 ctx.shadowColor = point.color;
-ctx.shadowBlur = 2;
+ctx.shadowBlur = 8;
 ctx.fill();
 ctx.shadowBlur = 0;
 ctx.globalAlpha = k;
@@ -494,14 +865,29 @@ spiralRadius = Math.sin(angleY * 0.15) * 40;
     // Чистый Лисажу — рисуем простую точку
   ctx.beginPath();
 //    ctx.fillStyle = point.color;
-	ctx.fillStyle = color; //`rgba(${R}, ${G}, ${B}, ${alpha})`;
+//const t = point.color / 10;
+//const R = Math.floor(128 + 127 * Math.sin(t * Math.PI * 2 + 1));
+//const G = Math.floor(128 + 127 * Math.sin(t * Math.PI * 2 + 2));
+//const B = Math.floor(128 + 127 * Math.sin(t * Math.PI * 2 + 1));
+//for (let i = 0; i < 6; i++) {
+//	const alpha = (0.25 / ((R+G+B)/700 + 1)) * 0.5;
+	ctx.fillStyle = color; //'rgba('+ R + ', ' + G + ', ' + B + ', ' + 1 + ')'; //
     ctx.arc((X), (Y), point.size * sizeScale, 0, Math.PI * 2);
     ctx.fill();
-	ctx.shadowColor = point.color;
+	ctx.shadowColor = color; //point.color;
 	ctx.shadowBlur = 10;
 	ctx.fill();
 	ctx.shadowBlur = 0;
-	
+//}	
+/*	ctx.strokeStyle = point.color; 
+	ctx.lineWidth = 2; 
+	if (point._first) { 
+	ctx.beginPath(); 
+	ctx.moveTo(X, Y); 
+	point._first = false; 
+	} else { 
+	ctx.lineTo(X, Y); 
+	}*/
 }
 } catch (error) {
 console.error("err:", error.message);
@@ -513,7 +899,7 @@ console.log("finish");
 function animate() {
     angleY += 0;
     angleX += 0;
-    m += 0.85;
+    m += 0.25;
 
     // 1. Аудио-фрактал
     const audioPoints = fractalPoints;
@@ -527,16 +913,16 @@ function animate() {
     // 3. Выбор режима
     if (renderMode === "audio") {
         finalPoints = audioPoints;
-		zone_t = 0.01;
+		zone_t = 1;
     }
     else if (renderMode === "lissajous") {
         finalPoints = lissajousPoints;
 		zone_t = 0;
     }
     else if (renderMode === "mix") {
-        const mix = Math.min(1, Math.max(1, bands[1].amp / 255));
+        const mix = Math.min(1, Math.max(1, bands[3].amp / 255));
         finalPoints = mixPoints(audioPoints, lissajousPoints, mix);
-		zone_t = 0.05;
+		zone_t = 1;
     }
 
     // 4. Рисуем
