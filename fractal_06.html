@@ -517,7 +517,7 @@ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 const source = audioCtx.createMediaStreamSource(stream);
 analyser = audioCtx.createAnalyser();
-analyser.fftSize = 512;
+analyser.fftSize = 2048;
 fftData = new Uint8Array(analyser.frequencyBinCount);
 source.connect(analyser);
 console.log("Audio init");
@@ -562,7 +562,7 @@ if (p.depth > max) max = p.depth;
 }
 if (max < 20) {
 for (let p of points) {
-p.depth = p.depth * 5 + Math.random() * 22;
+p.depth = p.depth * 5 + Math.random() * 30;
 }
 return;
 }
@@ -579,7 +579,7 @@ points[i].depth = i * 5 + Math.random() * 5;
 
 function generateAudioReactiveLissajous(t, bands) {
     const points = [];
-    const N = 800;
+    const N = 300;
 
     // -----------------------------------------
     // 1. Аудио-параметры
@@ -732,7 +732,7 @@ const canvas = ctx.canvas;
 const R = 0;
 const G = 0;
 const B = 0;
-ctx.fillStyle = 'rgba('+ R + ', ' + G + ', ' + B + ', 0.17)';
+ctx.fillStyle = 'rgba('+ R + ', ' + G + ', ' + B + ', 0.45)';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -864,13 +864,6 @@ spiralRadius = Math.sin(angleY * 0.15) * 40;
 }else if(zone == 0){
     // Чистый Лисажу — рисуем простую точку
   ctx.beginPath();
-//    ctx.fillStyle = point.color;
-//const t = point.color / 10;
-//const R = Math.floor(128 + 127 * Math.sin(t * Math.PI * 2 + 1));
-//const G = Math.floor(128 + 127 * Math.sin(t * Math.PI * 2 + 2));
-//const B = Math.floor(128 + 127 * Math.sin(t * Math.PI * 2 + 1));
-//for (let i = 0; i < 6; i++) {
-//	const alpha = (0.25 / ((R+G+B)/700 + 1)) * 0.5;
 	ctx.fillStyle = color; //'rgba('+ R + ', ' + G + ', ' + B + ', ' + 1 + ')'; //
     ctx.arc((X), (Y), point.size * sizeScale, 0, Math.PI * 2);
     ctx.fill();
@@ -878,16 +871,6 @@ spiralRadius = Math.sin(angleY * 0.15) * 40;
 	ctx.shadowBlur = 10;
 	ctx.fill();
 	ctx.shadowBlur = 0;
-//}	
-/*	ctx.strokeStyle = point.color; 
-	ctx.lineWidth = 2; 
-	if (point._first) { 
-	ctx.beginPath(); 
-	ctx.moveTo(X, Y); 
-	point._first = false; 
-	} else { 
-	ctx.lineTo(X, Y); 
-	}*/
 }
 } catch (error) {
 console.error("err:", error.message);
@@ -899,7 +882,7 @@ console.log("finish");
 function animate() {
     angleY += 0;
     angleX += 0;
-    m += 0.25;
+    m += 0.65;
 
     // 1. Аудио-фрактал
     const audioPoints = fractalPoints;
