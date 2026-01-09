@@ -754,6 +754,11 @@ float fractalDE(vec3 p) {
         float y = z.y;
         float z3 = z.z;
 
+// ======== Ctrl error =========
+float x2 = x*x;
+float y2 = y*y;
+//=========== End test error ====
+
         escaped = false;
 
         // >>> ВСТАВКА ДИНАМИЧЕСКОЙ 3D-ФОРМУЛЫ <<<
@@ -1689,6 +1694,7 @@ requestAnimationFrame(render);
   </script>
 </body>
 </html>
+
 
 
 
