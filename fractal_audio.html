@@ -748,26 +748,37 @@ float fractalDE(vec3 p) {
     const int MAX_ITER = 8;
     bool escaped = false;
 
+    int n = MAX_ITER;
+
     for (int i = 0; i < MAX_ITER; i++) {
+
+        n = i;
 
         float x = z.x;
         float y = z.y;
         float z3 = z.z;
 
-// ======== Ctrl error =========
-float x2 = x*x;
-float y2 = y*y;
-//=========== End test error ====
+//        float nx = u_low * 0.02;
+//        float ny = u_mid * 0.02;
+        float nz = u_high * 0.02;
 
         escaped = false;
 
         // >>> ВСТАВКА ДИНАМИЧЕСКОЙ 3D-ФОРМУЛЫ <<<
+        // === ORIGINAL 2D FORMULA ===
+
         {{FORMULA_3D}}
+
         // <<< КОНЕЦ ВСТАВКИ >>>
 
-        z = vec3(nx, ny, nz);
+        if (x*x + y*y + z3*z3 > 4.0) {
+            escaped = true;
+        }
+        nz = 2.0*(y*z3 + z3*x) + cz;
+
         float z2 = z3*z3;
-        r = sqrt(x2 + y2 + z2);
+        r = sqrt(x*x + y*y + z2);
+        z = vec3(nz, x, z3);
 
         if (r > 4.0) break;
         dr = 2.0 * r * dr + 1.0;
@@ -791,8 +802,6 @@ vec3 calcNormal(vec3 p) {
 }
 
 // =========================
-// Ray marching
-// =========================
 float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
     float t = 0.0;
     const float tMax = 50.0;
@@ -812,8 +821,6 @@ float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
 }
 
 // =========================
-// Камера
-// =========================
 vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
     vec3 f = normalize(target - ro);
     vec3 r = normalize(vec3(f.z, 0.0, -f.x));
@@ -822,8 +829,6 @@ vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
     return normalize(f * z + r * uv.x + u * uv.y);
 }
 
-// =========================
-// main()
 // =========================
 void main() {
 
@@ -834,12 +839,11 @@ void main() {
 
     float angle;
 
-    // === идеальный цикличный угол ===
     if (u_cycleMode == 1) {
         float phase = u_cycleTime / u_cycleDuration;
         angle = 6.2831853 * phase; // 2π
     } else {
-        angle = u_time * 0.25;
+        angle = u_time * 0.15;
     }
 
     vec3 ro = vec3(
@@ -868,12 +872,10 @@ void main() {
         smooth = pow(smooth, 0.7);
         smooth = smooth * (1.0 + u_high * 0.3);
 
-        // === случайность ===
         float rnd  = 0.2 + 0.4 * hash(u_time * 1.234);
         float rnd1 = 0.2 + 0.4 * hash(u_time * 2.345);
         float rnd2 = 0.2 + 0.4 * hash(u_time * 3.456);
 
-        // === фиксация случайности в цикле ===
         if (u_cycleMode == 1) {
             rnd  = 0.3;
             rnd1 = 0.3;
@@ -886,11 +888,9 @@ void main() {
             rnd2 + 0.5 * cos(0.5 * smooth + u_high * 5.0 + 4.0)
         );
 
-        // === идеальная цикличная палитра ===
         if (u_cycleMode == 1) {
             float phase = u_cycleTime / u_cycleDuration;
             float hue = phase;
-		//	matCol = vec3(0.0, 0.0, 0.6); // любой цвет однотонный
             matCol = vec3(
                 0.5 + 0.5 * cos(6.2831853 * (hue + 0.1)),
                 0.5 + 0.5 * cos(6.2831853 * (hue + 0.33)),
@@ -899,7 +899,6 @@ void main() {
         }
 
         col = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
-		
 
         if (u_debugMode == 1) col = vec3(diff);
         if (u_debugMode == 2) col = 0.5 + 0.5 * n;
@@ -1694,6 +1693,7 @@ requestAnimationFrame(render);
   </script>
 </body>
 </html>
+
 
 
 
