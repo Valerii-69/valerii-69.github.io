@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Audio Fractal Playlist</title>
+<style>
+body { margin:0; overflow:hidden; background:#000; color:#ddd; font-family:monospace; }
+#ui { position:fixed; top:10px; left:10px; z-index:10; }
+button, input {
+    margin:4px; padding:4px 8px;
+    background:#222; color:#ddd; border:1px solid #555; cursor:pointer;
+}
+#sidebar{flex:4;display:flex;flex-direction:column;margin-left:5px;min-width:0;}
+#log{background:#000;color:#f88;padding:5px;margin-bottom:5px;overflow-y:scroll;width:400px;height:300px;}
+button:hover { background:#333; }
+#glcanvas { width:100vw; height:100vh; display:block; }
+#bars {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+   border:1px solid #555;
+  background: rgba(0,0,0,0.4);
+  z-index: 10;
+}
+</style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<div id="sidebar">
+<div id="ui">
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+    <button id="recBtn">Record</button>
+    <label>Track length (sec): <input id="trackLen" type="number" value="840" style="width:60px;"></label>
+    <label>cx: <input id="cx" type="number" value="-0.7" step="0.01"></label>
+    <label>cy: <input id="cy" type="number" value="0.27015" step="0.01"></label>
+    <label>Zoom: <input id="zoom" type="number" value="6" step="0.01" min="-100" max="100"></label>
+    <label>Debug:
+      <select id="debugModeSelect">
+        <option value="0">0 — выкл</option>
+        <option value="1">1 — escape-time</option>
+        <option value="2">2 — coords</option>
+        <option value="3">3 — params</option>
+      </select>
+    </label>
+	<pre id="log"></pre>
+	</div>
+</div>
+<canvas id="bars" width="100" height="200"></canvas>
+
+<script>
+// ===============================
+// WebGL базовая настройка
+// ===============================
+const canvas = document.getElementById("glcanvas");
+const gl = canvas.getContext("webgl");
+	const barsCanvas = document.getElementById("bars");
+	const ctx = barsCanvas.getContext("2d");
+
+    const cxInput = document.getElementById('cx');
+    const cyInput = document.getElementById('cy');
+    const zoomInput = document.getElementById('zoom');
+    const debugModeSelect = document.getElementById('debugModeSelect');
+
+let srcinf = "";
+let tecstr = [];
+let iError = false;
+    let lowBand = 0.0;
+    let midBand = 0.0;
+    let highBand = 0.0;
+let u_lowGainLoc = null;
+let u_midGainLoc = null;
+let u_highGainLoc = null;
+		let lowNorm  = null;
+		let midNorm  = null;
+		let highNorm = null;
+    let current = null;
+    let current2 = null;
+    let current3 = null;
+    let current4 = null;
+    let current5 = null;
+    let current6 = null;
+	let lines = null;
+	let currentMIX = [];
+    let currentMIX3 = [];
+
+// ===============================
+// Логика смены фракталов
+// ===============================
+let running=false;
+let t0=0;
+let currentFractalIndex=0;
+let currentFract2D=0;
+let currentFractDE=0;
+let fractalDuration=30; // по умолчанию
+	
+	let prog = null;
+	let u_time, u_res, u_low, u_mid, u_high;
+    let u_cxLoc = null;
+    let u_cyLoc = null;
+    let u_zoomLoc = null;
+// ===============================
+// Парсинг /glsl/fractal.glsl
+// ===============================
+let fractalBlocks = []; // {name, code}
+//let fractalBlocks2 = []; // {name, code}
+	
+	// Добавляем обработчик клика, чтобы войти в полноэкранный режим
+canvas.addEventListener('click', () => {
+    if (canvas.requestFullscreen) {
+        canvas.requestFullscreen(); // Стандартный API
+    } else if (canvas.webkitRequestFullScreen) { // Для старых Safari/Chrome
+        canvas.webkitRequestFullScreen();
+    } else if (canvasLeft.mozRequestFullScreen) { // Для Firefox
+        canvas.mozRequestFullScreen();
+    }
+});
+
+function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+function resize() {
+    const dpr = devicePixelRatio || 1;
+    canvas.width  = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    gl.viewport(0,0,canvas.width,canvas.height);
+}
+addEventListener("resize", resize);
+resize();
+
+const vsSrc = `
+attribute vec2 a_pos;
+varying vec2 v_uv;
+void main(){
+v_uv = 0.5 * (a_pos + 1.0);
+    gl_Position = vec4(a_pos, 0.0, 1.0);
+}
+`;
+const fsTemplate432 = `
+precision mediump float;
+
+varying vec2 v_uv;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+uniform float u_lowGain; 
+uniform float u_midGain; 
+uniform float u_highGain;
+uniform float u_blur;
+uniform float u_cx;
+uniform float u_cy;
+uniform float u_zoom;
+uniform int   u_debugMode;
+
+float g_low; 
+float g_mid; 
+float g_high;
+
+float bass    = 0.0;
+float midBand = 0.0;
+float treble  = 0.0;
+float timeVal = 0.0;
+
+float g_fx = 0.0;
+float g_fy = 0.0;
+float g_fz = 0.0;
+
+float hash(float x) {
+    return fract(sin(x * 123.456) * 789.123);
+}
+
+float logGain(float x, float gain) { 
+    return pow(x + 1e-6, gain); 
+}
+
+//======2D FRACTAL===========
+//FRACTAL_CO32
+//=======end CO32============
+
+// 3D DE
+float fractalDE(vec3 p) {
+    vec3 z = p;
+
+    float dr = 1.0;
+    float r  = 0.0;
+
+    vec3 c = vec3( 
+        u_cx + g_low * 0.3 + 0.3 * sin(u_time * 0.5), 
+        u_cy + g_mid * 0.3 + 0.3 * cos(u_time * 0.4), 
+        0.0 + g_high * 0.3 
+    );
+    
+    float cx = c.x;
+    float cy = c.y;
+    float cz = c.z;
+
+    const int MAX_ITER = 20;
+    int n = MAX_ITER;
+    bool escaped = false;
+    for (int i = 0; i < MAX_ITER; i++) {
+
+        float x = z.x;
+        float y = z.y;
+        float z3 = z.z;
+
+        float z2 = z3*z3;
+
+        r = sqrt(x*x + y*y + z2);
+        if (r > 4.0) break;
+
+        dr = 2.0 * r * dr + 1.0;
+
+        float yz = y * z3;
+        float zx = z3 * x;
+        
+        float nx = x*x - y*y - z2 + c.x + g_low * 0.15; 
+        float ny = 2.0 * x * y + c.y + g_mid * 0.15; 
+        float nz = 2.0 * (yz + zx) + c.z + g_high * 0.10;
+        
+        g_fx = nx*0.60;
+        g_fy = ny*0.88;
+        g_fz = nz*0.22;
+
+        z = vec3(g_fx, g_fy, g_fz);
+
+        float x2 = x*x;
+        float y2 = y*y;
+        if (x2 + y2 > 4.0) { 
+            escaped = true;
+        }
+        float xy = x*y;
+        x = x2 - y2 + cx + g_high * 0.15;
+        y = 2.0*xy + cy + g_mid * 0.15;
+
+        float k1 = clamp(0.5 + 0.5*sin(u_time), 0.0, 1.0);
+        z = mix(vec3(g_fx, g_fy, g_fz), z, k1);
+        r = sqrt(x*x + y*y + z2);
+        dr = 2.0 * r * dr + 1.0;
+    }
+
+    return 0.5 * log(r) * r / dr;
+}
+
+vec3 calcNormal(vec3 p) {
+    float e = 0.001;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * fractalDE(p + k.xyy * e) +
+        k.yyx * fractalDE(p + k.yyx * e) +
+        k.yxy * fractalDE(p + k.yxy * e) +
+        k.xxx * fractalDE(p + k.xxx * e)
+    );
+}
+
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 50.0;
+
+    for (int i = 0; i < 64; i++) {
+        vec3 p = ro + rd * t;
+        float d = fractalDE(p);
+        if (d < 0.001) {
+            pHit = p;
+            return t;
+        }
+        if (t > tMax) break;
+        t += d;
+    }
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    vec3 rd = normalize(f * z + r * uv.x + u * uv.y);
+    return rd;
+}
+
+void main() {
+
+    g_low = logGain(u_low,  u_lowGain); 
+    g_mid = logGain(u_mid,  u_midGain); 
+    g_high= logGain(u_high, u_highGain);    
+
+    bass    = g_low;
+    midBand = g_mid;
+    treble  = g_high;
+    timeVal = u_time;
+
+    vec2 uv = v_uv * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    float camRadius = max(1.0, u_zoom);
+    float angle = u_time * 0.25;
+
+    vec3 ro = vec3(
+        camRadius * cos(angle),
+        camRadius * 0.3,
+        camRadius * sin(angle)
+    );
+    vec3 target = vec3(0.0, 0.0, 0.0);
+
+    vec3 rd = getRayDir(uv, ro, target, 45.0);
+
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+
+    vec3 col = vec3(0.0);
+
+    if (t > 0.0) {
+        vec3 n = calcNormal(pHit);
+
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+        float smooth = clamp(t / 20.0, 0.0, 1.0);
+        smooth = pow(smooth, 0.7);
+        smooth = smooth * (1.0 + g_high * 0.3);
+
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+
+        vec3 matCol = vec3( 
+            rnd  + 0.5 * sin(smooth + g_low  * 5.0), 
+            rnd1 + 0.5 * sin(smooth + g_mid  * 5.0 + 2.0), 
+            rnd2 + 0.5 * sin(smooth + g_high * 5.0 + 4.0) 
+        );
+
+        col = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+
+        // 2D как текстура на поверхности
+        vec3 tex = render2D(pHit.xy * 0.3 + timeVal * 0.1);
+        col = mix(col, tex, 0.5);
+
+        if (u_debugMode == 1) {
+            col = vec3(diff);
+        }
+        if (u_debugMode == 2) {
+            col = 0.5 + 0.5 * n;
+        }
+
+    } else {
+        col = vec3(0.0);
+    }
+
+    col = pow(col, vec3(0.4545));
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`;
+const fsTemplate132 = `
+precision mediump float;
+
+varying vec2 v_uv;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+uniform float u_lowGain; 
+uniform float u_midGain; 
+uniform float u_highGain;
+uniform float u_blur;
+uniform float u_cx;
+uniform float u_cy;
+uniform float u_zoom;
+uniform int   u_debugMode;
+
+float g_low; 
+float g_mid; 
+float g_high;
+
+float bass    = 0.0;
+float midBand = 0.0;
+float treble  = 0.0;
+float timeVal = 0.0;
+
+float g_fx = 0.0;
+float g_fy = 0.0;
+float g_fz = 0.0;
+
+float hash(float x) {
+    return fract(sin(x * 123.456) * 789.123);
+}
+
+float logGain(float x, float gain) { 
+    return pow(x + 1e-6, gain); 
+}
+
+//======2D FRACTAL===========
+//FRACTAL_CO32
+//=======end CO32============
+
+// 3D DE с маской
+float fractalDE(vec3 p) {
+    vec3 z = p;
+
+    float dr = 1.0;
+    float r  = 0.0;
+
+    vec3 c = vec3( 
+        u_cx + g_low * 0.3 + 0.3 * sin(u_time * 0.5), 
+        u_cy + g_mid * 0.3 + 0.3 * cos(u_time * 0.4), 
+        0.0 + g_high * 0.3 
+    );
+    
+    float cx = c.x;
+    float cy = c.y;
+    float cz = c.z;
+
+    const int MAX_ITER = 20;
+    int n = MAX_ITER;
+    bool escaped = false;
+    for (int i = 0; i < MAX_ITER; i++) {
+
+        float x = z.x;
+        float y = z.y;
+        float z3 = z.z;
+
+        float z2 = z3*z3;
+
+        r = sqrt(x*x + y*y + z2);
+        if (r > 4.0) break;
+
+        dr = 2.0 * r * dr + 1.0;
+
+        float yz = y * z3;
+        float zx = z3 * x;
+        
+        float nx = x*x - y*y - z2 + c.x + g_low * 0.15; 
+        float ny = 2.0 * x * y + c.y + g_mid * 0.15; 
+        float nz = 2.0 * (yz + zx) + c.z + g_high * 0.10;
+        
+        g_fx = nx*0.60;
+        g_fy = ny*0.88;
+        g_fz = nz*0.22;
+
+        z = vec3(g_fx, g_fy, g_fz);
+
+        float x2 = x*x;
+        float y2 = y*y;
+        if (x2 + y2 > 4.0) { 
+            escaped = true;
+        }
+        float xy = x*y;
+        x = x2 - y2 + cx + g_high * 0.15;
+        y = 2.0*xy + cy + g_mid * 0.15;
+
+        float k1 = clamp(0.5 + 0.5*sin(u_time), 0.0, 1.0);
+        z = mix(vec3(g_fx, g_fy, g_fz), z, k1);
+        r = sqrt(x*x + y*y + z2);
+        dr = 2.0 * r * dr + 1.0;
+    }
+
+    float de = 0.5 * log(r) * r / dr;
+
+    // 2D-маска, деформирующая расстояние
+    float mask = render2D(p.xy * 0.5).r;   // 0..1
+    de += (mask - 0.5) * 0.3;
+
+    return de;
+}
+
+vec3 calcNormal(vec3 p) {
+    float e = 0.001;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * fractalDE(p + k.xyy * e) +
+        k.yyx * fractalDE(p + k.yyx * e) +
+        k.yxy * fractalDE(p + k.yxy * e) +
+        k.xxx * fractalDE(p + k.xxx * e)
+    );
+}
+
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 50.0;
+
+    for (int i = 0; i < 64; i++) {
+        vec3 p = ro + rd * t;
+        float d = fractalDE(p);
+        if (d < 0.001) {
+            pHit = p;
+            return t;
+        }
+        if (t > tMax) break;
+        t += d;
+    }
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    vec3 rd = normalize(f * z + r * uv.x + u * uv.y);
+    return rd;
+}
+
+void main() {
+
+    g_low = logGain(u_low,  u_lowGain); 
+    g_mid = logGain(u_mid,  u_midGain); 
+    g_high= logGain(u_high, u_highGain);    
+
+    bass    = g_low;
+    midBand = g_mid;
+    treble  = g_high;
+    timeVal = u_time;
+
+    vec2 uv = v_uv * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    float camRadius = max(1.0, u_zoom);
+    float angle = u_time * 0.25;
+
+    vec3 ro = vec3(
+        camRadius * cos(angle),
+        camRadius * 0.3,
+        camRadius * sin(angle)
+    );
+    vec3 target = vec3(0.0, 0.0, 0.0);
+
+    vec3 rd = getRayDir(uv, ro, target, 45.0);
+
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+
+    vec3 col = vec3(0.0);
+
+    if (t > 0.0) {
+        vec3 n = calcNormal(pHit);
+
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+        float smooth = clamp(t / 20.0, 0.0, 1.0);
+        smooth = pow(smooth, 0.7);
+        smooth = smooth * (1.0 + g_high * 0.3);
+
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+
+        vec3 matCol = vec3( 
+            rnd  + 0.5 * sin(smooth + g_low  * 5.0), 
+            rnd1 + 0.5 * sin(smooth + g_mid  * 5.0 + 2.0), 
+            rnd2 + 0.5 * sin(smooth + g_high * 5.0 + 4.0) 
+        );
+
+        col = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+
+        if (u_debugMode == 1) {
+            col = vec3(diff);
+        }
+        if (u_debugMode == 2) {
+            col = 0.5 + 0.5 * n;
+        }
+
+    } else {
+        col = vec3(0.0);
+    }
+
+    col = pow(col, vec3(0.4545));
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`;
+const fsTemplate32 = `
+precision mediump float;
+
+uniform vec2  u_res;
+uniform float u_time;
+
+// аудио-полосы
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+
+// логарифмическая чувствительность
+uniform float u_lowGain;
+uniform float u_midGain;
+uniform float u_highGain;
+
+uniform float u_blur;  // (пока не используем, но uniform есть)
+
+// базовые параметры фрактала (cx, cy, zoom)
+uniform float u_cx;
+uniform float u_cy;
+uniform float u_zoom;
+
+uniform int   u_debugMode;
+
+// глобальные логарифмически нормализованные значения 
+float g_low; 
+float g_mid; 
+float g_high;
+
+//2D глобальные значения
+float bass    = 0.0;
+float midBand = 0.0;
+float treble  = 0.0;
+float timeVal = 0.0;
+
+// --- выходные каналы фрактала ---
+float g_fx = 0.0;
+float g_fy = 0.0;
+float g_fz = 0.0;
+
+// логарифмическая нормализация
+float logGain(float x, float gain) {
+    return pow(x + 1e-6, gain);
+}
+
+// простая hash-функция
+float hash(float x) {
+    return fract(sin(x * 123.456) * 789.123);
+}
+// =========================
+// 2D FRACTAL (из другого пакета)
+// =========================
+//DE-фрактал подставляется сюда
+//FRACTAL_CO32
+//=========== end 2D =======
+
+
+// =========================
+// 3D FRACTAL (DE + raymarch)
+// =========================
+float fractalDE(vec3 p) {
+    vec3 z = p;
+
+    float dr = 1.0;
+    float r  = 0.0;
+
+    vec3 c = vec3( 
+        u_cx + g_low * 0.3 + 0.3 * sin(u_time * 0.5), 
+        u_cy + g_mid * 0.3 + 0.3 * cos(u_time * 0.4), 
+        0.0 + g_high * 0.3 
+    );
+    
+    float cx = c.x;
+    float cy = c.y;
+    float cz = c.z;
+
+    const int MAX_ITER = 20;
+    int n = MAX_ITER;
+    bool escaped = false;
+    for (int i = 0; i < MAX_ITER; i++) {
+
+        float x = z.x;
+        float y = z.y;
+        float z3 = z.z;
+
+        float z2 = z3*z3;
+
+        r = sqrt(x*x + y*y + z2);
+        if (r > 4.0) break;
+
+        dr = 2.0 * r * dr + 1.0;
+
+        float yz = y * z3;
+        float zx = z3 * x;
+        
+        float nx = x*x - y*y - z2 + c.x + g_low * 0.15; 
+        float ny = 2.0 * x * y + c.y + g_mid * 0.15; 
+        float nz = 2.0 * (yz + zx) + c.z + g_high * 0.10;
+        
+        g_fx = nx*0.60;
+        g_fy = ny*0.88;
+        g_fz = nz*0.22;
+
+        z = vec3(g_fx, g_fy, g_fz);
+
+        float x2 = x*x;
+        float y2 = y*y;
+        if (x2 + y2 > 4.0) { 
+            escaped = true;
+        }
+        float xy = x*y;
+        x = x2 - y2 + cx + g_high * 0.15;
+        y = 2.0*xy + cy + g_mid * 0.15;
+
+        float k1 = clamp(0.5 + 0.5*sin(u_time), 0.0, 1.0);
+        z = mix(vec3(g_fx, g_fy, g_fz), z, k1);
+        r = sqrt(x*x + y*y + z2);
+        dr = 2.0 * r * dr + 1.0;
+    }
+
+    return 0.5 * log(r) * r / dr;
+}
+//============== end 3D fractal =================
+
+float map(vec3 p){
+    return fractalDE(p);
+}
+vec3 getNormal(vec3 p){
+    float e = 0.002;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * map(p + k.xyy * e) +
+        k.yyx * map(p + k.yyx * e) +
+        k.yxy * map(p + k.yxy * e) +
+        k.xxx * map(p + k.xxx * e)
+    );
+}
+
+// =========================
+// Ray marching
+// =========================
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 50.0;
+
+    for (int i = 0; i < 64; i++) {
+        vec3 p = ro + rd * t;
+        float d = fractalDE(p);
+        if (d < 0.001) {
+            pHit = p;
+            return t;
+        }
+        if (t > tMax) break;
+        t += d;
+    }
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+
+// =========================
+// Камера
+// =========================
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    vec3 rd = normalize(f * z + r * uv.x + u * uv.y);
+    return rd;
+}
+
+vec3 cameraPos(float t){
+    float r = 8.0;
+    float a = t * 0.2;
+    float h = 2.5 * sin(t * 0.15);
+    return vec3(r * cos(a), h, r * sin(a));
+}
+
+const int   MAX_STEPS = 150;
+const float MAX_DIST  = 40.0;
+const float SURF_DIST = 0.01;
+
+// =========================
+// MAIN
+// =========================
+void main(){
+
+    // логарифмическая нормализация аудио 
+    g_low = logGain(u_low,  u_lowGain); 
+    g_mid = logGain(u_mid,  u_midGain); 
+    g_high= logGain(u_high, u_highGain);    
+
+    bass    = g_low;
+    midBand = g_mid;
+    treble  = g_high;
+    timeVal = u_time;
+
+    // нормализованные координаты
+    vec2 uv = (gl_FragCoord.xy / u_res) * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    float camRadius = max(1.0, u_zoom);
+    float angle = u_time * 0.25;
+
+    vec3 ro = vec3(
+        camRadius * cos(angle),
+        camRadius * 0.3,
+        camRadius * sin(angle)
+    );
+    vec3 target = vec3(0.0, 0.0, 0.0);
+
+    vec3 rd = getRayDir(uv, ro, target, 45.0);
+
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+
+    vec3 col = vec3(0.0);
+
+    if (t > 0.0) {
+        vec3 n = getNormal(pHit);
+
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+        float smooth = clamp(t / 20.0, 0.0, 1.0);
+        smooth = pow(smooth, 0.7);
+        smooth = smooth * (1.0 + g_high * 0.3);
+
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+
+        vec3 matCol = vec3( 
+            rnd  + 0.5 * sin(smooth + g_low  * 5.0), 
+            rnd1 + 0.5 * sin(smooth + g_mid  * 5.0 + 2.0), 
+            rnd2 + 0.5 * sin(smooth + g_high * 5.0 + 4.0) 
+        );
+
+        col = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+
+        if (u_debugMode == 1) {
+            col = vec3(diff);
+        }
+        if (u_debugMode == 2) {
+            col = 0.5 + 0.5 * n;
+        }
+
+    } else {
+        col = render2D(uv * 1.5);
+    }
+
+    col = pow(col, vec3(0.4545));
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`;
+// Шаблон fs с маячком FRACTAL_PLACEHOLDER
+const fsTemplate = `
+precision mediump float;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+
+// логарифмическая чувствительность (степени) 
+uniform float u_lowGain; 
+uniform float u_midGain; 
+uniform float u_highGain;
+
+float bass = 0.0;
+float mid = 0.0;
+float treble = 0.0;
+
+float time = 0.0;
+
+const int   MAX_STEPS = 150;
+const float MAX_DIST  = 40.0;
+const float SURF_DIST = 0.01;
+
+// === фрактальная формула ===
+//FRACTAL_PLACEHOLDER
+
+float map(vec3 p){
+    return fractalDE(p);
+}
+
+vec3 getNormal(vec3 p){
+    float e = 0.002;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * map(p + k.xyy * e) +
+        k.yyx * map(p + k.yyx * e) +
+        k.yxy * map(p + k.yxy * e) +
+        k.xxx * map(p + k.xxx * e)
+    );
+}
+
+vec3 cameraPos(float t){
+    float r = 8.0;
+    float a = t * 0.2;
+    float h = 2.5 * sin(t * 0.15);
+    return vec3(r * cos(a), h, r * sin(a));
+}
+
+// логарифмическая чувствительность 
+float logGain(float x, float gain) { 
+return pow(x + 1e-6, gain); 
+}
+
+void main(){
+    vec2 uv = (gl_FragCoord.xy / u_res) * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    float t = u_time * 0.5;
+    vec3 ro = cameraPos(t);
+    vec3 target = vec3(0.0);
+
+    vec3 fwd = normalize(target - ro);
+    vec3 right = normalize(vec3(fwd.z, 0.0, -fwd.x));
+    vec3 up = normalize(cross(right, fwd));
+
+    vec3 rd = normalize(fwd + uv.x * right + uv.y * up);
+	
+	// лог-нормализованные аудио-полосы 
+	float low = logGain(u_low, u_lowGain); 
+	float mid = logGain(u_mid, u_midGain); 
+	float high = logGain(u_high, u_highGain);
+
+    float dist = 0.0;
+    float totalDist = 0.0;
+    vec3 col = vec3(0.0);
+    bool hit = false;
+
+    for(int i=0; i<MAX_STEPS; i++){
+        vec3 p = ro + rd * dist;
+        float d = map(p);
+        if(d < SURF_DIST){
+            hit = true;
+            vec3 n = getNormal(p);
+
+            vec3 lightDir = normalize(vec3(0.6, 0.8, -0.4));
+            float diff = max(dot(n, lightDir), 0.0);
+
+// цвет, зависящий от лог-нормализованных полос 
+vec3 baseCol = vec3( 0.2 + low * 0.8, 0.3 + mid * 0.7, 0.7 + high * 0.6 );
+
+/*            vec3 baseCol = vec3(
+                0.2 + u_low * 0.8,
+                0.3 + u_mid * 0.7,
+                0.7 + u_high * 0.6
+            );*/
+
+            float detail = clamp(1.0 - length(p)*0.05, 0.0, 1.0);
+            float glow = pow(max(dot(n, -rd), 0.0), 2.0);
+
+            col = baseCol * (0.3 + 0.7*diff) * (0.5 + 0.5*detail) + glow * vec3(0.8,0.9,1.0);
+            break;
+        }
+        if(dist > MAX_DIST) break;
+        dist += d;
+        totalDist = dist;
+    }
+
+    if(!hit){
+        float bg = 0.15 + 0.15 * sin(u_time*0.2 + uv.y*3.0);
+        col = vec3(0.02, 0.03, 0.05) + bg * vec3(0.1,0.15,0.2);
+    }
+
+    float fog = exp(-0.02 * totalDist * totalDist);
+    col *= fog;
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`;
+const fsTemplate2 = `
+precision mediump float;
+
+varying vec2 v_uv;
+
+uniform vec2  u_res;
+uniform float u_time;
+
+// три полосы частот микрофона
+uniform float u_low;   // 60–300 Hz
+uniform float u_mid;   // 300–5000 Hz
+uniform float u_high;  // 5–12 kHz
+
+// чувствительность (логарифмическая степень) 
+uniform float u_lowGain; 
+uniform float u_midGain; 
+uniform float u_highGain;
+
+uniform float u_blur;  // (пока не используем, но uniform есть)
+
+// базовые параметры фрактала (cx, cy, zoom) — используем как смещение и масштаб
+uniform float u_cx;
+uniform float u_cy;
+uniform float u_zoom;
+
+uniform int   u_debugMode;
+
+// глобальные логарифмически нормализованные значения 
+float g_low; 
+float g_mid; 
+float g_high;
+
+// параметры цикла
+//uniform int   u_cycleMode;
+//uniform float u_cycleTime;
+//uniform float u_cycleDuration;
+
+// --- выходные каналы фрактала ---
+float g_fx = 0.0;
+float g_fy = 0.0;
+float g_fz = 0.0;
+
+
+float hash(float x) {
+    return fract(sin(x * 123.456) * 789.123);
+}
+
+// логарифмическая чувствительность 
+float logGain(float x, float gain) { 
+return pow(x + 1e-6, gain); 
+}
+
+// =========================
+// 3D фрактал: DE-функция
+// =========================
+
+// 3D-расширение твоей 2D-формулы внутри DE
+float fractalDE(vec3 p) {
+    vec3 z = p;
+
+    float dr = 1.0;
+    float r  = 0.0;
+
+    // cx, cy, cz из uniform'ов + аудио/время
+    /*vec3 c = vec3(
+        u_cx + u_low  * 0.3 + 0.3 * sin(u_time * 0.5),
+        u_cy + u_mid  * 0.3 + 0.3 * cos(u_time * 0.4),
+                 0.0 + u_high * 0.3
+    );*/
+	
+	vec3 c = vec3( 
+	u_cx + g_low * 0.3 + 0.3 * sin(u_time * 0.5), 
+	u_cy + g_mid * 0.3 + 0.3 * cos(u_time * 0.4), 
+	0.0 + g_high * 0.3 
+	);
+	
+	float cx = c.x;
+	float cy = c.y;
+	float cz = c.z;
+
+    const int MAX_ITER = 20;
+	int n = MAX_ITER;
+	bool escaped = false;
+    for (int i = 0; i < MAX_ITER; i++) {
+
+        float x = z.x;
+        float y = z.y;
+        float z3 = z.z;
+
+//        float x2 = x*x;
+//        float y2 = y*y;
+        float z2 = z3*z3;
+
+        r = sqrt(x*x + y*y + z2);
+        if (r > 4.0) break;
+
+        // производная для DE
+        dr = 2.0 * r * dr + 1.0;
+
+//        float xy = x * y;
+        float yz = y * z3;
+        float zx = z3 * x;
+
+/*        float nx = x*x - y*y - z2 + c.x + u_low * 0.15;
+        float ny = 2.0 * x * y        + c.y + u_mid * 0.15;
+        float nz = 2.0 * (yz + zx) + c.z + u_high * 0.10;*/
+		
+		float nx = x*x - y*y - z2 + c.x + g_low * 0.15; 
+		float ny = 2.0 * x * y + c.y + g_mid * 0.15; 
+		float nz = 2.0 * (yz + zx) + c.z + g_high * 0.10;
+		
+		g_fx = nx*0.60;
+		g_fy = ny*0.88;
+		g_fz = nz*0.22;
+
+        z = vec3(g_fx, g_fy, g_fz);
+
+
+              // === FRACTAL FORMULA START ===
+
+//FRACTAL_CODE
+
+              // === FRACTAL FORMULA END ===
+
+		float k1 = clamp(0.5 + 0.5*sin(u_time), 0.0, 1.0);
+        z = mix(vec3(g_fx, g_fy, g_fz),z,k1);
+        r = sqrt(x*x + y*y + z2);
+
+//        if (r > 4.0) break;
+        dr = 2.0 * r * dr + 1.0;
+    }
+
+    // Mandelbulb-подобный distance estimator
+    return 0.5 * log(r) * r / dr;
+}
+
+// =========================
+// Нормаль по DE
+// =========================
+vec3 calcNormal(vec3 p) {
+    float e = 0.001;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * fractalDE(p + k.xyy * e) +
+        k.yyx * fractalDE(p + k.yyx * e) +
+        k.yxy * fractalDE(p + k.yxy * e) +
+        k.xxx * fractalDE(p + k.xxx * e)
+    );
+}
+
+// =========================
+// Ray marching
+// =========================
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 50.0;
+
+    for (int i = 0; i < 64; i++) {
+        vec3 p = ro + rd * t;
+        float d = fractalDE(p);
+        if (d < 0.001) {
+            pHit = p;
+            return t;
+        }
+        if (t > tMax) break;
+        t += d;
+    }
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+
+// =========================
+// Камера
+// =========================
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    vec3 rd = normalize(f * z + r * uv.x + u * uv.y);
+    return rd;
+}
+
+// =========================
+// main()
+// =========================
+void main() {
+
+// логарифмическая нормализация аудио 
+g_low = logGain(u_low, u_lowGain); 
+g_mid = logGain(u_mid, u_midGain); 
+g_high = logGain(u_high, u_highGain);    
+
+// uv из v_uv (как у тебя в 2D)
+    vec2 uv = v_uv * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    // камера: радиус привяжем к u_zoom
+    float camRadius = max(1.0, u_zoom);
+    float angle = u_time * 0.25;
+
+    vec3 ro = vec3(
+        camRadius * cos(angle),
+        camRadius * 0.3,
+        camRadius * sin(angle)
+    );
+    vec3 target = vec3(0.0, 0.0, 0.0);
+
+    vec3 rd = getRayDir(uv, ro, target, 45.0);
+
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+
+    vec3 col = vec3(0.0);
+
+    if (t > 0.0) {
+        vec3 n = calcNormal(pHit);
+
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+        float smooth = clamp(t / 20.0, 0.0, 1.0);
+        smooth = pow(smooth, 0.7);
+        smooth = smooth * (1.0 + u_high * 0.3);
+
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+
+     /*   vec3 matCol = vec3(
+            rnd  + 0.5 * sin(1.0 * smooth + u_low  * 5.0),
+            rnd1 + 0.5 * sin(1.0 * smooth + u_mid  * 5.0 + 2.0),
+            rnd2 + 0.5 * sin(1.0 * smooth + u_high * 5.0 + 4.0)
+        );*/
+
+			vec3 matCol = vec3( 
+				rnd + 0.5 * sin(smooth + g_low * 5.0), 
+				rnd1 + 0.5 * sin(smooth + g_mid * 5.0 + 2.0), 
+				rnd2 + 0.5 * sin(smooth + g_high * 5.0 + 4.0) 
+				);
+
+        col = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+
+        if (u_debugMode == 1) {
+            col = vec3(diff);
+        }
+        if (u_debugMode == 2) {
+            col = 0.5 + 0.5 * n;
+        }
+
+    } else {
+//        float g = 0.2 + 0.3 * uv.y;
+//        col = vec3(0.02, 0.03, 0.05) + vec3(g * 0.3);
+		col = vec3(0.0);
+    }
+
+    col = pow(col, vec3(0.4545));
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`;
+const fsTemplateMIX2 = `
+precision mediump float;
+
+uniform vec2  u_res;
+uniform float u_time;
+
+// аудио-полосы
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+
+// логарифмическая чувствительность
+uniform float u_lowGain;
+uniform float u_midGain;
+uniform float u_highGain;
+
+uniform float u_blur;  // (пока не используем, но uniform есть)
+
+// базовые параметры фрактала (cx, cy, zoom)
+uniform float u_cx;
+uniform float u_cy;
+uniform float u_zoom;
+
+uniform int   u_debugMode;
+
+// глобальные логарифмически нормализованные значения 
+float g_low; 
+float g_mid; 
+float g_high;
+
+// 2D глобальные значения
+float bass    = 0.0;
+float midBand = 0.0;
+float treble  = 0.0;
+float timeVal = 0.0;
+
+// --- выходные каналы фрактала ---
+float g_fx = 0.0;
+float g_fy = 0.0;
+float g_fz = 0.0;
+
+// логарифмическая нормализация
+float logGain(float x, float gain) {
+    return pow(x + 1e-6, gain);
+}
+
+// простая hash-функция
+float hash(float x) {
+    return fract(sin(x * 123.456) * 789.123);
+}
+
+// =========================
+// 2D FRACTAL (из другого пакета)
+// =========================
+//FRACTAL_CO32
+//=========== end 2D =======
+
+// =========================
+// 3D FRACTAL (DE + raymarch)
+// =========================
+//FRACTAL_PLACEHOLDER
+//============== end 3D fractal =================
+
+float map(vec3 p){
+    return fractalDE(p);
+}
+
+vec3 getNormal(vec3 p){
+    float e = 0.002;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * map(p + k.xyy * e) +
+        k.yyx * map(p + k.yyx * e) +
+        k.yxy * map(p + k.yxy * e) +
+        k.xxx * map(p + k.xxx * e)
+    );
+}
+
+// =========================
+// Ray marching
+// =========================
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 50.0;
+
+    for (int i = 0; i < 64; i++) {
+        vec3 p = ro + rd * t;
+        float d = fractalDE(p);
+        if (d < 0.001) {
+            pHit = p;
+            return t;
+        }
+        if (t > tMax) break;
+        t += d;
+    }
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+
+// =========================
+// Камера
+// =========================
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    vec3 rd = normalize(f * z + r * uv.x + u * uv.y);
+    return rd;
+}
+
+vec3 cameraPos(float t){
+    float r = 8.0;
+    float a = t * 0.2;
+    float h = 2.5 * sin(t * 0.15);
+    return vec3(r * cos(a), h, r * sin(a));
+}
+
+const int   MAX_STEPS = 150;
+const float MAX_DIST  = 40.0;
+const float SURF_DIST = 0.01;
+
+// =========================
+// MAIN
+// =========================
+void main(){
+
+    // логарифмическая нормализация аудио 
+    g_low = logGain(u_low,  u_lowGain); 
+    g_mid = logGain(u_mid,  u_midGain); 
+    g_high= logGain(u_high, u_highGain);    
+
+    bass    = g_low;
+    midBand = g_mid;
+    treble  = g_high;
+    timeVal = u_time;
+
+    // нормализованные координаты
+    vec2 uv = (gl_FragCoord.xy / u_res) * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    float camRadius = max(1.0, u_zoom);
+    float angle = u_time * 0.25;
+
+    vec3 ro = vec3(
+        camRadius * cos(angle),
+        camRadius * 0.3,
+        camRadius * sin(angle)
+    );
+    vec3 target = vec3(0.0, 0.0, 0.0);
+
+    vec3 rd = getRayDir(uv, ro, target, 45.0);
+
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+
+    vec3 col = vec3(0.0);
+
+    if (t > 0.0) {
+        vec3 n = getNormal(pHit);
+
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+        float smooth = clamp(t / 20.0, 0.0, 1.0);
+        smooth = pow(smooth, 0.7);
+        smooth = smooth * (1.0 + g_high * 0.3);
+
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+
+        vec3 matCol = vec3( 
+            rnd  + 0.5 * sin(smooth + g_low  * 5.0), 
+            rnd1 + 0.5 * sin(smooth + g_mid  * 5.0 + 2.0), 
+            rnd2 + 0.5 * sin(smooth + g_high * 5.0 + 4.0) 
+        );
+
+        col = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+
+        if (u_debugMode == 1) {
+            col = vec3(diff);
+        }
+        if (u_debugMode == 2) {
+            col = 0.5 + 0.5 * n;
+        }
+
+    } else {
+        col = render2D(uv * 1.5);
+    }
+
+    col = pow(col, vec3(0.4545));
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`;
+//========= CONTROLLER COMPILAT ==============
+function displayLog(msg){ document.getElementById("log").innerText=msg; }
+//============================================
+// ===============================
+// Компиляция шейдеров
+// ===============================
+function shader(type,src,nmb){
+    const s = gl.createShader(type);
+    gl.shaderSource(s,src);
+    gl.compileShader(s);
+  const linesCount = src.split('\n').length;
+  tecstr = src.split('\n');
+  for(let i=0;i<linesCount;i++){srcinf += (i+1).toString() + " " + tecstr[i] + "\n"};
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+//        console.error(gl.getShaderInfoLog(s));
+    displayLog("Shader " + nmb.toString() + " compile error:\n" + gl.getShaderInfoLog(s) + "\n=== FS SOURCE BEGIN ===\n" + srcinf + "\n=== FS SOURCE END ===");
+	iError = true;
+	return 0;
+    }
+    displayLog("Shader " + nmb.toString() + " compile Ok!:\n" + gl.getShaderInfoLog(s) + "\n=== FS SOURCE BEGIN ===\n" + srcinf + "\n=== FS SOURCE END ===");
+srcinf = "";//Очищаем log-поле с выводом glsl-program (контролька)
+    return s;
+}
+
+function buildProgram(fsSource, nmb){
+    const vs = shader(gl.VERTEX_SHADER, vsSrc, nmb);
+    const fs = shader(gl.FRAGMENT_SHADER, fsSource, nmb);
+    const p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)){
+        console.error(gl.getProgramInfoLog(p));
+    }
+    gl.useProgram(p);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,-1, 1,-1, -1,1,
+        -1,1, 1,-1, 1,1
+    ]), gl.STATIC_DRAW);
+    const pos = gl.getAttribLocation(p,"a_pos");
+    gl.enableVertexAttribArray(pos);
+    gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+
+    u_time = gl.getUniformLocation(p,"u_time");
+    u_res  = gl.getUniformLocation(p,"u_res");
+    u_low  = gl.getUniformLocation(p,"u_low");
+    u_mid  = gl.getUniformLocation(p,"u_mid");
+    u_high = gl.getUniformLocation(p,"u_high");
+	u_cxLoc = gl.getUniformLocation(p,"u_cx");
+	u_cyLoc = gl.getUniformLocation(p,"u_cy");
+	u_zoomLoc = gl.getUniformLocation(p,"u_zoom");
+	u_debugModeLoc  = gl.getUniformLocation(p, "u_debugMode");
+	u_lowGainLoc = gl.getUniformLocation(p, "u_lowGain"); 
+	u_midGainLoc = gl.getUniformLocation(p, "u_midGain"); 
+	u_highGainLoc = gl.getUniformLocation(p, "u_highGain");
+
+    prog = p;
+}
+
+async function loadFractals(){
+    const res = await fetch('glsl/fractals1.glsl');
+    const text = await res.text();
+    lines = text.split('\n');
+
+	
+    for(const line of lines){
+        const mStart = line.match(/^\s*\/\/\s*FRACTAL\s+(.+)\s*$/);
+        const mEnd   = line.match(/^\s*\/\/\s*END\s*$/);
+        const mStart2 = line.match(/^\s*\/\/\s*FRACT2\s+(.+)\s*$/);
+        const mEnd2   = line.match(/^\s*\/\/\s*EN2\s*$/);
+        const mStart3 = line.match(/^\s*\/\/\s*FRACT32\s+(.+)\s*$/);
+        const mEnd3   = line.match(/^\s*\/\/\s*E32\s*$/);
+        const mStart4 = line.match(/^\s*\/\/\s*FRACT132\s+(.+)\s*$/);
+        const mEnd4   = line.match(/^\s*\/\/\s*E132\s*$/);
+        const mStart5 = line.match(/^\s*\/\/\s*FRACT432\s+(.+)\s*$/);
+        const mEnd5   = line.match(/^\s*\/\/\s*E432\s*$/);
+        if(mStart){current = { name: mStart[1].trim(), code: '', mod: '0' };continue;}
+		if(mStart2){current2 = { name: mStart2[1].trim(), code: '', mod: '2' };continue;}
+		if(mStart3){current3 = { name: mStart3[1].trim(), code: '', mod: '3' };continue;}
+		if(mStart4){current4 = { name: mStart4[1].trim(), code: '', mod: '4' };continue;}
+		if(mStart5){current5 = { name: mStart5[1].trim(), code: '', mod: '5' };continue;}
+        if(mEnd){if(current) fractalBlocks.push(current);current = null;continue;}
+        if(mEnd2){if(current2) fractalBlocks.push(current2);current2 = null;continue;}
+        if(mEnd3){if(current3) fractalBlocks.push(current3);current3 = null;continue;}
+        if(mEnd4){if(current4) fractalBlocks.push(current4);current4 = null;continue;}
+        if(mEnd5){if(current5) fractalBlocks.push(current5);current5 = null;continue;}
+        if(current){current.code += line + '\n';}
+        if(current2){current2.code += line + '\n';}
+        if(current3){current3.code += line + '\n';}
+        if(current4){current4.code += line + '\n';}
+        if(current5){current5.code += line + '\n';}
+    }
+
+}
+
+// ===============================
+// Аудио
+// ===============================
+let audioCtx, analyser, data;
+async function startAudio(){
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 1024;
+    src.connect(analyser);
+    data = new Uint8Array(analyser.frequencyBinCount);
+}
+
+// ===============================
+// Запись
+// ===============================
+let recorder, chunks=[], recording=false;
+const stream = canvas.captureStream(60);
+
+function startRec(){
+    chunks=[];
+    recorder = new MediaRecorder(stream,{mimeType:"video/webm"});
+    recorder.ondataavailable=e=>chunks.push(e.data);
+    recorder.onstop=()=>{
+        const blob=new Blob(chunks,{type:"video/webm"});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        a.href=url;
+        a.download="audio_fractals.webm";
+        a.click();
+    };
+    recorder.start();
+    recording=true;
+}
+function stopRec(){
+    if(recorder && recording){
+        recorder.stop();
+        recording=false;
+    }
+}
+
+let ii = 0;
+let tt = 0;
+async function selectFractalByTime(t){
+    if(fractalBlocks.length === 0) return;
+    const total = parseFloat(document.getElementById('trackLen').value || '240');
+    const count = Math.min(fractalBlocks.length, 63); 
+    fractalDuration = total / count;
+    const idx = Math.floor(t / fractalDuration) % count;
+    if(idx !== currentFractalIndex){
+        currentFractalIndex = idx;
+	   if(currentFractalIndex == 1){
+	    for(const line of lines){
+        const mStart = line.match(/^\s*\/\/\s*FRACTAL\s+(.+)\s*$/);
+        const mEnd   = line.match(/^\s*\/\/\s*END\s*$/);
+        if(mStart){currentMIX[ii] = { name: mStart[1].trim(), code: '', mod: '0' };continue;}
+        if(mEnd){if(currentMIX[ii]) fractalBlocks.push(currentMIX[ii]);ii++;continue;} //currentMIX[ii] = null;
+        if(currentMIX[ii]){currentMIX[ii].code += line + '\n';}
+    }
+	    for(const line of lines){
+        const mStart3 = line.match(/^\s*\/\/\s*FRACT32\s+(.+)\s*$/);
+        const mEnd3   = line.match(/^\s*\/\/\s*E32\s*$/);
+		if(mStart3){currentMIX3[tt] = { name: mStart3[1].trim(), code: '', mod: '3' };continue;}
+        if(mEnd3){if(currentMIX3[tt]) fractalBlocks.push(currentMIX3[tt]);tt++;continue;}//currentMIX3[tt] = null;
+        if(currentMIX3[tt]){currentMIX3[tt].code += line + '\n';}
+		 }
+	for(let i = 0; i < ii; i++){
+		for(let t = 0; t < tt; t++){
+		let fsSource6 = fsTemplateMIX2.replace('FRACTAL_CO32', currentMIX3[t].code).replace('FRACTAL_PLACEHOLDER', currentMIX[i].code);
+	   buildProgram(fsSource6, "63-" + i.toString() + "-" + t.toString());
+	   await wait(10000); // задержка 500 мс
+	   }
+	   }
+	   }
+        const block = fractalBlocks[currentFractalIndex];
+       if(block.mod == '0'){
+        const fsSource = fsTemplate.replace('FRACTAL_PLACEHOLDER', block.code);
+		currentFractDE += 1;
+	   buildProgram(fsSource, currentFractalIndex); 
+	   }
+	   if(block.mod == '2'){
+		const fsSource2 = fsTemplate2.replace('FRACTAL_CODE', block.code);
+	   buildProgram(fsSource2, currentFractalIndex);
+	   }
+	   if(block.mod == '3'){
+		const fsSource3 = fsTemplate32.replace('FRACTAL_CO32', block.code);
+		currentFract2D += 1;
+	   buildProgram(fsSource3, currentFractalIndex);
+	   }
+	   if(block.mod == '4'){
+		const fsSource4 = fsTemplate132.replace('FRACTAL_CO32', block.code);
+	   buildProgram(fsSource4, currentFractalIndex);
+	   }
+	   if(block.mod == '5'){
+		const fsSource5 = fsTemplate432.replace('FRACTAL_CO32', block.code);
+	   buildProgram(fsSource5, currentFractalIndex);
+	   }
+        console.log('Switched fractal to:', block.name);
+    }
+}
+
+// ===============================
+// Рендер
+// ===============================
+function frame(){
+    if(!running || iError) return;
+
+    const t=(performance.now()-t0)/1000;
+	
+		function logNorm(x, floor = 1e-6, power = 0.6) {
+		return Math.pow(Math.log(x + floor) - Math.log(floor), power);
+		}
+
+    let low=0,mid=0,high=0;
+    if(analyser && data){
+        analyser.getByteFrequencyData(data);
+        const n=data.length;
+        let lc=0, mc=0, hc=0;
+        for(let i=0;i<n;i++){
+            const v=data[i]/255;
+            const f=i/n;
+            if(f<0.15){ low+=v; lc++; }
+            else if(f<0.45){ mid+=v; mc++; }
+            else { high+=v; hc++; }
+        }
+        if(lc>0) low/=lc;
+        if(mc>0) mid/=mc;
+        if(hc>0) high/=hc;
+    }
+
+
+      const nyquist = audioCtx.sampleRate / 2;
+      const binCount = data.length;
+
+      function bandRMS(fmin, fmax) {
+        const idxMin = Math.max(0, Math.floor(fmin / nyquist * binCount));
+        const idxMax = Math.min(binCount - 1, Math.floor(fmax / nyquist * binCount));
+        let sum = 0;
+        let count = 0;
+        for (let i = idxMin; i <= idxMax; i++) {
+          const v = data[i] / 255; // нормируем 0..1
+          sum += v * v;
+          count++;
+        }
+        if (count === 0) return 0;
+        return Math.sqrt(sum / count);
+      }
+
+      // три полосы: 60–300 Hz; 300–5000 Hz; 5–12 kHz
+      const lowRaw  = bandRMS(60, 300);
+      const midRaw  = bandRMS(300, 5000);
+      const highRaw = bandRMS(5000, 12000);
+
+      // лёгкое сглаживание
+      const smooth = 0.90;
+      lowBand  = lowBand  * smooth + lowRaw  * (1.0 - smooth);
+      midBand  = midBand  * smooth + midRaw  * (1.0 - smooth);
+      highBand = highBand * smooth + highRaw * (1.0 - smooth);
+	  
+		lowNorm  = logNorm(lowBand);
+		midNorm  = logNorm(midBand);
+		highNorm = logNorm(highBand);
+  
+		  let lowS=0, midS=0, highS=0;
+		
+		lowS  = lowS  * smooth + lowNorm  * (1-smooth);
+		midS  = midS  * smooth + midNorm  * (1-smooth);
+		highS = highS * smooth + highNorm * (1-smooth);
+		
+		
+  ctx.clearRect(0, 0, barsCanvas.width, barsCanvas.height);
+
+  const w = 20;
+  const gap = 10;
+  const h = barsCanvas.height;
+
+  ctx.fillStyle = "#44ff88";
+  ctx.fillRect(10, h - lowS  * h, w, lowS  * h);
+
+  ctx.fillStyle = "#ffaa44";
+  ctx.fillRect(10 + w + gap, h - midS  * h, w, midS  * h);
+
+  ctx.fillStyle = "#ff4488";
+  ctx.fillRect(10 + 2*(w + gap), h - highS * h, w, highS * h);
+		
+    gl.uniform1f(u_time,t);
+    gl.uniform2f(u_res,canvas.width,canvas.height);
+    gl.uniform1f(u_cxLoc,   parseFloat(cxInput.value)   || -0.7);
+    gl.uniform1f(u_cyLoc,   parseFloat(cyInput.value)   || 0.27015);
+    gl.uniform1f(u_zoomLoc, parseFloat(zoomInput.value) || 1.8);
+    const dbgMode = parseInt(debugModeSelect.value, 10) || 0;
+    gl.uniform1i(u_debugModeLoc, dbgMode);
+	gl.uniform1f(u_low, lowNorm); 
+	gl.uniform1f(u_mid, midNorm); 
+	gl.uniform1f(u_high, highNorm); 
+	gl.uniform1f(u_lowGainLoc, 0.25); //0.8
+	gl.uniform1f(u_midGainLoc, 0.8); //1.2
+	gl.uniform1f(u_highGainLoc, 2.0);//2.0
+    gl.drawArrays(gl.TRIANGLES,0,6);
+	selectFractalByTime(t);
+
+    requestAnimationFrame(frame);
+}
+
+// ===============================
+// UI
+// ===============================
+const startBtn = document.getElementById("startBtn");
+const stopBtn  = document.getElementById("stopBtn");
+const recBtn   = document.getElementById("recBtn");
+
+startBtn.onclick = async ()=>{
+    if(!fractalBlocks.length){await loadFractals();}
+    if(!prog){
+        const block = fractalBlocks[0];
+       if(block.mod == '0'){
+        const fsSource = fsTemplate.replace('FRACTAL_PLACEHOLDER', block.code);
+	   buildProgram(fsSource, 0); 
+	   }
+	   if(block.mod == '2'){
+		const fsSource2 = fsTemplate2.replace('FRACTAL_CODE', block.code);
+	   buildProgram(fsSource2, 0);
+	   }
+	   if(block.mod == '3'){
+		const fsSource3 = fsTemplate32.replace('FRACTAL_CO32', block.code);
+	   buildProgram(fsSource3, 0);
+	   }
+	   if(block.mod == '4'){
+		const fsSource4 = fsTemplate132.replace('FRACTAL_CO32', block.code);
+	   buildProgram(fsSource4, 0);
+	   }
+	   if(block.mod == '5'){
+		const fsSource5 = fsTemplate432.replace('FRACTAL_CO32', block.code);
+	   buildProgram(fsSource5, 0);
+	   }
+    }
+    if(!audioCtx){
+        try{ await startAudio(); }catch(e){ console.error(e); }
+    }
+    running=true;
+    t0=performance.now();
+    frame();
+};
+
+stopBtn.onclick = ()=>{ running=false; };
+
+recBtn.onclick = ()=>{ if(!recording) startRec(); else stopRec(); };
+
+
+</script>
+</body>
+</html>
