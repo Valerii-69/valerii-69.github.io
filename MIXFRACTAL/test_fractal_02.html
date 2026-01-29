@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>WebGL Fractal Test</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+    }
+    #glcanvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+    }
+	#bars {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+   border:1px solid #555;
+  background: rgba(0,0,0,0.4);
+  z-index: 10;
+}
+    #mic {
+      padding: 8px;
+      background: #111;
+      font-size: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+		position: absolute; 
+		top: 0; 
+		right: 0;
+      z-index: 3;
+    }
+</style>
+</head>
+<body>
+
+<!-- UI панель -->
+<div id="ui" style="
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 10px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-family: sans-serif;
+    z-index: 10;
+">
+    <label>Zoom:
+        <input id="zoomSlider" type="range" min="0.05" max="10" step="0.0001" value="2">
+    </label><input id="zoomSld" type="number" value="2" step="0.0001"/>
+
+    <label style="display:block; margin-top:10px;">
+        Загрузить GLSL:
+        <input id="glslFile" type="file" accept=".glsl,.frag,.txt">
+    </label>
+	<div id="mic">
+     <button id="micStartBtn">Старт микр.</button>
+    <button id="micStopBtn">Стоп микр.</button>
+	</div>
+<div style="margin-top:10px;">
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+	<button id="recStart">Record</button>
+	<button id="recStop">Save</button>
+	<button id="prevShader">◀ Предыдущий</button>
+<button id="nextShader">Следующий ▶</button>
+<button id="savePRM">Save PRM</button>
+
+</div>
+<div style="margin-top:10px;">
+    <label>Debug:
+        <select id="debugSelect">
+            <option value="0">Off</option>
+            <option value="1">Normals</option>
+            <option value="2">Distance</option>
+            <option value="3">Ray steps</option>
+        </select>
+    </label><input type="checkbox" id="setFON" name="Set2D" />
+	    <label>nprm: <input id="unprm" type="number" value="1.0" step="0.01"></label>
+	    <label>gamma: <input id="gamma" type="number" value="0.4545" step="0.0001"></label>
+
+</div>
+<label>CX: <input id="cxSlider" type="range" min="-2" max="2" step="0.01" value="0"></label>
+<label>CY: <input id="cySlider" type="range" min="-2" max="2" step="0.01" value="0"></label>
+  <label id="mix23">Mix: </label>
+    <input id="mixSlider" type="range" min="0.5" max="0.8" step="0.0001" value="0.5">
+	<input id="mixSld" type="number" value="0.7" step="0.0001"><input type="checkbox" id="stopMIX" name="Stop Mix" /><br>
+<label id="miclw">mic_low: </label><input id="miclow" type="range" min="0" max="20" step="1" value="2">
+<label id="micmd">mic_mid: </label><input id="micmid" type="range" min="0" max="80" step="1" value="20">
+<label id="michh">mic_high: </label><input id="michigh" type="range" min="0" max="160" step="1" value="80">
+<textarea id="editor" style="
+    position:fixed; right:10px; top:10px;
+    width:400px; height:500px;
+    background:#111; color:#0f0;
+    font-family:monospace; font-size:12px;
+    overflow: scroll;
+	white-space: nowrap;
+    z-index:20;
+"></textarea>
+
+<button id="applyShader" style="position:fixed; right:10px; top:520px;">Apply</button>
+
+</div>
+
+<!-- Панель ошибок -->
+<div id="errorPanel" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 30%;
+    overflow-y: scroll;
+    background: rgba(0,0,0,0.85);
+    color: #ff8080;
+    font-family: monospace;
+    font-size: 13px;
+    padding: 10px;
+    white-space: pre-wrap;
+    display: none;
+    z-index: 20;
+"></div>
+
+<canvas id="glcanvas"></canvas>
+<canvas id="bars" width="100" height="200"></canvas>
+
+<script>
+let running = false;
+let render; // объявляем глобально
+let debugMode = 0;
+let autoMix = 0.0;
+let autoMICL = 0.0;
+let autoMICM = 0.0;
+let autoMICH = 0.0;
+let mic_low = 2;
+let mic_mid = 20;
+let mic_high = 80;
+let mixValue = 0.0; 
+let mixDir = 0.8; // 1 = вверх, -1 = вниз
+let StopMIX = false;
+let micSTOP = true;
+let low  = 0.0;
+let mid  = 0.0;
+let high = 0.0;
+let fon = 1.0;
+let zoomValue = 2.0;
+let allPRM = {};
+let AutoIndex_fle = '';
+//let nprm = 1.0;
+//let gamma = 0.4545;
+
+	const barsCanvas = document.getElementById("bars");
+	const ctx = barsCanvas.getContext("2d");
+	
+	const nprmInput = document.getElementById('unprm');
+	const gammaInput = document.getElementById('gamma');
+
+
+document.getElementById("debugSelect").addEventListener("input", e => {
+    debugMode = parseInt(e.target.value);
+});
+
+let cx = 0, cy = 0;
+
+document.getElementById("cxSlider").oninput = e => cx = parseFloat(e.target.value);
+document.getElementById("cySlider").oninput = e => cy = parseFloat(e.target.value);
+
+	// Select the checkbox element by its ID
+const mixStop = document.getElementById("stopMIX");
+const fonStop = document.getElementById("setFON");
+
+
+
+// =======================
+// ВЕРШИННЫЙ ШЕЙДЕР
+// =======================
+const vsSource = `
+attribute vec2 a_position;
+varying vec2 v_uv;
+
+void main() {
+    v_uv = a_position * 0.5 + 0.5;
+    gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
+
+// =======================
+// ФРАГМЕНТНЫЙ ШЕЙДЕР ПО УМОЛЧАНИЮ
+// =======================
+let dynamicFsSource = `
+precision mediump float;
+varying vec2 v_uv;
+uniform float u_time;
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+uniform float u_blur;
+uniform float  u_fon;
+uniform float u_nprm;
+uniform float u_gamma;
+uniform vec2  u_res;
+uniform float u_cx;
+uniform float u_cy;
+uniform float u_zoom;
+uniform float u_mix;
+uniform float u_micl;
+uniform float u_micm;
+uniform float u_mich;
+uniform int   u_debugMode;
+uniform int   u_cycleMode;
+uniform float u_cycleTime;
+uniform float u_cycleDuration;
+
+void main() {
+    vec2 uv = v_uv;
+    gl_FragColor = vec4(uv, 0.5 + 0.5*sin(u_time), 1.0);//
+}
+`;
+
+
+let audioCtx, analyser, dataArray, stream;
+let recorder, recordedChunks = [];
+
+
+function stopRecording() {
+    recorder.stop();
+}
+// =======================
+// ПАНЕЛЬ ОШИБОК
+// =======================
+function showError(msg) {
+    const panel = document.getElementById("errorPanel");
+    panel.style.display = "block";
+    panel.textContent = msg;
+}
+
+function clearError() {
+    const panel = document.getElementById("errorPanel");
+    panel.style.display = "none";
+    panel.textContent = "";
+}
+
+// =======================
+// КОМПИЛЯЦИЯ ШЕЙДЕРОВ
+// =======================
+function createShader(gl, type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const info = gl.getShaderInfoLog(shader);
+        showError("Ошибка компиляции " +
+            (type === gl.VERTEX_SHADER ? "вершинного" : "фрагментного") +
+            " шейдера:\n\n" + info);
+        gl.deleteShader(shader);
+        return null;
+    }
+    return shader;
+}
+
+function createProgram(gl, vsSource, fsSource) {
+console.log("fsSource: " + fsSource);
+
+    clearError();
+
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    if (!vs || !fs) return null;
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        const info = gl.getProgramInfoLog(program);
+        showError("Ошибка линковки программы:\n\n" + info);
+        gl.deleteProgram(program);
+        return null;
+    }
+
+    return program;
+}
+
+// =======================
+// ОСНОВНОЙ КОД
+// =======================
+(function() {
+    const canvas = document.getElementById('glcanvas');
+    const gl = canvas.getContext('webgl');
+    if (!gl) {
+        alert("WebGL не поддерживается");
+        return;
+    }
+
+	const miclw = document.getElementById("miclw");
+	const micmd = document.getElementById("micmd");
+	const michh = document.getElementById("michh");
+	const mix23 = document.getElementById("mix23");
+	
+document.getElementById("recStart").onclick = startRecording;
+document.getElementById("recStop").onclick = stopRecording;
+
+function updateMix() { 
+mixValue += mixDir * 0.001; 
+if (mixValue >= 0.8) { 
+mixValue = 0.8; mixDir = -0.8;
+ } 
+ if (mixValue <= 0.5) {
+ mixValue = 0.5; 
+ mixDir = 0.8; 
+ } 
+ autoMix = mixValue.toFixed(4); // ← твоя переменная u_mix 
+ mix23.innerText = "Mix: " + autoMix.toString();
+ document.getElementById('mixSlider').value = autoMix.toString();
+ document.getElementById('mixSld').value = autoMix;
+ }
+
+function startRecording() {
+    const stream = canvas.captureStream(30);
+    recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+
+    recorder.ondataavailable = e => recordedChunks.push(e.data);
+
+    recorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "fractal.webm";
+        a.click();
+
+        recordedChunks = [];
+    };
+
+    recorder.start();
+}
+
+	// Добавляем обработчик клика, чтобы войти в полноэкранный режим
+canvas.addEventListener('click', () => {
+    if (canvas.requestFullscreen) {
+        canvas.requestFullscreen(); // Стандартный API
+    } else if (canvas.webkitRequestFullScreen) { // Для старых Safari/Chrome
+        canvas.webkitRequestFullScreen();
+    } else if (canvasLeft.mozRequestFullScreen) { // Для Firefox
+        canvas.mozRequestFullScreen();
+    }
+});
+
+async function initMic() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const source = audioCtx.createMediaStreamSource(stream);
+
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 512;
+
+    source.connect(analyser);
+
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
+async function stopMic(){
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      if (audioCtx) audioCtx.close();
+      audioCtx = null;
+      analyser = null;
+//      dataArray = null;
+
+}
+
+
+
+    function resize() {
+autoMix = parseFloat(document.getElementById('mixSlider').value);
+zoomValue = parseFloat(document.getElementById("zoomSld").value);
+autoMix = parseFloat(document.getElementById('mixSld').value);
+mix23.innerText = "Mix: " + autoMix.toString();
+mic_low = parseFloat(document.getElementById('miclow').value);
+mic_mid = parseFloat(document.getElementById('micmid').value);
+mic_high = parseFloat(document.getElementById('michigh').value);
+miclw.innerText = "mic_low: " + mic_low.toString();
+micmd.innerText = "mic_mid: " + mic_mid.toString();
+michh.innerText = "mic_high: " + mic_high.toString();
+		allPRM.u_low = mic_low;
+		allPRM.u_mid = mic_mid;
+		allPRM.u_high = mic_high;
+        const dpr = window.devicePixelRatio || 1;
+        const width = Math.floor(window.innerWidth * dpr);
+        const height = Math.floor(window.innerHeight * dpr);
+
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+        }
+        gl.viewport(0, 0, width, height);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    let program;
+    let uniformLocations = {};
+	
+	
+	    function rebuildProgram() {
+        const newProgram = createProgram(gl, vsSource, dynamicFsSource);
+        if (!newProgram) return;
+
+        program = newProgram;
+        gl.useProgram(program);
+
+        uniformLocations = {
+            u_time: gl.getUniformLocation(program, "u_time"),
+            u_fon: gl.getUniformLocation(program, "u_fon"),
+            u_nprm: gl.getUniformLocation(program, "u_nprm"),
+            u_gamma: gl.getUniformLocation(program, "u_gamma"),
+            u_low: gl.getUniformLocation(program, "u_low"),
+            u_mid: gl.getUniformLocation(program, "u_mid"),
+            u_high: gl.getUniformLocation(program, "u_high"),
+            u_blur: gl.getUniformLocation(program, "u_blur"),
+            u_res: gl.getUniformLocation(program, "u_res"),
+			u_lowGain: gl.getUniformLocation(program, 'u_lowGain'),
+			u_midGain: gl.getUniformLocation(program, 'u_midGain'),
+			u_highGain: gl.getUniformLocation(program, 'u_highGain'),
+            u_cx: gl.getUniformLocation(program, "u_cx"),
+            u_cy: gl.getUniformLocation(program, "u_cy"),
+            u_zoom: gl.getUniformLocation(program, "u_zoom"),
+            u_debugMode: gl.getUniformLocation(program, "u_debugMode"),
+            u_cycleMode: gl.getUniformLocation(program, "u_cycleMode"),
+            u_cycleTime: gl.getUniformLocation(program, "u_cycleTime"),
+            u_cycleDuration: gl.getUniformLocation(program, "u_cycleDuration"),
+			u_mix: gl.getUniformLocation(program, "u_mix"),
+			u_micl: gl.getUniformLocation(program, "u_micl"),
+			u_micm: gl.getUniformLocation(program, "u_micm"),
+			u_mich: gl.getUniformLocation(program, "u_mich"),
+        };
+
+        console.log("Шейдер успешно пересобран");
+    };
+
+
+    rebuildProgram();
+
+    // Буфер для прямоугольника
+    const positionLocation = gl.getAttribLocation(program, "a_position");
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+    const vertices = new Float32Array([
+        -1, -1,
+         1, -1,
+        -1,  1,
+        -1,  1,
+         1, -1,
+         1,  1
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // =======================
+    // ЗАГРУЗКА GLSL ФАЙЛА
+    // =======================
+    document.getElementById("glslFile").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+		allPRM.fname = file.name;
+        if (!file) return;
+
+        const text = await file.text();
+        dynamicFsSource = text;
+		document.getElementById("editor").value = text; // ← загружаем в редактор
+        rebuildProgram();
+    });
+
+    // =======================
+    // ZOOM
+    // =======================
+    document.getElementById("zoomSlider").addEventListener("input", (e) => {
+        zoomValue = parseFloat(e.target.value);
+		document.getElementById("zoomSld").value = zoomValue;
+    });
+//    document.getElementById("zoomSld").addEventListener("input", (e) => {
+//        zoomValue = parseFloat(e.target.value);
+//    });
+
+    const startTime = performance.now();
+
+render = function() {
+	if (!running) return; // если остановлено — не рендерим
+        const now = performance.now();
+        const time = (now - startTime) * 0.001;
+
+        resize();
+        const width = canvas.width;
+        const height = canvas.height;
+
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+if(!micSTOP){
+analyser.getByteFrequencyData(dataArray);
+low  = dataArray[mic_low]  / 255.0;
+mid  = dataArray[mic_mid] / 255.0;
+high = dataArray[mic_high] / 255.0;
+}else{
+low  = 0.0;
+mid  = 0.0;
+high = 0.0;
+}
+// Check the 'checked' property
+if (mixStop.checked) {
+  StopMIX = true;
+} else {
+  StopMIX = false;
+}
+if (fonStop.checked) {
+  fon = 1.0;
+} else {
+  fon = 0.0;
+}
+
+  ctx.clearRect(0, 0, barsCanvas.width, barsCanvas.height);
+
+  const w = 20;
+  const gap = 10;
+  const h = barsCanvas.height;
+
+  ctx.fillStyle = "#44ff88";
+  ctx.fillRect(10, h - low  * h, w, low  * h);
+
+  ctx.fillStyle = "#ffaa44";
+  ctx.fillRect(10 + w + gap, h - mid  * h, w, mid  * h);
+
+  ctx.fillStyle = "#ff4488";
+  ctx.fillRect(10 + 2*(w + gap), h - high * h, w, high * h);
+
+
+        // Заглушки аудио
+       const blur = 0.0;
+
+        const cx = 0.0;
+        const cy = 0.0;
+        const zoom = zoomValue;
+
+        const debugMode = 0;
+        const cycleMode = 0;
+        const cycleTime = time;
+        const cycleDuration = 0.0;
+
+        gl.useProgram(program);
+
+        gl.uniform1f(uniformLocations.u_time, time);
+        gl.uniform1f(uniformLocations.u_fon, fon);
+		gl.uniform1f(uniformLocations.u_nprm,   parseFloat(nprmInput.value)   || -0.7);
+		gl.uniform1f(uniformLocations.u_gamma,   parseFloat(gammaInput.value)   || 0.4545);
+        gl.uniform1f(uniformLocations.u_low, low);
+        gl.uniform1f(uniformLocations.u_mid, mid);
+        gl.uniform1f(uniformLocations.u_high, high);
+        gl.uniform1f(uniformLocations.u_blur, blur);
+        gl.uniform2f(uniformLocations.u_res, width, height);
+		  gl.uniform1f(uniformLocations.u_lowGain,  1.0);
+		  gl.uniform1f(uniformLocations.u_midGain,  1.0);
+		  gl.uniform1f(uniformLocations.u_highGain, 1.0);
+        gl.uniform1f(uniformLocations.u_cx, cx);
+        gl.uniform1f(uniformLocations.u_cy, cy);
+        gl.uniform1f(uniformLocations.u_zoom, zoom);
+        gl.uniform1i(uniformLocations.u_debugMode, debugMode);
+        gl.uniform1i(uniformLocations.u_cycleMode, cycleMode);
+        gl.uniform1f(uniformLocations.u_cycleTime, cycleTime);
+        gl.uniform1f(uniformLocations.u_cycleDuration, cycleDuration);
+		gl.uniform1f(uniformLocations.u_mix, autoMix);
+		gl.uniform1f(uniformLocations.u_micl, autoMICL);
+		gl.uniform1f(uniformLocations.u_micm, autoMICM);
+		gl.uniform1f(uniformLocations.u_mich, autoMICH);
+		allPRM.u_fon = fon;
+		allPRM.u_nprm = parseFloat(nprmInput.value);
+		allPRM.u_gamma = parseFloat(gammaInput.value);
+		allPRM.u_zoom = zoom;
+		allPRM.u_mix = autoMix;
+		
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        requestAnimationFrame(render);
+if(!StopMIX)updateMix();
+    }
+
+function useProgram(fragSource, filename) {
+    const newProgram = createProgram(gl, vsSource, fragSource);
+    if (!newProgram) {
+        console.warn("Не удалось собрать программу из", filename);
+        return;
+    }
+        program = newProgram;
+        gl.useProgram(program);
+		allPRM.fragSource = fragSource;
+		
+        uniformLocations = {
+            u_time: gl.getUniformLocation(program, "u_time"),
+            u_fon: gl.getUniformLocation(program, "u_fon"),
+            u_nprm: gl.getUniformLocation(program, "u_nprm"),
+            u_gamma: gl.getUniformLocation(program, "u_gamma"),
+            u_low: gl.getUniformLocation(program, "u_low"),
+            u_mid: gl.getUniformLocation(program, "u_mid"),
+            u_high: gl.getUniformLocation(program, "u_high"),
+            u_blur: gl.getUniformLocation(program, "u_blur"),
+            u_res: gl.getUniformLocation(program, "u_res"),
+			u_lowGain: gl.getUniformLocation(program, 'u_lowGain'),
+			u_midGain: gl.getUniformLocation(program, 'u_midGain'),
+			u_highGain: gl.getUniformLocation(program, 'u_highGain'),
+            u_cx: gl.getUniformLocation(program, "u_cx"),
+            u_cy: gl.getUniformLocation(program, "u_cy"),
+            u_zoom: gl.getUniformLocation(program, "u_zoom"),
+            u_debugMode: gl.getUniformLocation(program, "u_debugMode"),
+            u_cycleMode: gl.getUniformLocation(program, "u_cycleMode"),
+            u_cycleTime: gl.getUniformLocation(program, "u_cycleTime"),
+            u_cycleDuration: gl.getUniformLocation(program, "u_cycleDuration"),
+			u_mix: gl.getUniformLocation(program, "u_mix"),
+			u_micl: gl.getUniformLocation(program, "u_micl"),
+			u_micm: gl.getUniformLocation(program, "u_micm"),
+			u_mich: gl.getUniformLocation(program, "u_mich"),
+        };
+
+        console.log("Шейдер успешно пересобран");
+		if(!StopMIX)updateMix();
+}
+
+// =======================
+// АВТО-ПЕРЕКЛЮЧЕНИЕ GLSL + КНОПКИ
+// =======================
+
+let autoFiles = [];
+let autoIndex = 0;
+let autoInterval = 15000; // 5 секунд
+let autoTimer = null;
+
+// Загружаем список файлов
+async function loadFileList() {
+    try {
+        const txt = await fetch("filelist.txt").then(r => r.text());
+        autoFiles = txt.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+        if (!autoFiles.length) {
+            console.warn("filelist.txt пуст");
+            return;
+        }
+
+        console.log("Найдено файлов:", autoFiles.length);
+
+        // стартуем автозагрузку
+//        startAutoLoader();
+    loadGLSLByIndex(autoIndex);
+
+    } catch (e) {
+        console.error("Ошибка загрузки filelist.txt:", e);
+    }
+}
+
+// Загружаем GLSL по имени
+async function loadGLSLByIndex(idx) {
+    if (!autoFiles.length) return;
+	AutoIndex_fle = idx;
+    clearInterval(autoTimer); // остановить авто-цикл
+    const filename = autoFiles[idx];
+    try {
+        const text = await fetch(filename).then(r => r.text());
+
+        document.getElementById("editor").value = "//Number fractal: " + idx.toString() + "\n" + text;
+        useProgram(text, filename);
+
+        console.log("Загружен:", filename);
+    } catch (e) {
+        console.error("Ошибка загрузки", filename, e);
+    }
+}
+
+// Следующий файл
+function nextShader() {
+    autoIndex = (autoIndex + 1) % autoFiles.length;
+    loadGLSLByIndex(autoIndex);
+}
+
+// Предыдущий файл
+function prevShader() {
+    autoIndex = (autoIndex - 1 + autoFiles.length) % autoFiles.length;
+    loadGLSLByIndex(autoIndex);
+}
+
+// Автоматический цикл
+function startAutoLoader() {
+    loadGLSLByIndex(autoIndex);
+
+    autoTimer = setInterval(() => {
+        nextShader();
+    }, autoInterval);
+}
+
+
+	document.getElementById("micStartBtn").addEventListener("click", async () => {
+    if (micSTOP) {
+		await initMic();
+        running = true;
+		micSTOP = false;
+        requestAnimationFrame(render);
+    }
+});
+document.getElementById("micStopBtn").addEventListener("click", async () => {
+    if (!micSTOP) {
+		await stopMic();
+		micSTOP = true;
+        running = false;
+        requestAnimationFrame(render);
+    }
+});
+
+
+
+// Привязка кнопок
+document.getElementById("nextShader").addEventListener("click", () => {
+    clearInterval(autoTimer); // остановить авто-цикл
+    nextShader();
+});
+
+document.getElementById("prevShader").addEventListener("click", () => {
+    clearInterval(autoTimer);
+    prevShader();
+});
+
+document.getElementById("applyShader").addEventListener("click", async () => {
+    dynamicFsSource = document.getElementById("editor").value;
+    rebuildProgram();
+    if (!running) {
+        running = true;
+        requestAnimationFrame(render);
+    }
+});
+
+document.getElementById("startBtn").addEventListener("click", async () => {
+    if (!running) {
+        running = true;
+        requestAnimationFrame(render);
+    }
+});
+		// Запуск
+		loadFileList();
+
+})();
+
+document.getElementById("stopBtn").addEventListener("click", () => {
+    running = false;
+});
+document.getElementById("savePRM").addEventListener("click", () => {
+if (!running) {
+const json = JSON.stringify(allPRM, null, 2);
+const blob = new Blob([json], { type: "application/json" });
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = "fractal_" + AutoIndex_fle.toString() + ".json";
+a.click();
+URL.revokeObjectURL(url);
+	}
+});
+</script>
+</body>
+</html>
