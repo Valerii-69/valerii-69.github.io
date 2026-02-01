@@ -287,6 +287,20 @@
                 font-size: 2rem;
             }
         }
+		    #fullscreenBtn {
+            background: #003300;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        button:hover { background: #005500; }
+        button.active { background: #00aa00; color: #000; }
+
     </style>
 </head>
 <body>
@@ -302,6 +316,7 @@
             </div>
             
             <div class="controls-panel">
+	        <button id="fullscreenBtn">⛶ FS</button>
 			<select id="fractalSelect">
 				  <option value="fractal_0.json">Fractal 0</option>
 				  <option value="fractal_1.json">Fractal 1</option>
@@ -313,17 +328,17 @@
 				  <option value="fractal_7.json">Fractal 7</option>
 				  <option value="fractal_8.json">Fractal 8</option>
 				  <option value="fractal_9.json">Fractal 9</option>
-				<option value="fractal_10.json">Fractal10</option>
-				<option value="fractal_11.json">Fractal11</option>
-				<option value="fractal_12.json">Fractal12</option>
-				<option value="fractal_13.json">Fractal13</option>
-				<option value="fractal_14.json">Fractal14</option>
-				<option value="fractal_15.json">Fractal15</option>
-				<option value="fractal_16.json">Fractal16</option>
-				<option value="fractal_17.json">Fractal17</option>
-				<option value="fractal_18.json">Fractal18</option>
-				<option value="fractal_19.json">Fractal19</option>
-				<option value="fractal_20.json">Fractal20</option>
+				<option value="fractal_10.json">Fractal 10</option>
+				<option value="fractal_11.json">Fractal 11</option>
+				<option value="fractal_12.json">Fractal 12</option>
+				<option value="fractal_13.json">Fractal 13</option>
+				<option value="fractal_14.json">Fractal 14</option>
+				<option value="fractal_15.json">Fractal 15</option>
+				<option value="fractal_16.json">Fractal 16</option>
+				<option value="fractal_17.json">Fractal 17</option>
+				<option value="fractal_18.json">Fractal 18</option>
+				<option value="fractal_19.json">Fractal 19</option>
+				<option value="fractal_20.json">Fractal 20</option>
 			</select>
 
                 <div class="buttons-container">
@@ -456,7 +471,7 @@
 			const select = document.getElementById('fractalSelect');
 			
 	// Добавляем обработчик клика, чтобы войти в полноэкранный режим
-canvas.addEventListener('click', () => {
+/*canvas.addEventListener('click', () => {
     if (canvas.requestFullscreen) {
       canvas.requestFullscreen(); // Стандартный API
     } else if (canvas.webkitRequestFullScreen) { // Для старых Safari/Chrome
@@ -464,12 +479,21 @@ canvas.addEventListener('click', () => {
     } else if (canvas.mozRequestFullScreen) { // Для Firefox
         canvas.mozRequestFullScreen();
     }
-});
+});*/
+            // Fullscreen
+            document.getElementById('fullscreenBtn').addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+				document.getElementById('fractalCanvas').requestFullscreen();
+                //    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            });
 
  select.addEventListener('change', () => {
     const file = select.value;
 
-    fetch(`./json/${file}`)
+    fetch(`json/${file}`)
         .then(res => res.json())
         .then(data => {
             console.log("Загружен JSON:", data);
@@ -520,6 +544,10 @@ bool  uUseGlow = false;
 
 // глобальные аудио
 float bass, midBand, treble, timeVal, prm2D, glow;
+
+const vec3 COLOR_GLOW      = vec3(0.6, 0.5, 1.0);       // внутреннее свечение
+
+
 // =============================
 // УТИЛИТЫ
 // =============================
@@ -578,6 +606,10 @@ vec3 rotateY(vec3 p, float a) {
     float c = cos(a), s = sin(a);
     return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
 }
+vec3 rotateX(vec3 p, float a) {
+    float c = cos(a), s = sin(a);
+    return vec3(c*p.y/0.5 + s*p.z, p.x, -s*p.y + c*p.z);
+}
 
 // =============================
 // ТРОЙНОЙ МОРФИНГ DE
@@ -585,7 +617,7 @@ vec3 rotateY(vec3 p, float a) {
 float fractalDE(vec3 p) {
 
     float de2D = fractal2D_DE(p);
-    float de3D = fractal3D(rotateY(p, u_time * 0.3));
+    float de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));
 
     // нормализация
     de2D *= 0.2;
@@ -633,7 +665,7 @@ float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
         float d = map(p);
 		
         if (u_debugMode == 4) uUseGlow = true;
-        if(uUseGlow) glow = exp(-d*0.75) * (0.0005 + logGain(u_high, u_highGain)*0.0035);
+        if(uUseGlow) glow = exp(-d*0.95) * (0.0125 + logGain(u_high, u_highGain)*0.0135);
 
         if (d < 0.001) {
             g_raySteps = i;
@@ -659,7 +691,7 @@ vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
     vec3 u = normalize(cross(r, f));
 
     float z = 1.0 / tan(radians(fov) * 0.5);
-    return normalize(f * z * u_zoom + r * uv.x + u * uv.y);
+    return normalize(f * z * 1.0/cos(logGain(u_low, u_lowGain)*0.125) + r * uv.x + u * uv.y);  //u_zoom
 }
 
 vec3 cameraPos(float t) {
@@ -678,9 +710,16 @@ vec3 c3 = vec3(0.0, 1.0, 1.0);
 vec3 c4 = vec3(0.75, 0.45, 1.0);
 vec3 c5 = vec3(0.25, 0.0, 1.0);
 
+//vec3 c1 = vec3(0.05, 0.0, 0.15);     // глубокий фиолетово-синий
+//vec3 c2	= vec3(0.1, 0.0, 0.3);       // тёмный синий
+//vec3 c3	= vec3(0.3, 0.0, 0.5);       // фиолетовый
+//vec3 c4 = vec3(0.5, 0.1, 0.8);       // ультрафиолетовый
+//vec3 c5	= vec3(0.3, 0.4, 0.9);      // голубой
+
 vec3 palette5(float t) {
+t = t*u_midGain;
     if (t < 0.25) return mix(c1, c5, t / 0.25);
-    if (t < 0.50) return mix(c5, c2, (t - 0.25) / 0.25);
+    if (t < 0.50) return mix(c5, c2, (t - 0.35) / 0.25);
     if (t < 0.75) return mix(c2, c4, (t - 0.50) / 0.25);
     return mix(c4, c3, (t - 0.75) / 0.25);
 }
@@ -708,7 +747,6 @@ void main() {
     // raymarch
     vec3 pHit;
     float t = rayMarch(ro, rd, pHit);
-
     vec3 col;
 
     if (t > 0.0) {
@@ -746,7 +784,7 @@ void main() {
         vec3 blend4 = mix(c4, c5, phase);
         vec3 finalColor1 = mix(blend3, blend4, phase);
 
-        matCol = mix(matCol, mix(finalColor,finalColor1,0.5), 0.5);
+        matCol = mix(matCol, mix(finalColor1,finalColor,0.005), 0.005);
 
         if (u_debugMode == 0) prm2D = 200.0;
         if (u_debugMode == 1) prm2D = treble; //col = 0.5 + 0.5 * n;
@@ -775,9 +813,9 @@ void main() {
 `,
             "u_fon": 0,
             "u_nprm": 1,
-            "u_gamma": 0.4545,
+            "u_gamma": 1.1545,
             "u_zoom": 2,
-            "u_mix": 0.7424
+            "u_mix": 0.7024
         };
         
         // Инициализация WebGL
@@ -1058,6 +1096,11 @@ void main() {
             const midRange = audioData.slice(30, 100); // Средние частоты
             const trebleRange = audioData.slice(50, 200); // Высокие частоты
             
+            // Вычисление средних значений
+//            const bassValue = bassRange.reduce((a, b) => a + b, 0) / bassRange.length / 255;
+//            const midValue = midRange.reduce((a, b) => a + b, 0) / midRange.length / 255;
+//            const trebleValue = trebleRange.reduce((a, b) => a + b, 0) / trebleRange.length / 255;
+            
             // Обновление интерфейса
             document.getElementById('bassValue').textContent = (bassRange[currentFractalData?.u_low]/255.0).toFixed(4);
             document.getElementById('midValue').textContent = (midRange[currentFractalData?.u_mid]/255.0).toFixed(4);
@@ -1065,11 +1108,14 @@ void main() {
             
             // Обновление uniform-переменных
             if (uniforms) {
+//                uniforms.u_low = bassValue * (currentFractalData?.u_low || 2);
+//                uniforms.u_mid = midValue * (currentFractalData?.u_mid || 20);
+//                uniforms.u_high = trebleValue * (currentFractalData?.u_high || 80);
                 uniforms.u_low = (bassRange[currentFractalData?.u_low]/255.0)*8.5;
                 uniforms.u_mid = (midRange[currentFractalData?.u_mid]/255.0)*8.5;
                 uniforms.u_high = (trebleRange[currentFractalData?.u_high]/255.0)*8.5;
             }
-          
+            
             // Планирование следующего обновления
             if (isMicActive) {
                 setTimeout(updateAudioData, 50);
@@ -1173,9 +1219,4 @@ void main() {
         window.addEventListener('load', init);
     </script>
 </body>
-
 </html>
-
-
-
-
