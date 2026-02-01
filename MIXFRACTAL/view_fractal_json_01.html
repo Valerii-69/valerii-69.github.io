@@ -18,7 +18,28 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-        
+        html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#fractalCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.fullscreen-ios {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: black;
+}
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -481,15 +502,30 @@
     }
 });*/
             // Fullscreen
-            document.getElementById('fullscreenBtn').addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-				document.getElementById('fractalCanvas').requestFullscreen();
-                //    document.documentElement.requestFullscreen();
-                } else {
-                    document.exitFullscreen();
-                }
-            });
+            const btn = document.getElementById('fullscreenBtn');
+const canvas = document.getElementById('fractalCanvas');
 
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+btn.addEventListener('click', () => {
+    // iOS → псевдо‑фуллскрин
+    if (isIOS()) {
+        canvas.classList.toggle('fullscreen-ios');
+        return;
+    }
+
+    // Android/PC → настоящий fullscreen
+    if (!document.fullscreenElement) {
+        canvas.requestFullscreen().catch(err => {
+            console.warn("Fullscreen error:", err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+});
  select.addEventListener('change', () => {
     const file = select.value;
 
