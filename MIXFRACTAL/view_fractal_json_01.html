@@ -341,13 +341,13 @@
                     
                     <div class="control-row">
                         <span class="control-label">Морфинг (u_mix)</span>
-                        <input type="range" id="u_mix" min="0" max="1" step="0.01" value="0.5">
+                        <input type="number" id="u_mix" min="0" max="1" step="0.0001" value="0.5">
                         <span class="control-value" id="u_mix_val">0.50</span>
                     </div>
                     
                     <div class="control-row">
                         <span class="control-label">Гамма (u_gamma)</span>
-                        <input type="range" id="u_gamma" min="0.1" max="2" step="0.01" value="0.45">
+                        <input type="range" id="u_gamma" min="0.1" max="10" step="0.0001" value="0.45">
                         <span class="control-value" id="u_gamma_val">0.45</span>
                     </div>
                     
@@ -934,9 +934,9 @@ void main() {
                 
                 // Инициализация uniform-переменных из JSON
                 uniforms = {
-                    u_low: data.u_low || 2,
-                    u_mid: data.u_mid || 20,
-                    u_high: data.u_high || 80,
+                    u_low: 0.0,
+                    u_mid: 0.0,
+                    u_high: 0.0,
                     u_fon: data.u_fon || 0,
                     u_nprm: data.u_nprm || 1,
                     u_gamma: data.u_gamma || 0.4545,
@@ -1023,7 +1023,7 @@ void main() {
                 microphone = audioContext.createMediaStreamSource(stream);
                 
                 // Настройка анализатора
-                analyser.fftSize = 256;
+                analyser.fftSize = 2048;
                 const bufferLength = analyser.frequencyBinCount;
                 audioData = new Uint8Array(bufferLength);
                 
@@ -1054,27 +1054,22 @@ void main() {
             analyser.getByteFrequencyData(audioData);
             
             // Разделение на низкие, средние и высокие частоты
-            const bassRange = audioData.slice(0, 10); // Низкие частоты
-            const midRange = audioData.slice(10, 50); // Средние частоты
-            const trebleRange = audioData.slice(50, 128); // Высокие частоты
-            
-            // Вычисление средних значений
-            const bassValue = bassRange.reduce((a, b) => a + b, 0) / bassRange.length / 255;
-            const midValue = midRange.reduce((a, b) => a + b, 0) / midRange.length / 255;
-            const trebleValue = trebleRange.reduce((a, b) => a + b, 0) / trebleRange.length / 255;
+            const bassRange = audioData.slice(0, 30); // Низкие частоты
+            const midRange = audioData.slice(30, 100); // Средние частоты
+            const trebleRange = audioData.slice(50, 200); // Высокие частоты
             
             // Обновление интерфейса
-            document.getElementById('bassValue').textContent = bassValue.toFixed(2);
-            document.getElementById('midValue').textContent = midValue.toFixed(2);
-            document.getElementById('trebleValue').textContent = trebleValue.toFixed(2);
+            document.getElementById('bassValue').textContent = (bassRange[currentFractalData?.u_low]/255.0).toFixed(4);
+            document.getElementById('midValue').textContent = (midRange[currentFractalData?.u_mid]/255.0).toFixed(4);
+            document.getElementById('trebleValue').textContent = (trebleRange[currentFractalData?.u_high]/255.0).toFixed(4);
             
             // Обновление uniform-переменных
             if (uniforms) {
-                uniforms.u_low = bassValue * (currentFractalData?.u_low || 2);
-                uniforms.u_mid = midValue * (currentFractalData?.u_mid || 20);
-                uniforms.u_high = trebleValue * (currentFractalData?.u_high || 80);
+                uniforms.u_low = (bassRange[currentFractalData?.u_low]/255.0)*8.5;
+                uniforms.u_mid = (midRange[currentFractalData?.u_mid]/255.0)*8.5;
+                uniforms.u_high = (trebleRange[currentFractalData?.u_high]/255.0)*8.5;
             }
-            
+          
             // Планирование следующего обновления
             if (isMicActive) {
                 setTimeout(updateAudioData, 50);
@@ -1180,6 +1175,7 @@ void main() {
 </body>
 
 </html>
+
 
 
 
