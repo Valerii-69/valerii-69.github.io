@@ -469,7 +469,7 @@ canvas.addEventListener('click', () => {
  select.addEventListener('change', () => {
     const file = select.value;
 
-    fetch(`json/${file}`)
+    fetch(`/json/${file}`)
         .then(res => res.json())
         .then(data => {
             console.log("Загружен JSON:", data);
@@ -1178,4 +1178,5 @@ void main() {
         window.addEventListener('load', init);
     </script>
 </body>
+
 </html>
