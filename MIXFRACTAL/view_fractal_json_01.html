@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аудиоуправляемый фрактальный визуализатор</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #8a2be2, #00bfff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            min-width: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background: #000;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 600px;
+        }
+        
+        .controls-panel {
+            flex: 1;
+            min-width: 350px;
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-group h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #8a2be2;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .control-label {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .control-value {
+            font-size: 0.9rem;
+            color: #00bfff;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+            margin: 0 15px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #8a2be2;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+        }
+        
+        .audio-indicators {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .audio-indicator {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .audio-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .audio-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00bfff;
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #8a2be2, #6a0dad);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button#micToggle {
+            background: linear-gradient(90deg, #00bfff, #0077cc);
+        }
+        
+        button#loadShader {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a52);
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .file-label {
+            display: block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #4CAF50, #2E7D32);
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-label:hover {
+            background: linear-gradient(90deg, #66BB6A, #388E3C);
+            transform: translateY(-2px);
+        }
+        
+        .debug-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        select {
+            padding: 8px 15px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .status.success {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .status.error {
+            border-left: 4px solid #f44336;
+        }
+        
+        .status.info {
+            border-left: 4px solid #2196F3;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .canvas-container, .controls-panel {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .canvas-container {
+                min-width: 100%;
+            }
+            
+            canvas {
+                height: 400px;
+            }
+            
+            .controls-panel {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Аудиоуправляемый фрактальный визуализатор</h1>
+            <p class="subtitle">Загрузите JSON-файл с параметрами фрактала и управляйте визуализацией с помощью микрофона</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="fractalCanvas"></canvas>
+            </div>
+            
+            <div class="controls-panel">
+			<select id="fractalSelect">
+				  <option value="fractal_0.json">Fractal 0</option>
+				  <option value="fractal_1.json">Fractal 1</option>
+				  <option value="fractal_2.json">Fractal 2</option>
+				  <option value="fractal_3.json">Fractal 3</option>
+				  <option value="fractal_4.json">Fractal 4</option>
+				  <option value="fractal_5.json">Fractal 5</option>
+				  <option value="fractal_6.json">Fractal 6</option>
+				  <option value="fractal_7.json">Fractal 7</option>
+				  <option value="fractal_8.json">Fractal 8</option>
+				  <option value="fractal_9.json">Fractal 9</option>
+				<option value="fractal_10.json">Fractal10</option>
+				<option value="fractal_11.json">Fractal11</option>
+				<option value="fractal_12.json">Fractal12</option>
+				<option value="fractal_13.json">Fractal13</option>
+				<option value="fractal_14.json">Fractal14</option>
+				<option value="fractal_15.json">Fractal15</option>
+				<option value="fractal_16.json">Fractal16</option>
+				<option value="fractal_17.json">Fractal17</option>
+				<option value="fractal_18.json">Fractal18</option>
+				<option value="fractal_19.json">Fractal19</option>
+				<option value="fractal_20.json">Fractal20</option>
+			</select>
+
+                <div class="buttons-container">
+                    <label for="fileInput" class="file-label">
+                        Загрузить фрактал из JSON
+                    </label>
+                    <input type="file" id="fileInput" accept=".json">
+                    
+                    <button id="loadShader">Загрузить пример</button>
+                    <button id="micToggle">Включить микрофон</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Параметры фрактала</h3>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Морфинг (u_mix)</span>
+                        <input type="range" id="u_mix" min="0" max="1" step="0.01" value="0.5">
+                        <span class="control-value" id="u_mix_val">0.50</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Гамма (u_gamma)</span>
+                        <input type="range" id="u_gamma" min="0.1" max="2" step="0.01" value="0.45">
+                        <span class="control-value" id="u_gamma_val">0.45</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Зум (u_zoom)</span>
+                        <input type="range" id="u_zoom" min="0.1" max="5" step="0.1" value="2">
+                        <span class="control-value" id="u_zoom_val">2.0</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Фон (u_fon)</span>
+                        <input type="range" id="u_fon" min="0" max="1" step="0.01" value="0">
+                        <span class="control-value" id="u_fon_val">0.00</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Нормализация (u_nprm)</span>
+                        <input type="range" id="u_nprm" min="0" max="5" step="0.1" value="1">
+                        <span class="control-value" id="u_nprm_val">1.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Аудио параметры</h3>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Басы (u_lowGain)</span>
+                        <input type="range" id="u_lowGain" min="0.1" max="3" step="0.1" value="1">
+                        <span class="control-value" id="u_lowGain_val">1.0</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Средние (u_midGain)</span>
+                        <input type="range" id="u_midGain" min="0.1" max="3" step="0.1" value="1">
+                        <span class="control-value" id="u_midGain_val">1.0</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <span class="control-label">Высокие (u_highGain)</span>
+                        <input type="range" id="u_highGain" min="0.1" max="3" step="0.1" value="1">
+                        <span class="control-value" id="u_highGain_val">1.0</span>
+                    </div>
+                    
+                    <div class="audio-indicators">
+                        <div class="audio-indicator">
+                            <div class="audio-label">Басы</div>
+                            <div class="audio-value" id="bassValue">0.00</div>
+                        </div>
+                        <div class="audio-indicator">
+                            <div class="audio-label">Средние</div>
+                            <div class="audio-value" id="midValue">0.00</div>
+                        </div>
+                        <div class="audio-indicator">
+                            <div class="audio-label">Высокие</div>
+                            <div class="audio-value" id="trebleValue">0.00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Отладка</h3>
+                    <div class="debug-controls">
+                        <span class="control-label">Режим отладки:</span>
+                        <select id="u_debugMode">
+                            <option value="0">Нормальный</option>
+                            <option value="1">Только высокие частоты</option>
+                            <option value="2">Только диффузное освещение</option>
+                            <option value="3">Шаги рейтрейсинга</option>
+                            <option value="4">Свечение</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="status info" id="status">
+                    Готов к загрузке фрактала. Нажмите "Загрузить пример" или выберите JSON-файл.
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Фрактальный визуализатор с аудиоуправлением | Загрузите JSON-файл с параметрами фрактала для визуализации</p>
+        </footer>
+    </div>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+        precision mediump float;
+        attribute vec2 a_position;
+        varying vec2 v_uv;
+        
+        void main() {
+            v_uv = a_position * 0.5 + 0.5;
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    </script>
+
+    <script>
+        // Глобальные переменные
+        let canvas, gl, program, currentShader = '';
+        let uniforms = {};
+        let audioContext, analyser, microphone, audioData, isMicActive = false;
+        let animationId, startTime = Date.now();
+        let currentFractalData = null;
+
+
+            canvas = document.getElementById('fractalCanvas');
+			const select = document.getElementById('fractalSelect');
+			
+	// Добавляем обработчик клика, чтобы войти в полноэкранный режим
+canvas.addEventListener('click', () => {
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen(); // Стандартный API
+    } else if (canvas.webkitRequestFullScreen) { // Для старых Safari/Chrome
+        canvas.webkitRequestFullScreen();
+    } else if (canvas.mozRequestFullScreen) { // Для Firefox
+        canvas.mozRequestFullScreen();
+    }
+});
+
+ select.addEventListener('change', () => {
+    const file = select.value;
+
+    fetch(`json/${file}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log("Загружен JSON:", data);
+                try {
+                    loadFractalFromJSON(data);
+                } catch (error) {
+                    console.error('Ошибка парсинга JSON:', error);
+                    showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
+                }
+ 
+            // здесь ты можешь применить данные к шейдеру
+            // например:
+            // updateShader(data);
+        })
+        .catch(err => console.error("Ошибка загрузки:", err));
+});
+
+       
+        // Пример JSON-данных фрактала (на случай, если файл не загружен)
+        const exampleFractalData = {
+            "u_low": 2,
+            "u_mid": 20,
+            "u_high": 80,
+            "fragSource": `
+precision mediump float;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_fon;
+uniform float u_nprm;
+uniform float u_zoom;
+// аудио
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+
+uniform float u_lowGain;
+uniform float u_midGain;
+uniform float u_highGain;
+
+// морфинг
+uniform float u_mix;
+uniform float u_gamma;
+
+// debug
+uniform int u_debugMode;
+bool  uUseGlow = false;
+
+// глобальные аудио
+float bass, midBand, treble, timeVal, prm2D, glow;
+// =============================
+// УТИЛИТЫ
+// =============================
+float logGain(float x, float gain) {
+    return pow(x + 1e-6, gain);
+}
+
+float hash(float x) {
+    return fract(sin((x / 7900.456) * 89.123));
+}
+
+// =============================
+// 2D ФРАКТАЛ (цвет)
+// =============================
+// Lissajous
+vec3 render2D(vec2 uv) {
+    float a = 2.0 + bass * 5.0;
+    float b = 3.0 + midBand * 4.0;
+    float c = 4.0 + treble * 6.0;
+    vec2 p = vec2(
+        sin(a * uv.y + u_time*0.5),
+        sin(b * uv.x + u_time*0.3)
+    );
+    float n = length(p) * 0.05;
+    n *= n * 10.0;
+    return vec3(u_fon)*(0.3 + bass*0.7, 0.2 + midBand*0.8, 0.4 + treble*0.8) * n;
+}
+
+// =============================
+// 2D → псевдо‑объём (DE)
+// =============================
+float fractal2D_DE(vec3 p) {
+    vec3 col = render2D(p.xy);
+    return length(col) * 0.2;
+}
+
+// =============================
+// 3D / DE ФРАКТАЛ
+// =============================
+// Twisted Torus Field
+float fractal3D(vec3 p){
+    float a = 0.6 * sin(p.z * 0.5);
+    float c = cos(a), s = sin(a);
+    // twist around Z
+    mat2 rot = mat2(c, -s, s, c);
+    p.xy = rot * p.xy;
+    vec2 t = vec2(1.0, 0.25);
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
+// =============================
+// ВРАЩЕНИЕ
+// =============================
+vec3 rotateY(vec3 p, float a) {
+    float c = cos(a), s = sin(a);
+    return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
+}
+
+// =============================
+// ТРОЙНОЙ МОРФИНГ DE
+// =============================
+float fractalDE(vec3 p) {
+
+    float de2D = fractal2D_DE(p);
+    float de3D = fractal3D(rotateY(p, u_time * 0.3));
+
+    // нормализация
+    de2D *= 0.2;
+    de3D *= 4.0;
+
+    float phase1 = smoothstep(0.0, 0.5, u_mix); // 2D → pseudo
+    float phase2 = smoothstep(0.5, 1.0, u_mix); // pseudo → 3D
+
+    float de_phase1 = mix(0.0, de2D, phase1);
+    float de_phase2 = mix(de2D, de3D, phase2);
+
+    return mix(de_phase1, de_phase2, phase2);
+}
+
+// =============================
+// MAP + NORMAL
+// =============================
+float map(vec3 p) {
+    return fractalDE(p);
+}
+
+vec3 getNormal(vec3 p) {
+    float e = 0.002;
+    vec2 k = vec2(1.0, -1.0);
+
+    return normalize(
+        k.xyy * map(p + k.xyy * e) +
+        k.yyx * map(p + k.yyx * e) +
+        k.yxy * map(p + k.yxy * e) +
+        k.xxx * map(p + k.xxx * e)
+    );
+}
+
+// =============================
+// RAYMARCH
+// =============================
+int g_raySteps = 0;
+
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 30.0;
+	
+    for (int i = 0; i < 40; i++) {
+        vec3 p = ro + rd * t;
+        float d = map(p);
+		
+        if (u_debugMode == 4) uUseGlow = true;
+        if(uUseGlow) glow = exp(-d*0.75) * (0.0005 + logGain(u_high, u_highGain)*0.0035);
+
+        if (d < 0.001) {
+            g_raySteps = i;
+            pHit = p;
+            return t;
+        }
+
+        if (t > tMax) break;
+        t += d;
+    }
+
+    g_raySteps = 120;
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+
+// =============================
+// CAMERA
+// =============================
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    return normalize(f * z * u_zoom + r * uv.x + u * uv.y);
+}
+
+vec3 cameraPos(float t) {
+    float r = 6.0;
+    float a = t * 0.25;
+    float h = 2.5 * sin(t * 0.15);
+    return vec3(r * cos(a), h, r * sin(a));
+}
+
+// =============================
+// ПАЛИТРА
+// =============================
+vec3 c1 = vec3(0.0, 0.2, 0.8);
+vec3 c2 = vec3(0.4, 0.0, 0.6);
+vec3 c3 = vec3(0.0, 1.0, 1.0);
+vec3 c4 = vec3(0.75, 0.45, 1.0);
+vec3 c5 = vec3(0.25, 0.0, 1.0);
+
+vec3 palette5(float t) {
+    if (t < 0.25) return mix(c1, c5, t / 0.25);
+    if (t < 0.50) return mix(c5, c2, (t - 0.25) / 0.25);
+    if (t < 0.75) return mix(c2, c4, (t - 0.50) / 0.25);
+    return mix(c4, c3, (t - 0.75) / 0.25);
+}
+
+// =============================
+// MAIN
+// =============================
+void main() {
+
+    // аудио
+    bass    = logGain(u_low,  u_lowGain);
+    midBand = logGain(u_mid,  u_midGain);
+    treble  = logGain(u_high, u_highGain);
+    timeVal = u_time;
+	glow = 0.0;
+
+    // UV
+    vec2 uv = (gl_FragCoord.xy / u_res) * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+
+    // камера
+    vec3 ro = cameraPos(u_time);
+    vec3 rd = getRayDir(uv, ro, vec3(0.0), 45.0);
+
+    // raymarch
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+
+    vec3 col;
+
+    if (t > 0.0) {
+
+        vec3 n = getNormal(pHit);
+
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+        float smooth = pow(clamp(t / 20.0, 0.0, 1.0), 0.7);
+
+
+		/*
+
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+
+        vec3 matCol = vec3(
+            rnd  + 0.5 * sin(smooth + bass    * 5.0),
+            rnd1 + 0.5 * sin(smooth + midBand * 5.0 + 2.0),
+            rnd2 + 0.5 * sin(smooth + treble  * 5.0 + 4.0)
+        );*/
+		
+        float phase = 0.5 + 0.5 * sin(smooth + bass * 5.0)*sin(smooth + treble * 5.0);
+//		float phase = 0.5 + 0.5 * diff/sin(normalize(u_time * smooth) + u_low * 5.0);
+
+        vec3 matCol = palette5(phase);
+
+        vec3 blend1 = mix(c1, c2, phase);
+        vec3 blend2 = mix(c2, c3, phase);
+        vec3 finalColor = mix(blend1, blend2, phase);
+        vec3 blend3 = mix(c3, c4, phase);
+        vec3 blend4 = mix(c4, c5, phase);
+        vec3 finalColor1 = mix(blend3, blend4, phase);
+
+        matCol = mix(matCol, mix(finalColor,finalColor1,0.5), 0.5);
+
+        if (u_debugMode == 0) prm2D = 200.0;
+        if (u_debugMode == 1) prm2D = treble; //col = 0.5 + 0.5 * n;
+        if (u_debugMode == 2) col = vec3(diff);
+        if (u_debugMode == 3) col = vec3(float(g_raySteps) / 120.0);
+
+
+        vec3 col3D = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+        vec3 col2D = render2D(uv * prm2D);
+
+        float phaseColor = smoothstep(0.3, 1.0, u_mix);
+		
+        vec3 innerGlow = vec3(1.2, 0.9, 0.6) * glow * (0.5 + logGain(u_high, u_highGain));
+
+
+        col = mix(col2D, col3D, phaseColor) + innerGlow;
+
+    } else {
+        col = render2D(uv * prm2D);
+    }
+
+    col = pow(col, vec3(u_gamma)); // gamma
+
+    gl_FragColor = vec4(col, 1.0);
+}
+`,
+            "u_fon": 0,
+            "u_nprm": 1,
+            "u_gamma": 0.4545,
+            "u_zoom": 2,
+            "u_mix": 0.7424
+        };
+        
+        // Инициализация WebGL
+        function initWebGL() {
+//            canvas = document.getElementById('fractalCanvas');
+            
+            // Установка размера canvas
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // Получение контекста WebGL
+            gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (!gl) {
+                alert('Ваш браузер не поддерживает WebGL!');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Создание шейдерной программы
+        function createShaderProgram(vertexSource, fragmentSource) {
+            const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
+            const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
+            
+            if (!vertexShader || !fragmentShader) return null;
+            
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Ошибка линковки программы:', gl.getProgramInfoLog(program));
+                return null;
+            }
+            
+            return program;
+        }
+        
+        // Компиляция шейдера
+        function compileShader(type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Ошибка компиляции шейдера:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            
+            return shader;
+        }
+        
+        // Установка uniform-переменных
+        function setUniforms() {
+            if (!program || !currentFractalData) return;
+            
+            gl.useProgram(program);
+            
+            // Установка разрешения
+            const u_res = gl.getUniformLocation(program, 'u_res');
+            if (u_res) gl.uniform2f(u_res, canvas.width, canvas.height);
+            
+            // Установка времени
+            const u_time = gl.getUniformLocation(program, 'u_time');
+            if (u_time) gl.uniform1f(u_time, (Date.now() - startTime) * 0.001);
+            
+            // Установка параметров из загруженного JSON
+            const params = ['u_fon', 'u_nprm', 'u_zoom', 'u_mix', 'u_gamma', 'u_debugMode'];
+            params.forEach(param => {
+                const location = gl.getUniformLocation(program, param);
+                if (location !== null) {
+                    const value = uniforms[param] !== undefined ? uniforms[param] : currentFractalData[param];
+                    
+                    if (param === 'u_debugMode') {
+                        gl.uniform1i(location, parseInt(value));
+                    } else {
+                        gl.uniform1f(location, parseFloat(value));
+                    }
+                }
+            });
+            
+            // Установка аудио параметров
+            const audioParams = ['u_low', 'u_mid', 'u_high', 'u_lowGain', 'u_midGain', 'u_highGain'];
+            audioParams.forEach(param => {
+                const location = gl.getUniformLocation(program, param);
+                if (location !== null) {
+                    const value = uniforms[param] !== undefined ? uniforms[param] : currentFractalData[param];
+                    gl.uniform1f(location, parseFloat(value));
+                }
+            });
+            
+            // Обновление значений на слайдерах
+            updateSliderValues();
+        }
+        
+        // Отрисовка кадра
+        function render() {
+            if (!gl || !program) return;
+            
+            // Очистка экрана
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.clearColor(0, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            
+            // Установка uniform-переменных
+            setUniforms();
+            
+            // Создание буфера вершин
+            const vertices = new Float32Array([
+                -1, -1,
+                 1, -1,
+                -1,  1,
+                 1,  1
+            ]);
+            
+            const vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+            
+            // Получение атрибута позиции
+            const positionLocation = gl.getAttribLocation(program, 'a_position');
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+            
+            // Отрисовка
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            
+            // Запрос следующего кадра
+            animationId = requestAnimationFrame(render);
+        }
+        
+        // Загрузка фрактала из JSON
+        function loadFractalFromJSON(data) {
+            try {
+                currentFractalData = data;
+                
+                // Создание вершинного шейдера
+                const vertexSource = document.getElementById('vertexShader').text;
+                
+                // Создание фрагментного шейдера из данных JSON
+                const fragmentSource = data.fragSource;
+                
+                // Создание новой шейдерной программы
+                program = createShaderProgram(vertexSource, fragmentSource);
+                
+                if (!program) {
+                    showStatus('Ошибка создания шейдерной программы', 'error');
+                    return;
+                }
+                
+                // Инициализация uniform-переменных из JSON
+                uniforms = {
+                    u_low: data.u_low || 2,
+                    u_mid: data.u_mid || 20,
+                    u_high: data.u_high || 80,
+                    u_fon: data.u_fon || 0,
+                    u_nprm: data.u_nprm || 1,
+                    u_gamma: data.u_gamma || 0.4545,
+                    u_zoom: data.u_zoom || 2,
+                    u_mix: data.u_mix || 0.5,
+                    u_lowGain: 1.0,
+                    u_midGain: 1.0,
+                    u_highGain: 1.0,
+                    u_debugMode: 0
+                };
+                
+                // Обновление слайдеров
+                updateSlidersFromData(data);
+                
+                // Обновление статуса
+                showStatus(`Фрактал успешно загружен! Параметры: mix=${data.u_mix}, gamma=${data.u_gamma}, zoom=${data.u_zoom}`, 'success');
+                
+                // Запуск рендеринга
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                startTime = Date.now();
+                render();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки фрактала:', error);
+                showStatus(`Ошибка загрузки фрактала: ${error.message}`, 'error');
+            }
+        }
+        
+        // Обновление слайдеров из данных JSON
+        function updateSlidersFromData(data) {
+            document.getElementById('u_mix').value = data.u_mix || 0.5;
+            document.getElementById('u_gamma').value = data.u_gamma || 0.4545;
+            document.getElementById('u_zoom').value = data.u_zoom || 2;
+            document.getElementById('u_fon').value = data.u_fon || 0;
+            document.getElementById('u_nprm').value = data.u_nprm || 1;
+            
+            // Обновление значений
+            updateSliderValues();
+        }
+        
+        // Обновление значений слайдеров
+        function updateSliderValues() {
+            const sliders = ['u_mix', 'u_gamma', 'u_zoom', 'u_fon', 'u_nprm', 'u_lowGain', 'u_midGain', 'u_highGain'];
+            
+            sliders.forEach(sliderId => {
+                const slider = document.getElementById(sliderId);
+                const valueDisplay = document.getElementById(`${sliderId}_val`);
+                if (slider && valueDisplay) {
+                    let value = parseFloat(slider.value);
+                    
+                    // Форматирование значения
+                    if (sliderId === 'u_mix' || sliderId === 'u_fon') {
+                        valueDisplay.textContent = value.toFixed(2);
+                    } else if (sliderId === 'u_gamma') {
+                        valueDisplay.textContent = value.toFixed(3);
+                    } else if (sliderId === 'u_zoom' || sliderId === 'u_nprm') {
+                        valueDisplay.textContent = value.toFixed(1);
+                    } else {
+                        valueDisplay.textContent = value.toFixed(1);
+                    }
+                    
+                    // Обновление uniform-переменных
+                    uniforms[sliderId] = value;
+                }
+            });
+        }
+        
+        // Инициализация аудио
+        async function initAudio() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showStatus('Микрофон не поддерживается в этом браузере', 'error');
+                    return false;
+                }
+                
+                // Запрос доступа к микрофону
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                
+                // Создание аудиоконтекста
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                
+                // Настройка анализатора
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                audioData = new Uint8Array(bufferLength);
+                
+                // Подключение микрофона к анализатору
+                microphone.connect(analyser);
+                
+                isMicActive = true;
+                document.getElementById('micToggle').textContent = 'Выключить микрофон';
+                showStatus('Микрофон активирован. Аудио анализируется в реальном времени.', 'success');
+                
+                // Запуск обновления аудио данных
+                updateAudioData();
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Ошибка доступа к микрофону:', error);
+                showStatus(`Ошибка доступа к микрофону: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Обновление аудио данных
+        function updateAudioData() {
+            if (!isMicActive || !analyser) return;
+            
+            // Получение данных частотного спектра
+            analyser.getByteFrequencyData(audioData);
+            
+            // Разделение на низкие, средние и высокие частоты
+            const bassRange = audioData.slice(0, 10); // Низкие частоты
+            const midRange = audioData.slice(10, 50); // Средние частоты
+            const trebleRange = audioData.slice(50, 128); // Высокие частоты
+            
+            // Вычисление средних значений
+            const bassValue = bassRange.reduce((a, b) => a + b, 0) / bassRange.length / 255;
+            const midValue = midRange.reduce((a, b) => a + b, 0) / midRange.length / 255;
+            const trebleValue = trebleRange.reduce((a, b) => a + b, 0) / trebleRange.length / 255;
+            
+            // Обновление интерфейса
+            document.getElementById('bassValue').textContent = bassValue.toFixed(2);
+            document.getElementById('midValue').textContent = midValue.toFixed(2);
+            document.getElementById('trebleValue').textContent = trebleValue.toFixed(2);
+            
+            // Обновление uniform-переменных
+            if (uniforms) {
+                uniforms.u_low = bassValue * (currentFractalData?.u_low || 2);
+                uniforms.u_mid = midValue * (currentFractalData?.u_mid || 20);
+                uniforms.u_high = trebleValue * (currentFractalData?.u_high || 80);
+            }
+            
+            // Планирование следующего обновления
+            if (isMicActive) {
+                setTimeout(updateAudioData, 50);
+            }
+        }
+        
+        // Переключение микрофона
+        function toggleMicrophone() {
+            if (isMicActive) {
+                // Выключение микрофона
+                if (microphone) {
+                    microphone.disconnect();
+                }
+                if (audioContext) {
+                    audioContext.close();
+                }
+                isMicActive = false;
+                document.getElementById('micToggle').textContent = 'Включить микрофон';
+                showStatus('Микрофон выключен', 'info');
+            } else {
+                // Включение микрофона
+                initAudio();
+            }
+        }
+        
+        // Загрузка примера фрактала
+        function loadExample() {
+            loadFractalFromJSON(exampleFractalData);
+            showStatus('Загружен пример фрактала с параметрами по умолчанию', 'info');
+        }
+        
+        // Обработка загрузки файла
+        function handleFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    loadFractalFromJSON(jsonData);
+                } catch (error) {
+                    console.error('Ошибка парсинга JSON:', error);
+                    showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
+                }
+            };
+            
+            reader.onerror = function() {
+                showStatus('Ошибка чтения файла', 'error');
+            };
+            
+            reader.readAsText(file);
+        }
+		
+       
+        // Показать статус
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+        
+        // Инициализация приложения
+        function init() {
+            // Инициализация WebGL
+            if (!initWebGL()) {
+                return;
+            }
+            
+            // Загрузка примера по умолчанию
+            loadExample();
+            
+            // Настройка обработчиков событий
+            document.getElementById('fileInput').addEventListener('change', handleFileLoad);
+            document.getElementById('loadShader').addEventListener('click', loadExample);
+            document.getElementById('micToggle').addEventListener('click', toggleMicrophone);
+            
+            // Настройка слайдеров
+            const sliders = document.querySelectorAll('input[type="range"]');
+            sliders.forEach(slider => {
+                slider.addEventListener('input', updateSliderValues);
+            });
+            
+            // Настройка выбора режима отладки
+            document.getElementById('u_debugMode').addEventListener('change', function() {
+                uniforms.u_debugMode = parseInt(this.value);
+            });
+            
+            // Обработка изменения размера окна
+            window.addEventListener('resize', function() {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            });
+            
+            showStatus('Приложение готово. Загрузите JSON-файл с фракталом или используйте пример.', 'info');
+        }
+        
+        // Запуск приложения после загрузки страницы
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
