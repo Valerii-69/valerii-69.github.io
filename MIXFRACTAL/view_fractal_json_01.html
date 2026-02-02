@@ -74,7 +74,7 @@
         }
         
         .canvas-container {
-            flex: 1;
+            flex: 2;
             min-width: 600px;
             border-radius: 12px;
             overflow: hidden;
@@ -326,7 +326,7 @@
     <div class="container">
         <header>
             <h1>Аудиоуправляемый фрактальный визуализатор</h1>
-            <p class="subtitle">Загрузите JSON-файл с параметрами фрактала и управляйте визуализацией с помощью микрофона</p>
+<!--            <p class="subtitle">Загрузите JSON-файл с параметрами фрактала и управляйте визуализацией с помощью микрофона</p>-->
         </header>
         
         <div class="main-content">
@@ -375,7 +375,8 @@
                     
                     <div class="control-row">
                         <span class="control-label">Морфинг (u_mix)</span>
-                        <input type="number" id="u_mix" min="0" max="1" step="0.0001" value="0.5">
+                        <input type="range" id="u_mix" min="0" max="1" step="0.0001" value="0.5">
+                        <input type="number" id="u_mix_n" min="0" max="1" step="0.0001" value="0.5">
                         <span class="control-value" id="u_mix_val">0.50</span>
                     </div>
                     
@@ -405,22 +406,22 @@
                 </div>
                 
                 <div class="control-group">
-                    <h3>Аудио параметры</h3>
+                    <h3>Аудио параметры + Color</h3>
                     
                     <div class="control-row">
-                        <span class="control-label">Басы (u_lowGain)</span>
+                        <span class="control-label">Басы(u_lowGain)</span>
                         <input type="range" id="u_lowGain" min="0.1" max="3" step="0.1" value="1">
                         <span class="control-value" id="u_lowGain_val">1.0</span>
                     </div>
                     
                     <div class="control-row">
-                        <span class="control-label">Средние (u_midGain)</span>
+                        <span class="control-label">Средние(u_midGain)</span>
                         <input type="range" id="u_midGain" min="0.1" max="3" step="0.1" value="1">
                         <span class="control-value" id="u_midGain_val">1.0</span>
                     </div>
                     
                     <div class="control-row">
-                        <span class="control-label">Высокие (u_highGain)</span>
+                        <span class="control-label">Высокие(u_highGain)</span>
                         <input type="range" id="u_highGain" min="0.1" max="3" step="0.1" value="1">
                         <span class="control-value" id="u_highGain_val">1.0</span>
                     </div>
@@ -451,6 +452,8 @@
                             <option value="2">Только диффузное освещение</option>
                             <option value="3">Шаги рейтрейсинга</option>
                             <option value="4">Свечение</option>
+                            <option value="5">Rotor Y</option>
+                            <option value="6">Rotor XY</option>
                         </select>
                     </div>
                 </div>
@@ -462,7 +465,7 @@
         </div>
         
         <footer>
-            <p>Фрактальный визуализатор с аудиоуправлением | Загрузите JSON-файл с параметрами фрактала для визуализации</p>
+            <p>Фрактальный визуализатор с аудиоуправлением.</p>
         </footer>
     </div>
 
@@ -499,6 +502,14 @@
         canvas.mozRequestFullScreen();
     }
 });*/
+const mix_n = document.getElementById('u_mix_n');
+
+document.getElementById("u_mix_n").addEventListener("click", () => {
+    document.getElementById("u_mix").value = document.getElementById("u_mix_n").value;
+});
+document.getElementById("u_mix").addEventListener("change", () => {
+    mix_n.value = document.getElementById("u_mix").value;
+});
             // Fullscreen
 const btn = document.getElementById('fullscreenBtn');
 
@@ -544,6 +555,14 @@ btn.addEventListener('click', () => {
         .catch(err => console.error("Ошибка загрузки:", err));
 });
 
+function resizeCanvas() {
+    canvas = document.getElementById('fractalCanvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
        
         // Пример JSON-данных фрактала (на случай, если файл не загружен)
         const exampleFractalData = {
@@ -650,7 +669,10 @@ vec3 rotateX(vec3 p, float a) {
 float fractalDE(vec3 p) {
 
     float de2D = fractal2D_DE(p);
-    float de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));
+	float de3D = fractal3D(rotateY(p, u_time * 0.0001));
+	if (u_debugMode == 0)de3D = fractal3D(rotateY(p, u_time * 0.035));
+    if (u_debugMode == 5)de3D = fractal3D(rotateY(p, u_time * cos(logGain(u_high, u_highGain)*0.00035)));
+    if (u_debugMode == 6)de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));
 
     // нормализация
     de2D *= 0.2;
@@ -982,6 +1004,7 @@ void main() {
             
             // Запрос следующего кадра
             animationId = requestAnimationFrame(render);
+			resizeCanvas();
         }
         
         // Загрузка фрактала из JSON
@@ -1041,6 +1064,7 @@ void main() {
         // Обновление слайдеров из данных JSON
         function updateSlidersFromData(data) {
             document.getElementById('u_mix').value = data.u_mix || 0.5;
+            document.getElementById('u_mix_n').value = data.u_mix || 0.5;
             document.getElementById('u_gamma').value = data.u_gamma || 0.4545;
             document.getElementById('u_zoom').value = data.u_zoom || 2;
             document.getElementById('u_fon').value = data.u_fon || 0;
@@ -1061,7 +1085,7 @@ void main() {
                     let value = parseFloat(slider.value);
                     
                     // Форматирование значения
-                    if (sliderId === 'u_mix' || sliderId === 'u_fon') {
+                    if (sliderId === 'u_mix' || sliderId === 'u_mix_n' || sliderId === 'u_fon') {
                         valueDisplay.textContent = value.toFixed(2);
                     } else if (sliderId === 'u_gamma') {
                         valueDisplay.textContent = value.toFixed(3);
