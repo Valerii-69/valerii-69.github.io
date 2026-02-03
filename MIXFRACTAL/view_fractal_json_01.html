@@ -6,8 +6,8 @@
     <title>Аудиоуправляемый фрактальный визуализатор</title>
     <style>
         * {
-            margin: 0;
-            padding: 0;
+         /*   margin: 0;
+            padding: 0;*/
             box-sizing: border-box;
         }
         
@@ -74,7 +74,7 @@
         }
         
         .canvas-container {
-            flex: 2;
+            flex: 1.45;
             min-width: 600px;
             border-radius: 12px;
             overflow: hidden;
@@ -89,7 +89,7 @@
         }
         
         .controls-panel {
-            flex: 1;
+            flex: 1.45;
             min-width: 350px;
             background: rgba(30, 30, 46, 0.8);
             border-radius: 12px;
@@ -99,9 +99,9 @@
         }
         
         .control-group {
-            margin-bottom: 25px;
+        /*    margin-bottom: 25px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);*/
         }
         
         .control-group h3 {
@@ -171,7 +171,7 @@
         }
         
         .audio-value {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #00bfff;
         }
@@ -319,7 +319,6 @@
         
         button:hover { background: #005500; }
         button.active { background: #00aa00; color: #000; }
-
     </style>
 </head>
 <body>
@@ -335,6 +334,7 @@
             </div>
             
             <div class="controls-panel">
+			<button onclick="openPopup()">Открыть зеркало</button>
 	        <button id="fullscreenBtn">⛶ FS</button>
 			<select id="fractalSelect">
 				  <option value="fractal_0.json">Fractal 0</option>
@@ -358,8 +358,22 @@
 				<option value="fractal_18.json">Fractal 18</option>
 				<option value="fractal_19.json">Fractal 19</option>
 				<option value="fractal_20.json">Fractal 20</option>
+				<option value="fractal_21.json">Fractal 21</option>
+				<option value="fractal_22.json">Fractal 22</option>
+				<option value="fractal_23.json">Fractal 23</option>
+				<option value="fractal_24.json">Fractal 24</option>
+				<option value="fractal_25.json">Fractal 25</option>
+				<option value="fractal_26.json">Fractal 26</option>
+				<option value="fractal_27.json">Fractal 27</option>
+				<option value="fractal_28.json">Fractal 28</option>
+				<option value="fractal_29.json">Fractal 29</option>
+				<option value="fractal_30.json">Fractal 30</option>
+				<option value="fractal_31.json">Fractal 31</option>
+				<option value="fractal_32.json">Fractal 32</option>
 			</select>
-
+			<button id="setBtn">SET</button>
+			<input id="resultInput" type="text" placeholder="Список выбранных"  maxlength="5000">
+			<button id="saveBtn">SAVE</button>
                 <div class="buttons-container">
                     <label for="fileInput" class="file-label">
                         Загрузить фрактал из JSON
@@ -430,14 +444,20 @@
                         <div class="audio-indicator">
                             <div class="audio-label">Басы</div>
                             <div class="audio-value" id="bassValue">0.00</div>
+                        <input type="range" id="ulow" min="1" max="8" step="1" value="1"><br>
+                        <span class="control-value" id="ulow_val">0</span>
                         </div>
                         <div class="audio-indicator">
                             <div class="audio-label">Средние</div>
                             <div class="audio-value" id="midValue">0.00</div>
-                        </div>
+                         <input type="range" id="umid" min="1" max="12" step="1" value="1"><br>
+                        <span class="control-value" id="umid_val">0</span>
+                       </div>
                         <div class="audio-indicator">
                             <div class="audio-label">Высокие</div>
                             <div class="audio-value" id="trebleValue">0.00</div>
+                        <input type="range" id="uhigh" min="1" max="16" step="1" value="1"><br>
+                        <span class="control-value" id="uhigh_val">0</span>
                         </div>
                     </div>
                 </div>
@@ -454,6 +474,8 @@
                             <option value="4">Свечение</option>
                             <option value="5">Rotor Y</option>
                             <option value="6">Rotor XY</option>
+                            <option value="7">RotorY + Свечение</option>
+                            <option value="8">RotorXY + Свечение</option>
                         </select>
                     </div>
                 </div>
@@ -482,26 +504,175 @@
 
     <script>
         // Глобальные переменные
-        let canvas, gl, program, currentShader = '';
+        let canvas, gl, ctx, program, currentShader = '';
         let uniforms = {};
         let audioContext, analyser, microphone, audioData, isMicActive = false;
         let animationId, startTime = Date.now();
         let currentFractalData = null;
+		let fractal_arr = [];
+		let numb_fractal = 0;
 
 
             canvas = document.getElementById('fractalCanvas');
 			const select = document.getElementById('fractalSelect');
-			
-	// Добавляем обработчик клика, чтобы войти в полноэкранный режим
-/*canvas.addEventListener('click', () => {
-    if (canvas.requestFullscreen) {
-      canvas.requestFullscreen(); // Стандартный API
-    } else if (canvas.webkitRequestFullScreen) { // Для старых Safari/Chrome
-        canvas.webkitRequestFullScreen();
-    } else if (canvas.mozRequestFullScreen) { // Для Firefox
-        canvas.mozRequestFullScreen();
+
+canvas.addEventListener("touchstart", handlePress);
+canvas.addEventListener("click", handlePress);
+
+let popupWin = null;
+
+const input = document.getElementById("resultInput");
+const setBtn = document.getElementById("setBtn");
+const saveBtn = document.getElementById("saveBtn");
+const u_lowDel = document.getElementById("ulow");
+const u_midDel = document.getElementById("umid");
+const u_highDel = document.getElementById("uhigh");
+
+// ===============================
+// 1. Добавление выбранного пункта
+// ===============================
+setBtn.onclick = () => {
+    const value = select.value;
+
+    // если input пустой — просто вставляем
+    if (input.value.trim() === "") {
+        input.value = value;
+    } else {
+        // иначе добавляем через запятую
+        input.value += "," + value;
     }
-});*/
+};
+
+// ===============================
+// 2. Сохранение JSON на сервер
+// ===============================
+// Требуется серверный обработчик save.php или save.json-handler
+saveBtn.onclick = async () => {
+    const list = input.value.split(",").map(v => v.trim()).filter(v => v !== "");
+
+    const jsonData = JSON.stringify({ list });
+
+    const res = await fetch("save_list.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: jsonData
+    });
+
+    if (res.ok) {
+        alert("Список сохранён!");
+    } else {
+        alert("Ошибка сохранения");
+    }
+};
+
+// ===============================
+// 3. Загрузка JSON при старте
+// ===============================
+async function loadSavedList() {
+    try {
+        const res = await fetch("saved_list.json"); // файл, который создаёт save.php
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (data.list) {
+            input.value = data.list.join(",");
+			fractal_arr = input.value.split(",");
+        }
+    } catch (e) {
+        console.warn("Нет сохранённого списка");
+    }
+}
+
+loadSavedList();
+
+
+function openPopup() {
+    popupWin = window.open("canvas_popup.html", "mirrorWindow", "width=800,height=600");
+};
+
+function getCanvasCoords(event) {
+    const rect = canvas.getBoundingClientRect();
+
+    if (event.touches) {
+        const t = event.touches[0];
+        return {
+            x: t.clientX - rect.left,
+            y: t.clientY - rect.top
+        };
+    } else {
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+}
+
+function isInLeftSquare(x, y) {
+    return (
+        x >= 0 &&
+        x <= 200 &&
+        y >= canvas.height - 200 &&
+        y <= canvas.height
+    );
+}
+
+function isInRightSquare(x, y) {
+    return (
+        x >= canvas.width - 200 &&
+        x <= canvas.width &&
+        y >= canvas.height - 200 &&
+        y <= canvas.height
+    );
+}
+
+function handlePress(e) {
+    const p = getCanvasCoords(e);
+    const x = p.x;
+    const y = p.y;
+
+    if (isInLeftSquare(x, y)) {
+        console.log("Левый нижний квадрат");
+        // действие 1
+		if(numb_fractal > 0){numb_fractal -= 1;};//else{numb_fractal = 0;};
+		    const file = fractal_arr[numb_fractal];
+
+    fetch(`./json/${file}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log("Загружен JSON:", data);
+                try {
+                    loadFractalFromJSON(data);
+                } catch (error) {
+                    console.error('Ошибка парсинга JSON:', error);
+                    showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
+                }
+        })
+        .catch(err => console.error("Ошибка загрузки:", err));
+		showStatus(`"Левый нижний квадрат [X Y]": [${x}  ${y}]`, 'error');
+    }
+
+    if (isInRightSquare(x, y)) {
+        console.log("Правый нижний квадрат");
+        // действие 2
+		if(numb_fractal < (fractal_arr.length - 1)){numb_fractal += 1;};//else{numb_fractal = (fractal_arr.length - 1);};
+		    const file = fractal_arr[numb_fractal];
+
+    fetch(`./json/${file}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log("Загружен JSON:", data);
+                try {
+                    loadFractalFromJSON(data);
+                } catch (error) {
+                    console.error('Ошибка парсинга JSON:', error);
+                    showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
+                }
+         })
+        .catch(err => console.error("Ошибка загрузки:", err));
+		showStatus(`"Правый нижний квадрат [X Y]": [${x}  ${y}]`, 'error');
+
+    }
+}
 const mix_n = document.getElementById('u_mix_n');
 
 document.getElementById("u_mix_n").addEventListener("click", () => {
@@ -522,6 +693,7 @@ btn.addEventListener('click', () => {
     // iOS → псевдо‑фуллскрин
     if (isIOS()) {
         canvas.classList.toggle('fullscreen-ios');
+		if (popupWin && !popupWin.closed) { popupWin.postMessage({ type: "showFSButton" }, "*"); }
         return;
     }
 
@@ -530,10 +702,12 @@ btn.addEventListener('click', () => {
         canvas.requestFullscreen().catch(err => {
             console.warn("Fullscreen error:", err);
         });
+		if (popupWin && !popupWin.closed) { popupWin.postMessage({ type: "showFSButton" }, "*"); }
     } else {
         document.exitFullscreen();
     }
 });
+
  select.addEventListener('change', () => {
     const file = select.value;
 
@@ -547,11 +721,7 @@ btn.addEventListener('click', () => {
                     console.error('Ошибка парсинга JSON:', error);
                     showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
                 }
- 
-            // здесь ты можешь применить данные к шейдеру
-            // например:
-            // updateShader(data);
-        })
+         })
         .catch(err => console.error("Ошибка загрузки:", err));
 });
 
@@ -655,11 +825,11 @@ float fractal3D(vec3 p){
 // ВРАЩЕНИЕ
 // =============================
 vec3 rotateY(vec3 p, float a) {
-    float c = cos(a), s = sin(a);
+    float c = cos(a)*1.0, s = sin(a)*1.0;
     return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
 }
 vec3 rotateX(vec3 p, float a) {
-    float c = cos(a), s = sin(a);
+    float c = cos(a)*1.5, s = sin(a)*1.5;
     return vec3(c*p.y/0.5 + s*p.z, p.x, -s*p.y + c*p.z);
 }
 
@@ -670,9 +840,11 @@ float fractalDE(vec3 p) {
 
     float de2D = fractal2D_DE(p);
 	float de3D = fractal3D(rotateY(p, u_time * 0.0001));
-	if (u_debugMode == 0)de3D = fractal3D(rotateY(p, u_time * 0.035));
+	if (u_debugMode == 0)de3D = fractal3D(rotateY(p, u_time * 0.00035));
     if (u_debugMode == 5)de3D = fractal3D(rotateY(p, u_time * cos(logGain(u_high, u_highGain)*0.00035)));
     if (u_debugMode == 6)de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));
+    if (u_debugMode == 7){uUseGlow = true; de3D = fractal3D(rotateY(p, u_time * cos(logGain(u_high, u_highGain)*0.00035)));};
+    if (u_debugMode == 8){uUseGlow = true; de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));};
 
     // нормализация
     de2D *= 0.2;
@@ -746,7 +918,7 @@ vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
     vec3 u = normalize(cross(r, f));
 
     float z = 1.0 / tan(radians(fov) * 0.5);
-    return normalize(f * z * 1.0/cos(logGain(u_low, u_lowGain)*0.125) + r * uv.x + u * uv.y);  //u_zoom
+    return normalize((f * z * (1.0/cos(logGain(u_low, u_lowGain)*0.125))) * u_zoom + r * uv.x + u * uv.y);  //u_zoom
 }
 
 vec3 cameraPos(float t) {
@@ -875,8 +1047,6 @@ void main() {
         
         // Инициализация WebGL
         function initWebGL() {
-//            canvas = document.getElementById('fractalCanvas');
-            
             // Установка размера canvas
             const container = canvas.parentElement;
             canvas.width = container.clientWidth;
@@ -892,6 +1062,7 @@ void main() {
             return true;
         }
         
+
         // Создание шейдерной программы
         function createShaderProgram(vertexSource, fragmentSource) {
             const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
@@ -1005,7 +1176,15 @@ void main() {
             // Запрос следующего кадра
             animationId = requestAnimationFrame(render);
 			resizeCanvas();
+			sendFrameToPopup();
         }
+
+async function sendFrameToPopup() {
+    if (!popupWin || popupWin.closed) return;
+
+    const bmp = await createImageBitmap(canvas); // твой WebGL canvas
+    popupWin.postMessage({ type: "mirrorFrame", bitmap: bmp }, [bmp]);
+}
         
         // Загрузка фрактала из JSON
         function loadFractalFromJSON(data) {
@@ -1076,7 +1255,7 @@ void main() {
         
         // Обновление значений слайдеров
         function updateSliderValues() {
-            const sliders = ['u_mix', 'u_gamma', 'u_zoom', 'u_fon', 'u_nprm', 'u_lowGain', 'u_midGain', 'u_highGain'];
+            const sliders = ['u_mix', 'u_gamma', 'u_zoom', 'u_fon', 'u_nprm', 'u_lowGain', 'u_midGain', 'u_highGain', 'ulow', 'umid', 'uhigh'];
             
             sliders.forEach(sliderId => {
                 const slider = document.getElementById(sliderId);
@@ -1151,26 +1330,21 @@ void main() {
             // Разделение на низкие, средние и высокие частоты
             const bassRange = audioData.slice(0, 30); // Низкие частоты
             const midRange = audioData.slice(30, 100); // Средние частоты
-            const trebleRange = audioData.slice(50, 200); // Высокие частоты
-            
-            // Вычисление средних значений
-//            const bassValue = bassRange.reduce((a, b) => a + b, 0) / bassRange.length / 255;
-//            const midValue = midRange.reduce((a, b) => a + b, 0) / midRange.length / 255;
-//            const trebleValue = trebleRange.reduce((a, b) => a + b, 0) / trebleRange.length / 255;
+            const trebleRange = audioData.slice(100, 200); // Высокие частоты
             
             // Обновление интерфейса
-            document.getElementById('bassValue').textContent = (bassRange[currentFractalData?.u_low]/255.0).toFixed(4);
-            document.getElementById('midValue').textContent = (midRange[currentFractalData?.u_mid]/255.0).toFixed(4);
-            document.getElementById('trebleValue').textContent = (trebleRange[currentFractalData?.u_high]/255.0).toFixed(4);
+            document.getElementById('bassValue').textContent = (bassRange[parseInt(u_lowDel.value) + currentFractalData?.u_low]/255.0).toFixed(4);
+            document.getElementById('midValue').textContent = (midRange[parseInt(u_midDel.value) + currentFractalData?.u_mid]/255.0).toFixed(4);
+            document.getElementById('trebleValue').textContent = (trebleRange[parseInt(u_highDel.value) + currentFractalData?.u_high]/255.0).toFixed(4);
             
+			let sum_low = 0; for (let i = 0; i < bassRange.length; i++) { sum_low += bassRange[i]; } const avg_low = sum_low / bassRange.length;
+			let sum_mid = 0; for (let i = 0; i < midRange.length; i++) { sum_mid += midRange[i]; } const avg_mid = sum_mid / midRange.length;
+			let sum_high = 0; for (let i = 0; i < trebleRange.length; i++) { sum_high += trebleRange[i]; } const avg_high = sum_high / trebleRange.length;
             // Обновление uniform-переменных
             if (uniforms) {
-//                uniforms.u_low = bassValue * (currentFractalData?.u_low || 2);
-//                uniforms.u_mid = midValue * (currentFractalData?.u_mid || 20);
-//                uniforms.u_high = trebleValue * (currentFractalData?.u_high || 80);
-                uniforms.u_low = (bassRange[currentFractalData?.u_low]/255.0)*8.5;
-                uniforms.u_mid = (midRange[currentFractalData?.u_mid]/255.0)*8.5;
-                uniforms.u_high = (trebleRange[currentFractalData?.u_high]/255.0)*8.5;
+                uniforms.u_low = (avg_low/255.0)*parseInt(u_lowDel.value);
+                uniforms.u_mid = (avg_mid/255.0)*parseInt(u_midDel.value);
+                uniforms.u_high = (avg_high/255.0)*parseInt(u_highDel.value);
             }
             
             // Планирование следующего обновления

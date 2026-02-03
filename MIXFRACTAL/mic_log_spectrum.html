@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Логарифмический спектральный осциллограф микрофона</title>
+<style>
+    body {
+        background:#111;
+        color:#eee;
+        font-family:sans-serif;
+        padding:20px;
+    }
+    canvas {
+        width:100%;
+        height:300px;
+        background:#000;
+        border:1px solid #333;
+        cursor:crosshair;
+    }
+    button {
+        padding:8px 16px;
+        margin-right:10px;
+        cursor:pointer;
+    }
+    #info {
+        margin-top:10px;
+        font-size:14px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>🎤 Логарифмический спектральный осциллограф микрофона</h1>
+
+<button id="micBtn">Включить микрофон</button>
+<button id="runBtn">Stop</button>
+
+<canvas id="spectrumCanvas" width="1024" height="300"></canvas>
+<div id="info">Частота под курсором: — Гц</div>
+
+<script>
+const canvas = document.getElementById("spectrumCanvas");
+const ctx = canvas.getContext("2d");
+const info = document.getElementById("info");
+const micBtn = document.getElementById("micBtn");
+const runBtn = document.getElementById("runBtn");
+
+let audioCtx = null;
+let analyser = null;
+let dataArray = null;
+let running = true;
+
+let sampleRate = 44100; // обновим после создания AudioContext
+const fMin = 20;        // нижняя граница лог‑шкалы
+let fMax = 22050;       // верхняя (обновим по sampleRate)
+
+// логарифмическое преобразование частоты в X
+function freqToX(f, w) {
+    const minL = Math.log10(fMin);
+    const maxL = Math.log10(fMax);
+    const lf = Math.log10(Math.max(f, fMin));
+    return (lf - minL) / (maxL - minL) * w;
+}
+
+// обратное: X → частота
+function xToFreq(x, w) {
+    const minL = Math.log10(fMin);
+    const maxL = Math.log10(fMax);
+    const ratio = x / w;
+    const lf = minL + ratio * (maxL - minL);
+    return Math.pow(10, lf);
+}
+
+micBtn.onclick = async () => {
+    if (audioCtx) return;
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sampleRate = audioCtx.sampleRate;
+    fMax = sampleRate / 2;
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+        }
+    });
+
+    const source = audioCtx.createMediaStreamSource(stream);
+
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.2;
+
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    source.connect(analyser);
+
+    drawSpectrum();
+};
+
+runBtn.onclick = () => {
+    running = !running;
+    runBtn.textContent = running ? "Stop" : "Start";
+};
+
+function drawSpectrum() {
+    requestAnimationFrame(drawSpectrum);
+    if (!analyser || !dataArray) return;
+
+    if (running) {
+        analyser.getByteFrequencyData(dataArray);
+    }
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, w, h);
+
+    const binCount = dataArray.length;
+    const nyquist = fMax;
+
+    ctx.fillStyle = "lime";
+
+    for (let i = 0; i < binCount; i++) {
+        const amp = dataArray[i];
+        const freq = i * nyquist / binCount;
+
+        if (freq < fMin) continue;
+
+        const x = freqToX(freq, w);
+        const nextFreq = (i + 1) * nyquist / binCount;
+        const nextX = freqToX(nextFreq, w);
+        const barWidth = Math.max(1, nextX - x);
+
+        const barHeight = (amp / 255) * h;
+        ctx.fillRect(x, h - barHeight, barWidth, barHeight);
+    }
+
+    // сетка по частотам (лог)
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const decadeFreqs = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+    for (let f of decadeFreqs) {
+        if (f < fMin || f > fMax) continue;
+        const x = freqToX(f, w);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+    }
+    ctx.stroke();
+
+    // подписи частот
+    ctx.fillStyle = "#aaa";
+    ctx.font = "10px sans-serif";
+    for (let f of decadeFreqs) {
+        if (f < fMin || f > fMax) continue;
+        const x = freqToX(f, w);
+        ctx.fillText(f + " Гц", x + 2, 12);
+    }
+}
+
+// отображение частоты под курсором
+canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const freq = xToFreq(x, canvas.width);
+    info.textContent = "Частота под курсором: " + freq.toFixed(1) + " Гц";
+});
+</script>
+
+</body>
+</html>

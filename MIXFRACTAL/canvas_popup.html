@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Mirror Canvas Popup</title>
+<style>
+    html, body {
+        margin:0; padding:0; overflow:hidden;
+        background:#000;
+        width:100%; height:100%;
+    }
+    #mirror_canvas {
+        width:100vw;
+        height:100vh;
+        display:block;
+        background:#000;
+    }
+</style>
+</head>
+
+<body>
+<canvas id="mirror_canvas"></canvas>
+
+<script>
+const mirror = document.getElementById("mirror_canvas");
+const ctx = mirror.getContext("2d");
+
+window.addEventListener("message", (e) => {
+	resizeCanvas();
+    const msg = e.data;
+    if (!msg) return;
+
+    if (msg.type === "mirrorFrame" && msg.bitmap) {
+        ctx.drawImage(msg.bitmap, 0, 0, mirror.width, mirror.height);
+    }
+});
+
+function createFullscreenButton() {
+    if (document.getElementById("fsBtnPopup")) return;
+
+    const btn = document.createElement("button");
+    btn.id = "fsBtnPopup";
+    btn.textContent = "⛶";
+    btn.style.position = "absolute";
+    btn.style.bottom = "20px";
+    btn.style.right = "20px";
+    btn.style.zIndex = "9999";
+    btn.style.fontSize = "28px";
+    btn.style.padding = "10px 16px";
+    btn.style.borderRadius = "8px";
+    btn.style.border = "1px solid #fff";
+    btn.style.background = "rgba(0,0,0,0.5)";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+    btn.style.backdropFilter = "blur(4px)";
+    btn.style.userSelect = "none";
+
+    btn.onclick = () => {
+        if (mirror.requestFullscreen) mirror.requestFullscreen();
+        else if (document.body.requestFullscreen) document.body.requestFullscreen();
+        btn.remove();
+    };
+
+    document.body.appendChild(btn);
+};
+
+window.addEventListener("message", (e) => {
+    const msg = e.data;
+    if (!msg) return;
+
+    if (msg.type === "showFSButton") {
+        createFullscreenButton();
+    }
+
+    // ... твой остальной код
+});
+
+function resizeCanvas() {
+//    canvas = document.getElementById('fractalCanvas');
+    mirror.width = window.innerWidth;
+    mirror.height = window.innerHeight;
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+</script>
+
+</body>
+</html>
