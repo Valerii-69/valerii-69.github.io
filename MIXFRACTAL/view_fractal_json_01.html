@@ -372,7 +372,7 @@
 				<option value="fractal_32.json">Fractal 32</option>
 			</select>
 			<button id="setBtn">SET</button>
-			<input id="resultInput" type="text" placeholder="Список выбранных"  maxlength="5000">
+			<textarea id="resultInput" type="text" placeholder="Список выбранных"  maxlength="5000"></textarea>
 			<button id="saveBtn">SAVE</button>
                 <div class="buttons-container">
                     <label for="fileInput" class="file-label">
@@ -511,10 +511,12 @@
         let currentFractalData = null;
 		let fractal_arr = [];
 		let numb_fractal = 0;
-
+		let fractal_prm = {};
+		let number = 0;
 
             canvas = document.getElementById('fractalCanvas');
 			const select = document.getElementById('fractalSelect');
+			const debugMode = document.getElementById('u_debugMode');
 
 canvas.addEventListener("touchstart", handlePress);
 canvas.addEventListener("click", handlePress);
@@ -532,14 +534,15 @@ const u_highDel = document.getElementById("uhigh");
 // 1. Добавление выбранного пункта
 // ===============================
 setBtn.onclick = () => {
-    const value = select.value;
-
+    const value = select.value.split(".");
+	const valnmb = value[0].split("_");
+	number = parseInt(valnmb[1]);
     // если input пустой — просто вставляем
     if (input.value.trim() === "") {
-        input.value = value;
+        input.value = value[0] + "_new." + value[1];
     } else {
         // иначе добавляем через запятую
-        input.value += "," + value;
+        input.value += "," + value[0] + "_new." + value[1];
     }
 };
 
@@ -563,6 +566,29 @@ saveBtn.onclick = async () => {
     } else {
         alert("Ошибка сохранения");
     }
+	
+//Сохранение файла fractal_NN.json
+    const jsonData1 = JSON.stringify({
+        number,   // ← добавили номер
+        fractal_prm
+    });
+
+    const res1 = await fetch("save_fractal.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: jsonData1
+    });
+
+    if (res1.ok) {
+        alert("Список сохранён!");
+    } else {
+        alert("Ошибка сохранения");
+    }
+	
+	
+	
+	
+	
 };
 
 // ===============================
@@ -641,7 +667,7 @@ function handlePress(e) {
         .then(data => {
             console.log("Загружен JSON:", data);
                 try {
-                    loadFractalFromJSON(data);
+                    loadFractalFromJSON(data,1);
                 } catch (error) {
                     console.error('Ошибка парсинга JSON:', error);
                     showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
@@ -662,7 +688,7 @@ function handlePress(e) {
         .then(data => {
             console.log("Загружен JSON:", data);
                 try {
-                    loadFractalFromJSON(data);
+                    loadFractalFromJSON(data,1);
                 } catch (error) {
                     console.error('Ошибка парсинга JSON:', error);
                     showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
@@ -716,7 +742,7 @@ btn.addEventListener('click', () => {
         .then(data => {
             console.log("Загружен JSON:", data);
                 try {
-                    loadFractalFromJSON(data);
+                    loadFractalFromJSON(data,0);
                 } catch (error) {
                     console.error('Ошибка парсинга JSON:', error);
                     showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
@@ -733,15 +759,13 @@ function resizeCanvas() {
 
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
-       
-        // Пример JSON-данных фрактала (на случай, если файл не загружен)
+      // Пример JSON-данных фрактала (на случай, если файл не загружен)
         const exampleFractalData = {
-            "u_low": 2,
-            "u_mid": 20,
-            "u_high": 80,
+            "u_low": 0.0,
+            "u_mid": 0.0,
+            "u_high": 0.0,
             "fragSource": `
 precision mediump float;
-
 uniform vec2  u_res;
 uniform float u_time;
 uniform float u_fon;
@@ -751,36 +775,27 @@ uniform float u_zoom;
 uniform float u_low;
 uniform float u_mid;
 uniform float u_high;
-
 uniform float u_lowGain;
 uniform float u_midGain;
 uniform float u_highGain;
-
 // морфинг
 uniform float u_mix;
 uniform float u_gamma;
-
 // debug
 uniform int u_debugMode;
 bool  uUseGlow = false;
-
 // глобальные аудио
 float bass, midBand, treble, timeVal, prm2D, glow;
-
 const vec3 COLOR_GLOW      = vec3(0.6, 0.5, 1.0);       // внутреннее свечение
-
-
 // =============================
 // УТИЛИТЫ
 // =============================
 float logGain(float x, float gain) {
     return pow(x + 1e-6, gain);
 }
-
 float hash(float x) {
     return fract(sin((x / 7900.456) * 89.123));
 }
-
 // =============================
 // 2D ФРАКТАЛ (цвет)
 // =============================
@@ -797,7 +812,6 @@ vec3 render2D(vec2 uv) {
     n *= n * 10.0;
     return vec3(u_fon)*(0.3 + bass*0.7, 0.2 + midBand*0.8, 0.4 + treble*0.8) * n;
 }
-
 // =============================
 // 2D → псевдо‑объём (DE)
 // =============================
@@ -805,7 +819,6 @@ float fractal2D_DE(vec3 p) {
     vec3 col = render2D(p.xy);
     return length(col) * 0.2;
 }
-
 // =============================
 // 3D / DE ФРАКТАЛ
 // =============================
@@ -820,7 +833,6 @@ float fractal3D(vec3 p){
     vec2 q = vec2(length(p.xz) - t.x, p.y);
     return length(q) - t.y;
 }
-
 // =============================
 // ВРАЩЕНИЕ
 // =============================
@@ -832,12 +844,10 @@ vec3 rotateX(vec3 p, float a) {
     float c = cos(a)*1.5, s = sin(a)*1.5;
     return vec3(c*p.y/0.5 + s*p.z, p.x, -s*p.y + c*p.z);
 }
-
 // =============================
 // ТРОЙНОЙ МОРФИНГ DE
 // =============================
 float fractalDE(vec3 p) {
-
     float de2D = fractal2D_DE(p);
 	float de3D = fractal3D(rotateY(p, u_time * 0.0001));
 	if (u_debugMode == 0)de3D = fractal3D(rotateY(p, u_time * 0.00035));
@@ -845,31 +855,24 @@ float fractalDE(vec3 p) {
     if (u_debugMode == 6)de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));
     if (u_debugMode == 7){uUseGlow = true; de3D = fractal3D(rotateY(p, u_time * cos(logGain(u_high, u_highGain)*0.00035)));};
     if (u_debugMode == 8){uUseGlow = true; de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));};
-
     // нормализация
     de2D *= 0.2;
     de3D *= 4.0;
-
     float phase1 = smoothstep(0.0, 0.5, u_mix); // 2D → pseudo
     float phase2 = smoothstep(0.5, 1.0, u_mix); // pseudo → 3D
-
     float de_phase1 = mix(0.0, de2D, phase1);
     float de_phase2 = mix(de2D, de3D, phase2);
-
     return mix(de_phase1, de_phase2, phase2);
 }
-
 // =============================
 // MAP + NORMAL
 // =============================
 float map(vec3 p) {
     return fractalDE(p);
 }
-
 vec3 getNormal(vec3 p) {
     float e = 0.002;
     vec2 k = vec2(1.0, -1.0);
-
     return normalize(
         k.xyy * map(p + k.xyy * e) +
         k.yyx * map(p + k.yyx * e) +
@@ -877,38 +880,30 @@ vec3 getNormal(vec3 p) {
         k.xxx * map(p + k.xxx * e)
     );
 }
-
 // =============================
 // RAYMARCH
 // =============================
 int g_raySteps = 0;
-
 float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
     float t = 0.0;
     const float tMax = 30.0;
-	
-    for (int i = 0; i < 40; i++) {
+	    for (int i = 0; i < 40; i++) {
         vec3 p = ro + rd * t;
         float d = map(p);
-		
-        if (u_debugMode == 4) uUseGlow = true;
+		if (u_debugMode == 4) uUseGlow = true;
         if(uUseGlow) glow = exp(-d*0.95) * (0.0125 + logGain(u_high, u_highGain)*0.0135);
-
         if (d < 0.001) {
             g_raySteps = i;
             pHit = p;
             return t;
         }
-
         if (t > tMax) break;
         t += d;
     }
-
     g_raySteps = 120;
     pHit = ro + rd * tMax;
     return -1.0;
 }
-
 // =============================
 // CAMERA
 // =============================
@@ -916,18 +911,15 @@ vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
     vec3 f = normalize(target - ro);
     vec3 r = normalize(vec3(f.z, 0.0, -f.x));
     vec3 u = normalize(cross(r, f));
-
     float z = 1.0 / tan(radians(fov) * 0.5);
     return normalize((f * z * (1.0/cos(logGain(u_low, u_lowGain)*0.125))) * u_zoom + r * uv.x + u * uv.y);  //u_zoom
 }
-
 vec3 cameraPos(float t) {
     float r = 6.0;
     float a = t * 0.25;
     float h = 2.5 * sin(t * 0.15);
     return vec3(r * cos(a), h, r * sin(a));
 }
-
 // =============================
 // ПАЛИТРА
 // =============================
@@ -936,13 +928,11 @@ vec3 c2 = vec3(0.4, 0.0, 0.6);
 vec3 c3 = vec3(0.0, 1.0, 1.0);
 vec3 c4 = vec3(0.75, 0.45, 1.0);
 vec3 c5 = vec3(0.25, 0.0, 1.0);
-
 //vec3 c1 = vec3(0.05, 0.0, 0.15);     // глубокий фиолетово-синий
 //vec3 c2	= vec3(0.1, 0.0, 0.3);       // тёмный синий
 //vec3 c3	= vec3(0.3, 0.0, 0.5);       // фиолетовый
 //vec3 c4 = vec3(0.5, 0.1, 0.8);       // ультрафиолетовый
 //vec3 c5	= vec3(0.3, 0.4, 0.9);      // голубой
-
 vec3 palette5(float t) {
 t = t*u_midGain;
     if (t < 0.25) return mix(c1, c5, t / 0.25);
@@ -950,91 +940,64 @@ t = t*u_midGain;
     if (t < 0.75) return mix(c2, c4, (t - 0.50) / 0.25);
     return mix(c4, c3, (t - 0.75) / 0.25);
 }
-
 // =============================
 // MAIN
 // =============================
 void main() {
-
     // аудио
     bass    = logGain(u_low,  u_lowGain);
     midBand = logGain(u_mid,  u_midGain);
     treble  = logGain(u_high, u_highGain);
     timeVal = u_time;
 	glow = 0.0;
-
     // UV
     vec2 uv = (gl_FragCoord.xy / u_res) * 2.0 - 1.0;
     uv.x *= u_res.x / u_res.y;
-
     // камера
     vec3 ro = cameraPos(u_time);
     vec3 rd = getRayDir(uv, ro, vec3(0.0), 45.0);
-
     // raymarch
     vec3 pHit;
     float t = rayMarch(ro, rd, pHit);
     vec3 col;
-
     if (t > 0.0) {
-
         vec3 n = getNormal(pHit);
-
         vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
         float diff = max(dot(n, lightDir), 0.0);
         float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
-
         float smooth = pow(clamp(t / 20.0, 0.0, 1.0), 0.7);
-
-
 		/*
-
         float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
         float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
         float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
-
         vec3 matCol = vec3(
             rnd  + 0.5 * sin(smooth + bass    * 5.0),
             rnd1 + 0.5 * sin(smooth + midBand * 5.0 + 2.0),
             rnd2 + 0.5 * sin(smooth + treble  * 5.0 + 4.0)
         );*/
-		
-        float phase = 0.5 + 0.5 * sin(smooth + bass * 5.0)*sin(smooth + treble * 5.0);
+		float phase = 0.5 + 0.5 * sin(smooth + bass * 5.0)*sin(smooth + treble * 5.0);
 //		float phase = 0.5 + 0.5 * diff/sin(normalize(u_time * smooth) + u_low * 5.0);
-
         vec3 matCol = palette5(phase);
-
         vec3 blend1 = mix(c1, c2, phase);
         vec3 blend2 = mix(c2, c3, phase);
         vec3 finalColor = mix(blend1, blend2, phase);
         vec3 blend3 = mix(c3, c4, phase);
         vec3 blend4 = mix(c4, c5, phase);
         vec3 finalColor1 = mix(blend3, blend4, phase);
-
         matCol = mix(matCol, mix(finalColor1,finalColor,0.005), 0.005);
-
         if (u_debugMode == 0) prm2D = 200.0;
         if (u_debugMode == 1) prm2D = treble; //col = 0.5 + 0.5 * n;
         if (u_debugMode == 2) col = vec3(diff);
         if (u_debugMode == 3) col = vec3(float(g_raySteps) / 120.0);
-
-
         vec3 col3D = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
         vec3 col2D = render2D(uv * prm2D);
-
         float phaseColor = smoothstep(0.3, 1.0, u_mix);
-		
-        vec3 innerGlow = vec3(1.2, 0.9, 0.6) * glow * (0.5 + logGain(u_high, u_highGain));
-
-
+		vec3 innerGlow = vec3(1.2, 0.9, 0.6) * glow * (0.5 + logGain(u_high, u_highGain));
         col = mix(col2D, col3D, phaseColor) + innerGlow;
-
     } else {
         col = render2D(uv * prm2D);
     }
-
     col = pow(col, vec3(u_gamma)); // gamma
-
     gl_FragColor = vec4(col, 1.0);
 }
 `,
@@ -1042,9 +1005,14 @@ void main() {
             "u_nprm": 1,
             "u_gamma": 1.1545,
             "u_zoom": 2,
-            "u_mix": 0.7024
+            "u_mix": 0.7024,
+			"u_lowGain": 1.0,
+            "u_midGain": 1.0,
+            "u_highGain": 1.0,
+			"u_debugMode": 0
         };
-        
+
+       
         // Инициализация WebGL
         function initWebGL() {
             // Установка размера canvas
@@ -1187,8 +1155,9 @@ async function sendFrameToPopup() {
 }
         
         // Загрузка фрактала из JSON
-        function loadFractalFromJSON(data) {
+        function loadFractalFromJSON(data,typ) {
             try {
+			if(typ == 0){
                 currentFractalData = data;
                 
                 // Создание вершинного шейдера
@@ -1196,7 +1165,7 @@ async function sendFrameToPopup() {
                 
                 // Создание фрагментного шейдера из данных JSON
                 const fragmentSource = data.fragSource;
-                
+                fractal_prm["fragSource"] = data.fragSource;
                 // Создание новой шейдерной программы
                 program = createShaderProgram(vertexSource, fragmentSource);
                 
@@ -1215,10 +1184,10 @@ async function sendFrameToPopup() {
                     u_gamma: data.u_gamma || 0.4545,
                     u_zoom: data.u_zoom || 2,
                     u_mix: data.u_mix || 0.5,
-                    u_lowGain: 1.0,
-                    u_midGain: 1.0,
-                    u_highGain: 1.0,
-                    u_debugMode: 0
+                    u_lowGain: data.u_lowGain || 1.0,
+                    u_midGain: data.u_midGain || 1.0,
+                    u_highGain: data.u_highGain || 1.0,
+                    u_debugMode: data.u_debugMode || 0
                 };
                 
                 // Обновление слайдеров
@@ -1233,7 +1202,51 @@ async function sendFrameToPopup() {
                 }
                 startTime = Date.now();
                 render();
+            }else{
+			                currentFractalData = data.fractal_prm;
                 
+                // Создание вершинного шейдера
+                const vertexSource = document.getElementById('vertexShader').text;
+                
+                // Создание фрагментного шейдера из данных JSON
+                const fragmentSource = currentFractalData?.fragSource;
+                fractal_prm["fragSource"] = currentFractalData?.fragSource;
+                // Создание новой шейдерной программы
+                program = createShaderProgram(vertexSource, fragmentSource);
+                
+                if (!program) {
+                    showStatus('Ошибка создания шейдерной программы', 'error');
+                    return;
+                }
+                
+                // Инициализация uniform-переменных из JSON
+                uniforms = {
+                    u_low: 0.0,
+                    u_mid: 0.0,
+                    u_high: 0.0,
+                    u_fon: currentFractalData?.u_fon || 0,
+                    u_nprm: currentFractalData?.u_nprm || 1,
+                    u_gamma: currentFractalData?.u_gamma || 0.4545,
+                    u_zoom: currentFractalData?.u_zoom || 2,
+                    u_mix: currentFractalData?.u_mix || 0.5,
+                    u_lowGain: currentFractalData?.u_lowGain || 1.0,
+                    u_midGain: currentFractalData?.u_midGain || 1.0,
+                    u_highGain: currentFractalData?.u_highGain || 1.0,
+                    u_debugMode: currentFractalData?.u_debugMode || 0
+                };
+                
+                // Обновление слайдеров
+                updateSlidersFromData(currentFractalData);
+                
+                // Обновление статуса
+                showStatus(`Фрактал успешно загружен! Параметры: mix=${currentFractalData?.u_mix}, gamma=${currentFractalData?.u_gamma}, zoom=${currentFractalData?.u_zoom}`, 'success');
+                
+                // Запуск рендеринга
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                startTime = Date.now();
+                render();}    
             } catch (error) {
                 console.error('Ошибка загрузки фрактала:', error);
                 showStatus(`Ошибка загрузки фрактала: ${error.message}`, 'error');
@@ -1255,7 +1268,7 @@ async function sendFrameToPopup() {
         
         // Обновление значений слайдеров
         function updateSliderValues() {
-            const sliders = ['u_mix', 'u_gamma', 'u_zoom', 'u_fon', 'u_nprm', 'u_lowGain', 'u_midGain', 'u_highGain', 'ulow', 'umid', 'uhigh'];
+            const sliders = ['u_mix', 'u_gamma', 'u_zoom', 'u_fon', 'u_nprm', 'u_lowGain', 'u_midGain', 'u_highGain', 'ulow', 'umid', 'uhigh'];  //
             
             sliders.forEach(sliderId => {
                 const slider = document.getElementById(sliderId);
@@ -1264,7 +1277,7 @@ async function sendFrameToPopup() {
                     let value = parseFloat(slider.value);
                     
                     // Форматирование значения
-                    if (sliderId === 'u_mix' || sliderId === 'u_mix_n' || sliderId === 'u_fon') {
+                    if (sliderId === 'u_mix' || sliderId === 'u_fon') {
                         valueDisplay.textContent = value.toFixed(2);
                     } else if (sliderId === 'u_gamma') {
                         valueDisplay.textContent = value.toFixed(3);
@@ -1276,6 +1289,8 @@ async function sendFrameToPopup() {
                     
                     // Обновление uniform-переменных
                     uniforms[sliderId] = value;
+					fractal_prm[sliderId] = value;
+					fractal_prm["u_debugMode"] = debugMode.value;
                 }
             });
         }
@@ -1337,6 +1352,11 @@ async function sendFrameToPopup() {
             document.getElementById('midValue').textContent = (midRange[parseInt(u_midDel.value) + currentFractalData?.u_mid]/255.0).toFixed(4);
             document.getElementById('trebleValue').textContent = (trebleRange[parseInt(u_highDel.value) + currentFractalData?.u_high]/255.0).toFixed(4);
             
+			fractal_prm["ulow"] = parseInt(u_lowDel.value);
+			fractal_prm["umid"] = parseInt(u_midDel.value);
+			fractal_prm["uhigh"] = parseInt(u_highDel.value);
+
+			
 			let sum_low = 0; for (let i = 0; i < bassRange.length; i++) { sum_low += bassRange[i]; } const avg_low = sum_low / bassRange.length;
 			let sum_mid = 0; for (let i = 0; i < midRange.length; i++) { sum_mid += midRange[i]; } const avg_mid = sum_mid / midRange.length;
 			let sum_high = 0; for (let i = 0; i < trebleRange.length; i++) { sum_high += trebleRange[i]; } const avg_high = sum_high / trebleRange.length;
@@ -1374,7 +1394,7 @@ async function sendFrameToPopup() {
         
         // Загрузка примера фрактала
         function loadExample() {
-            loadFractalFromJSON(exampleFractalData);
+            loadFractalFromJSON(exampleFractalData,0);
             showStatus('Загружен пример фрактала с параметрами по умолчанию', 'info');
         }
         
@@ -1388,7 +1408,7 @@ async function sendFrameToPopup() {
             reader.onload = function(e) {
                 try {
                     const jsonData = JSON.parse(e.target.result);
-                    loadFractalFromJSON(jsonData);
+                    loadFractalFromJSON(jsonData,0);
                 } catch (error) {
                     console.error('Ошибка парсинга JSON:', error);
                     showStatus(`Ошибка чтения файла: ${error.message}`, 'error');
@@ -1416,7 +1436,255 @@ async function sendFrameToPopup() {
             if (!initWebGL()) {
                 return;
             }
-            
+
+				fractal_prm = {
+                    "u_gamma": 0.4545,
+                    "u_zoom": 2,
+                    "u_mix": 0.5,
+                    "u_lowGain": 1.0,
+                    "u_midGain": 1.0,
+                    "u_highGain": 1.0,
+                    "ulow": 1.0,
+                    "umid": 1.0,
+                    "uhigh": 1.0,
+					"fragSource":`precision mediump float;
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_fon;
+uniform float u_nprm;
+uniform float u_zoom;
+// аудио
+uniform float u_low;
+uniform float u_mid;
+uniform float u_high;
+uniform float u_lowGain;
+uniform float u_midGain;
+uniform float u_highGain;
+// морфинг
+uniform float u_mix;
+uniform float u_gamma;
+// debug
+uniform int u_debugMode;
+bool  uUseGlow = false;
+// глобальные аудио
+float bass, midBand, treble, timeVal, prm2D, glow;
+const vec3 COLOR_GLOW      = vec3(0.6, 0.5, 1.0);       // внутреннее свечение
+// =============================
+// УТИЛИТЫ
+// =============================
+float logGain(float x, float gain) {
+    return pow(x + 1e-6, gain);
+}
+float hash(float x) {
+    return fract(sin((x / 7900.456) * 89.123));
+}
+// =============================
+// 2D ФРАКТАЛ (цвет)
+// =============================
+// Lissajous
+vec3 render2D(vec2 uv) {
+    float a = 2.0 + bass * 5.0;
+    float b = 3.0 + midBand * 4.0;
+    float c = 4.0 + treble * 6.0;
+    vec2 p = vec2(
+        sin(a * uv.y + u_time*0.5),
+        sin(b * uv.x + u_time*0.3)
+    );
+    float n = length(p) * 0.05;
+    n *= n * 10.0;
+    return vec3(u_fon)*(0.3 + bass*0.7, 0.2 + midBand*0.8, 0.4 + treble*0.8) * n;
+}
+// =============================
+// 2D → псевдо‑объём (DE)
+// =============================
+float fractal2D_DE(vec3 p) {
+    vec3 col = render2D(p.xy);
+    return length(col) * 0.2;
+}
+// =============================
+// 3D / DE ФРАКТАЛ
+// =============================
+// Twisted Torus Field
+float fractal3D(vec3 p){
+    float a = 0.6 * sin(p.z * 0.5);
+    float c = cos(a), s = sin(a);
+    // twist around Z
+    mat2 rot = mat2(c, -s, s, c);
+    p.xy = rot * p.xy;
+    vec2 t = vec2(1.0, 0.25);
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+// =============================
+// ВРАЩЕНИЕ
+// =============================
+vec3 rotateY(vec3 p, float a) {
+    float c = cos(a)*1.0, s = sin(a)*1.0;
+    return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
+}
+vec3 rotateX(vec3 p, float a) {
+    float c = cos(a)*1.5, s = sin(a)*1.5;
+    return vec3(c*p.y/0.5 + s*p.z, p.x, -s*p.y + c*p.z);
+}
+// =============================
+// ТРОЙНОЙ МОРФИНГ DE
+// =============================
+float fractalDE(vec3 p) {
+    float de2D = fractal2D_DE(p);
+	float de3D = fractal3D(rotateY(p, u_time * 0.0001));
+	if (u_debugMode == 0)de3D = fractal3D(rotateY(p, u_time * 0.00035));
+    if (u_debugMode == 5)de3D = fractal3D(rotateY(p, u_time * cos(logGain(u_high, u_highGain)*0.00035)));
+    if (u_debugMode == 6)de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));
+    if (u_debugMode == 7){uUseGlow = true; de3D = fractal3D(rotateY(p, u_time * cos(logGain(u_high, u_highGain)*0.00035)));};
+    if (u_debugMode == 8){uUseGlow = true; de3D = fractal3D(mix(rotateX(p, -u_time * cos(logGain(u_high, u_highGain)*0.00035)),rotateY(p, u_time * 1.2/sin(logGain(u_high, u_highGain)*0.0035)),0.005));};
+    // нормализация
+    de2D *= 0.2;
+    de3D *= 4.0;
+    float phase1 = smoothstep(0.0, 0.5, u_mix); // 2D → pseudo
+    float phase2 = smoothstep(0.5, 1.0, u_mix); // pseudo → 3D
+    float de_phase1 = mix(0.0, de2D, phase1);
+    float de_phase2 = mix(de2D, de3D, phase2);
+    return mix(de_phase1, de_phase2, phase2);
+}
+// =============================
+// MAP + NORMAL
+// =============================
+float map(vec3 p) {
+    return fractalDE(p);
+}
+vec3 getNormal(vec3 p) {
+    float e = 0.002;
+    vec2 k = vec2(1.0, -1.0);
+    return normalize(
+        k.xyy * map(p + k.xyy * e) +
+        k.yyx * map(p + k.yyx * e) +
+        k.yxy * map(p + k.yxy * e) +
+        k.xxx * map(p + k.xxx * e)
+    );
+}
+// =============================
+// RAYMARCH
+// =============================
+int g_raySteps = 0;
+float rayMarch(vec3 ro, vec3 rd, out vec3 pHit) {
+    float t = 0.0;
+    const float tMax = 30.0;
+    for (int i = 0; i < 40; i++) {
+        vec3 p = ro + rd * t;
+        float d = map(p);
+        if (u_debugMode == 4) uUseGlow = true;
+        if(uUseGlow) glow = exp(-d*0.95) * (0.0125 + logGain(u_high, u_highGain)*0.0135);
+        if (d < 0.001) {
+            g_raySteps = i;
+            pHit = p;
+            return t;
+        }
+        if (t > tMax) break;
+        t += d;
+    }
+    g_raySteps = 120;
+    pHit = ro + rd * tMax;
+    return -1.0;
+}
+// =============================
+// CAMERA
+// =============================
+vec3 getRayDir(vec2 uv, vec3 ro, vec3 target, float fov) {
+    vec3 f = normalize(target - ro);
+    vec3 r = normalize(vec3(f.z, 0.0, -f.x));
+    vec3 u = normalize(cross(r, f));
+    float z = 1.0 / tan(radians(fov) * 0.5);
+    return normalize((f * z * (1.0/cos(logGain(u_low, u_lowGain)*0.125))) * u_zoom + r * uv.x + u * uv.y);  //u_zoom
+}
+vec3 cameraPos(float t) {
+    float r = 6.0;
+    float a = t * 0.25;
+    float h = 2.5 * sin(t * 0.15);
+    return vec3(r * cos(a), h, r * sin(a));
+}
+// =============================
+// ПАЛИТРА
+// =============================
+vec3 c1 = vec3(0.0, 0.2, 0.8);
+vec3 c2 = vec3(0.4, 0.0, 0.6);
+vec3 c3 = vec3(0.0, 1.0, 1.0);
+vec3 c4 = vec3(0.75, 0.45, 1.0);
+vec3 c5 = vec3(0.25, 0.0, 1.0);
+//vec3 c1 = vec3(0.05, 0.0, 0.15);     // глубокий фиолетово-синий
+//vec3 c2	= vec3(0.1, 0.0, 0.3);       // тёмный синий
+//vec3 c3	= vec3(0.3, 0.0, 0.5);       // фиолетовый
+//vec3 c4 = vec3(0.5, 0.1, 0.8);       // ультрафиолетовый
+//vec3 c5	= vec3(0.3, 0.4, 0.9);      // голубой
+vec3 palette5(float t) {
+t = t*u_midGain;
+    if (t < 0.25) return mix(c1, c5, t / 0.25);
+    if (t < 0.50) return mix(c5, c2, (t - 0.35) / 0.25);
+    if (t < 0.75) return mix(c2, c4, (t - 0.50) / 0.25);
+    return mix(c4, c3, (t - 0.75) / 0.25);
+}
+// =============================
+// MAIN
+// =============================
+void main() {
+    // аудио
+    bass    = logGain(u_low,  u_lowGain);
+    midBand = logGain(u_mid,  u_midGain);
+    treble  = logGain(u_high, u_highGain);
+    timeVal = u_time;
+	glow = 0.0;
+    // UV
+    vec2 uv = (gl_FragCoord.xy / u_res) * 2.0 - 1.0;
+    uv.x *= u_res.x / u_res.y;
+    // камера
+    vec3 ro = cameraPos(u_time);
+    vec3 rd = getRayDir(uv, ro, vec3(0.0), 45.0);
+    // raymarch
+    vec3 pHit;
+    float t = rayMarch(ro, rd, pHit);
+    vec3 col;
+    if (t > 0.0) {
+        vec3 n = getNormal(pHit);
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diff = max(dot(n, lightDir), 0.0);
+        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+        float smooth = pow(clamp(t / 20.0, 0.0, 1.0), 0.7);
+		/*
+        float rnd  = 0.1 + 0.8 * hash(u_time * 1.234);
+        float rnd1 = 0.1 + 0.8 * hash(u_time * 2.345);
+        float rnd2 = 0.1 + 0.8 * hash(u_time * 3.456);
+        vec3 matCol = vec3(
+            rnd  + 0.5 * sin(smooth + bass    * 5.0),
+            rnd1 + 0.5 * sin(smooth + midBand * 5.0 + 2.0),
+            rnd2 + 0.5 * sin(smooth + treble  * 5.0 + 4.0)
+        );*/
+        float phase = 0.5 + 0.5 * sin(smooth + bass * 5.0)*sin(smooth + treble * 5.0);
+//		float phase = 0.5 + 0.5 * diff/sin(normalize(u_time * smooth) + u_low * 5.0);
+        vec3 matCol = palette5(phase);
+        vec3 blend1 = mix(c1, c2, phase);
+        vec3 blend2 = mix(c2, c3, phase);
+        vec3 finalColor = mix(blend1, blend2, phase);
+        vec3 blend3 = mix(c3, c4, phase);
+        vec3 blend4 = mix(c4, c5, phase);
+        vec3 finalColor1 = mix(blend3, blend4, phase);
+        matCol = mix(matCol, mix(finalColor1,finalColor,0.005), 0.005);
+        if (u_debugMode == 0) prm2D = 200.0;
+        if (u_debugMode == 1) prm2D = treble; //col = 0.5 + 0.5 * n;
+        if (u_debugMode == 2) col = vec3(diff);
+        if (u_debugMode == 3) col = vec3(float(g_raySteps) / 120.0);
+        vec3 col3D = matCol * (0.15 + 0.85 * diff) + rim * vec3(0.8, 0.7, 1.0);
+        vec3 col2D = render2D(uv * prm2D);
+        float phaseColor = smoothstep(0.3, 1.0, u_mix);
+        vec3 innerGlow = vec3(1.2, 0.9, 0.6) * glow * (0.5 + logGain(u_high, u_highGain));
+        col = mix(col2D, col3D, phaseColor) + innerGlow;
+    } else {
+        col = render2D(uv * prm2D);
+    }
+    col = pow(col, vec3(u_gamma)); // gamma
+    gl_FragColor = vec4(col, 1.0);
+}`,
+                    "u_debugMode": 0
+				};       
+              
             // Загрузка примера по умолчанию
             loadExample();
             
